@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Itaitinga MTB Race — Admin</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main id="login" class="login">
+  <section class="login-card">
+    <div class="brand"><div class="mark">MTB</div><div><small>ITAITINGA</small><b>MTB RACE</b></div></div>
+    <div class="heading"><span>ÁREA RESTRITA</span><h1>Painel Administrativo</h1><p>Gerencie inscrições, pagamentos e confirmações do evento.</p></div>
+    <form id="loginForm">
+      <label>E-mail</label>
+      <input id="email" type="email" placeholder="Digite seu e-mail" autocomplete="username">
+      <label>Senha</label>
+      <div class="pass"><input id="password" type="password" placeholder="Digite sua senha" autocomplete="current-password"><button type="button" id="showPass">Mostrar</button></div>
+      <div id="error" class="error" hidden></div>
+      <button class="primary" type="submit">ENTRAR NO PAINEL <b>→</b></button>
+    </form>
+    <footer>Itaitinga MTB Race • Painel Administrativo</footer>
+  </section>
+</main>
+
+<main id="app" hidden>
+<aside class="sidebar">
+  <div class="sidebrand"><div class="mark">MTB</div><div><small>ITAITINGA</small><b>MTB RACE</b></div></div>
+  <nav>
+    <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+    <button class="nav" data-page="inscricoes">♙ <span>Inscrições</span></button>
+    <button class="nav" data-page="pagamentos">R$ <span>Pagamentos</span></button>
+    <button class="nav" data-page="configuracoes">⚙ <span>Configurações</span></button>
+    <button class="nav" data-page="usuarios">♙ <span>Usuários</span></button>
+  </nav>
+  <div class="user"><div class="avatar">A</div><div><b>Administrador</b><small id="userEmail"></small></div><button id="logout">Sair</button></div>
+</aside>
+<section class="main">
+<header><div><span id="eyebrow">VISÃO GERAL</span><h1 id="title">Dashboard</h1></div><div class="online"><i></i> Sistema online <button>↻</button></div></header>
+<div class="content">
+
+<section class="page active" id="dashboard">
+  <div class="hero"><div><span>ITAITINGA MTB RACE</span><h2>Controle das inscrições</h2><p>Acompanhe inscritos, pagamentos e confirmações.</p></div><strong>2026</strong></div>
+  <div class="stats">
+    <button class="stat" data-filter="todos"><em>♙</em><small>Total de inscritos</small><b>0</b><label>Ver todos →</label></button>
+    <button class="stat" data-filter="pagamento-pendente"><em>R$</em><small>Pagamentos pendentes</small><b>0</b><label>Ver pendentes →</label></button>
+    <button class="stat" data-filter="pago"><em>✓</em><small>Pagamentos confirmados</small><b>0</b><label>Ver confirmados →</label></button>
+    <button class="stat" data-filter="inscricao-pendente"><em>!</em><small>Inscrições pendentes</small><b>0</b><label>Ver pendentes →</label></button>
+    <button class="stat" data-filter="confirmado"><em>✓</em><small>Inscrições confirmadas</small><b>0</b><label>Ver confirmados →</label></button>
+    <button class="stat" data-filter="cancelado"><em>×</em><small>Canceladas</small><b>0</b><label>Ver canceladas →</label></button>
+  </div>
+  <div class="lower">
+    <article class="panel"><div class="ph"><div><span>FINANCEIRO</span><h3>Resumo das inscrições</h3></div><mark>Valores por categoria</mark></div><div class="money"><div><small>Arrecadado</small><b>R$ 0,00</b></div><div><small>A receber</small><b>R$ 0,00</b></div><div><small>Total potencial</small><b>R$ 0,00</b></div></div></article>
+    <article class="panel"><div class="ph"><div><span>ACESSO RÁPIDO</span><h3>Atalhos</h3></div></div><div class="quick"><button data-go="inscricoes">♙ Ver inscrições</button><button data-go="pagamentos">R$ Conferir pagamentos</button><button data-go="inscricoes" data-filter="pagamento-pendente">! Ver pendentes</button></div></article>
+  </div>
+</section>
+
+<section class="page" id="inscricoes">
+  <div class="section-head">
+    <div><span>GESTÃO</span><h2>Inscrições</h2><p>Consulte e acompanhe os atletas cadastrados.</p></div>
+    <button class="primary small" type="button" id="newRegistrationBtn">+ NOVA INSCRIÇÃO</button>
+  </div>
+  <div class="toolbar">
+    <input id="search" placeholder="⌕  Buscar por nome, CPF ou nº inscrição">
+    <select id="filter">
+      <option value="todos">Todos os status</option>
+      <option value="pagamento-pendente">Pagamento pendente</option>
+      <option value="pago">Pagamento pago</option>
+      <option value="inscricao-pendente">Inscrição pendente</option>
+      <option value="confirmado">Inscrição confirmada</option>
+      <option value="cancelado">Canceladas</option>
+    </select>
+    <select id="categoryFilter">
+      <option value="todas">Todas as categorias</option>
+      <option value="Elite Masculino">Elite Masculino</option>
+      <option value="Elite Feminino">Elite Feminino</option>
+      <option value="Sport Masculino">Sport Masculino</option>
+      <option value="Sport Feminino">Sport Feminino</option>
+    </select>
+  </div>
+  <article class="panel table">
+    <table><thead><tr><th>Nº</th><th>Atleta</th><th>Categoria</th><th>Pagamento</th><th>Inscrição</th><th></th></tr></thead>
+    <tbody id="rows"></tbody></table>
+  </article>
+</section>
+
+
+<div id="registrationModal" class="modal-backdrop" hidden>
+  <div class="detail-modal registration-modal" role="dialog" aria-modal="true" aria-labelledby="registrationTitle">
+    <div class="modal-head">
+      <div>
+        <span>NOVA INSCRIÇÃO</span>
+        <h2 id="registrationTitle">Cadastrar atleta</h2>
+      </div>
+      <button type="button" class="modal-close" id="closeRegistration">×</button>
+    </div>
+
+    <form id="registrationForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide">
+            <small>ATLETA *</small>
+            <input id="newNome" type="text" maxlength="120" placeholder="Nome completo" autocomplete="name" required>
+          </label>
+
+          <label class="registration-field">
+            <small>CPF *</small>
+            <input id="newCpf" type="text" maxlength="14" placeholder="000.000.000-00" inputmode="numeric" required>
+          </label>
+
+          <label class="registration-field">
+            <small>CATEGORIA *</small>
+            <select id="newCategoria" required>
+              <option value="">Selecione a categoria</option>
+
+            </select>
+          </label>
+
+          <label class="registration-field">
+            <small>E-MAIL *</small>
+            <input id="newEmail" type="email" maxlength="150" placeholder="atleta@email.com" autocomplete="email" required>
+          </label>
+
+          <label class="registration-field">
+            <small>WHATSAPP</small>
+            <input id="newTelefone" type="text" maxlength="20" placeholder="(85) 99999-9999" inputmode="tel" autocomplete="tel">
+          </label>
+
+          <label class="registration-field">
+            <small>VALOR</small>
+            <input id="newValor" type="number" min="0" step="0.01" value="80" readonly>
+          </label>
+
+          <label class="registration-field wide">
+            <small>OBSERVAÇÃO</small>
+            <textarea id="newObservacao" rows="3" maxlength="500" placeholder="Observações da inscrição"></textarea>
+          </label>
+        </div>
+
+        <div id="registrationError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-secondary" id="cancelRegistration">CANCELAR</button>
+        <button type="submit" class="modal-primary" id="saveRegistration">CADASTRAR INSCRIÇÃO</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="detailModal" class="modal-backdrop" hidden>
+  <div class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-head">
+      <div><span>INSCRIÇÃO</span><h2 id="detailTitle">#000</h2></div>
+      <button type="button" class="modal-close" id="closeDetail">×</button>
+    </div>
+    <div id="detailLoading" class="modal-loading">Carregando dados...</div>
+    <div id="detailContent" hidden>
+      <div class="detail-grid">
+        <div class="detail-field wide"><small>ATLETA</small><b id="dNome">—</b></div>
+        <div class="detail-field"><small>CPF</small><b id="dCpf">—</b></div>
+        <div class="detail-field"><small>CATEGORIA</small><b id="dCategoria">—</b></div>
+        <div class="detail-field"><small>DATA DE NASCIMENTO</small><b id="dNascimento">—</b></div>
+        <div class="detail-field"><small>CIDADE</small><b id="dCidade">—</b></div>
+        <div class="detail-field"><small>E-MAIL</small><b id="dEmail">—</b></div>
+        <div class="detail-field"><small>WHATSAPP</small><b id="dTelefone">—</b></div>
+        <div class="detail-field wide"><small>CONTATO DE EMERGÊNCIA</small><b id="dEmergencia">—</b></div>
+      </div>
+      <div class="detail-status">
+        <div><small>PAGAMENTO</small><div id="dPagamento" class="pill pending">Pendente</div></div>
+        <div><small>INSCRIÇÃO</small><div id="dStatus" class="pill pending">Pendente</div></div>
+      </div>
+      <div class="documents">
+        <div class="documents-head">
+          <div><span>DOCUMENTOS</span><h3>Comprovantes</h3></div>
+          <label class="upload-btn" for="fileUpload">+ ENVIAR ARQUIVO</label>
+          <input id="fileUpload" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" hidden>
+        </div>
+        <div id="fileList" class="file-list"><div class="empty-files">Nenhum arquivo vinculado.</div></div>
+        <small class="file-note">PDF, JPG, PNG ou WEBP • recomendado até 5 MB.</small>
+      </div>
+      <div id="editPanel" class="edit-panel" hidden>
+        <div class="edit-head">
+          <span>EDIÇÃO</span>
+          <h3>Editar inscrição</h3>
+        </div>
+        <div class="edit-grid">
+          <label class="wide">ATLETA
+            <input id="editNome" type="text" autocomplete="off">
+          </label>
+          <label>CPF
+            <input id="editCpf" type="text" autocomplete="off">
+          </label>
+          <label>CATEGORIA
+            <select id="editCategoria">
+
+            </select>
+          </label>
+          <label>E-MAIL
+            <input id="editEmail" type="email" autocomplete="off">
+          </label>
+          <label>WHATSAPP
+            <input id="editTelefone" type="text" autocomplete="off">
+          </label>
+          <label>VALOR
+            <input id="editValor" type="number" min="0" step="0.01" readonly>
+          </label>
+          <label class="wide">OBSERVAÇÃO
+            <textarea id="editObservacao" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="edit-actions">
+          <button type="button" class="modal-secondary" id="cancelEditAction">CANCELAR</button>
+          <button type="button" class="modal-primary" id="saveEditAction">SALVAR ALTERAÇÕES</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-secondary" id="editAction">EDITAR</button>
+        <button type="button" class="modal-primary" id="validateAction">VALIDAR INSCRIÇÃO</button>
+        <button type="button" class="modal-secondary" id="paymentAction" onclick="window.abrirAlteracaoPagamento && window.abrirAlteracaoPagamento(); return false;">ALTERAR PAGAMENTO</button>
+        <button type="button" class="modal-primary" id="statusAction">ALTERAR STATUS</button>
+      </div>
+    </div>
+  </div>
+</div>
+<section class="page" id="pagamentos">
+  <div class="section-head">
+    <div>
+      <span>FINANCEIRO</span>
+      <h2>Pagamentos</h2>
+      <p>Acompanhe os pagamentos e atualize a situação dos atletas.</p>
+    </div>
+  </div>
+
+  <div class="payment-cards">
+    <div><small>Pendentes</small><b id="paymentPendingCount">0</b><span id="paymentPendingValue">R$ 0,00</span></div>
+    <div><small>Confirmados</small><b id="paymentPaidCount">0</b><span id="paymentPaidValue">R$ 0,00</span></div>
+  </div>
+
+  <div class="toolbar payment-toolbar">
+    <input id="paymentSearch" placeholder="⌕  Buscar por nome, CPF ou nº inscrição">
+    <select id="paymentFilter">
+      <option value="todos">Todos os pagamentos</option>
+      <option value="pendente">Pendentes</option>
+      <option value="pago">Pagos</option>
+      <option value="cancelado">Cancelados</option>
+    </select>
+  </div>
+
+  <article class="panel table">
+    <table>
+      <thead>
+        <tr>
+          <th>Nº</th>
+          <th>Atleta</th>
+          <th>Categoria</th>
+          <th>Valor</th>
+          <th>Pagamento</th>
+          <th>Inscrição</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="paymentRows"></tbody>
+    </table>
+  </article>
+</section>
+
+
+<section class="page" id="usuarios">
+  <div class="section-head">
+    <div>
+      <span>ADMINISTRAÇÃO</span>
+      <h2>Usuários</h2>
+      <p>Cadastre administradores e altere as senhas de acesso ao painel.</p>
+    </div>
+    <button class="primary small" type="button" id="newUserBtn">+ NOVO USUÁRIO</button>
+  </div>
+
+  <article class="panel table">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Status</th>
+          <th>Criado em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="usersRows"></tbody>
+    </table>
+  </article>
+</section>
+
+<div id="userModal" class="modal-backdrop" hidden>
+  <div class="detail-modal user-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <span id="userModalEyebrow">NOVO USUÁRIO</span>
+        <h2 id="userModalTitle">Cadastrar administrador</h2>
+      </div>
+      <button type="button" class="modal-close" id="closeUserModal">×</button>
+    </div>
+
+    <form id="userForm">
+      <div class="user-body">
+        <label class="registration-field">
+          <small>NOME *</small>
+          <input id="userNome" type="text" maxlength="120" required placeholder="Nome do administrador">
+        </label>
+
+        <label class="registration-field">
+          <small>E-MAIL *</small>
+          <input id="userEmailInput" type="email" maxlength="180" required placeholder="usuario@email.com">
+        </label>
+
+        <label class="registration-field">
+          <small>SENHA *</small>
+          <input id="userSenha" type="password" minlength="6" maxlength="100" required placeholder="Mínimo de 6 caracteres">
+        </label>
+
+        <label class="registration-field">
+          <small>CONFIRMAR SENHA *</small>
+          <input id="userSenhaConfirm" type="password" minlength="6" maxlength="100" required placeholder="Digite novamente">
+        </label>
+
+        <div id="userError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions user-actions">
+        <button type="button" class="secondary" id="cancelUser">CANCELAR</button>
+        <button type="submit" class="primary modal-primary" id="saveUser">CRIAR USUÁRIO</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="passwordModal" class="modal-backdrop" hidden>
+  <div class="detail-modal user-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <span>SEGURANÇA</span>
+        <h2>Alterar senha</h2>
+      </div>
+      <button type="button" class="modal-close" id="closePasswordModal">×</button>
+    </div>
+
+    <form id="passwordForm">
+      <div class="user-body">
+        <div class="password-user-info">
+          <small>USUÁRIO</small>
+          <strong id="passwordUserName">—</strong>
+          <span id="passwordUserEmail">—</span>
+        </div>
+
+        <label class="registration-field">
+          <small>NOVA SENHA *</small>
+          <input id="newUserPassword" type="password" minlength="6" maxlength="100" required placeholder="Mínimo de 6 caracteres">
+        </label>
+
+        <label class="registration-field">
+          <small>CONFIRMAR NOVA SENHA *</small>
+          <input id="newUserPasswordConfirm" type="password" minlength="6" maxlength="100" required placeholder="Digite novamente">
+        </label>
+
+        <div id="passwordError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions user-actions">
+        <button type="button" class="secondary" id="cancelPassword">CANCELAR</button>
+        <button type="submit" class="primary modal-primary" id="savePassword">ALTERAR SENHA</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<section class="page" id="configuracoes">
+  <div class="section-head">
+    <div><span>SISTEMA</span><h2>Configurações</h2><p>Cadastre as categorias do evento e defina o valor de cada uma.</p></div>
+    <button class="primary small" type="button" id="addCategoryBtn">+ NOVA CATEGORIA</button>
+  </div>
+  <article class="panel settings categories-settings">
+    <div class="settings-section-head"><div><b>Categorias e valores</b><small>O valor definido aqui será aplicado automaticamente ao cadastrar ou alterar a categoria de um atleta.</small></div></div>
+    <div id="categoriesList" class="categories-list"></div>
+    <div id="categoriesEmpty" class="categories-empty" hidden>Nenhuma categoria cadastrada.</div>
+  </article>
+</section>
+</div></section>
+</main>
+<script src="js/main-v62.js?v=620"></script>
+</body>
+</html>
