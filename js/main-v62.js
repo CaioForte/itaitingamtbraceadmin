@@ -852,12 +852,16 @@ function render() {
 
         <td>
           <b>${esc(x.nome)}</b>
-          <br>
-          <small>${esc(x.cpf)}</small>
         </td>
+
+        <td>${esc(x.cpf)}</td>
 
         <td>
           ${esc(x.categoria)}
+        </td>
+
+        <td>
+          <b>${moeda(x.valor)}</b>
         </td>
 
         <td>
@@ -871,6 +875,8 @@ function render() {
             ${esc(x.statusInscricao)}
           </span>
         </td>
+
+        <td>${esc(x.dataInscricao || "—")}</td>
 
         <td>
           <button
@@ -888,7 +894,7 @@ function render() {
     `
       <tr>
         <td
-          colspan="6"
+          colspan="9"
           style="
             text-align:center;
             padding:30px
@@ -1509,6 +1515,35 @@ function preencherDetalhes(x) {
   st.className =
     "pill " +
     classe(stat);
+
+  const setDetail = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value == null || String(value).trim() === "" ? "—" : String(value);
+  };
+
+  setDetail("dValor", moeda(Number(x.valor || 0)));
+  setDetail("dDataInscricao", valor(x, "dataInscricao"));
+  setDetail("dOrderNsu", valor(x, "orderNsu", "order_nsu"));
+  setDetail("dFormaPagamento", valor(x, "formaPagamento", "forma_pagamento"));
+  setDetail("dTransactionNsu", valor(x, "transactionNsu", "transaction_nsu"));
+  setDetail("dDataPagamento", valor(x, "dataPagamento", "data_pagamento"));
+  setDetail("dObservacao", valor(x, "observacao"));
+
+  const checkoutUrl = valor(x, "checkoutUrl", "checkout_url");
+  const checkoutEl = document.getElementById("dCheckoutUrl");
+  if (checkoutEl) {
+    checkoutEl.innerHTML = checkoutUrl !== "—"
+      ? `<a href="${esc(checkoutUrl)}" target="_blank" rel="noopener noreferrer">ABRIR CHECKOUT</a>`
+      : "—";
+  }
+
+  const receiptUrl = valor(x, "comprovanteUrl", "receiptUrl", "receipt_url");
+  const receiptEl = document.getElementById("dComprovante");
+  if (receiptEl) {
+    receiptEl.innerHTML = receiptUrl !== "—"
+      ? `<a href="${esc(receiptUrl)}" target="_blank" rel="noopener noreferrer" class="action">🧾 VER COMPROVANTE</a>`
+      : "—";
+  }
 
   const validateBtn =
     document.getElementById("validateAction");
@@ -2497,14 +2532,16 @@ function renderPagamentos() {
         <td>${esc(x.categoria)}</td>
         <td><b>${moeda(x.valor)}</b></td>
         <td><span class="pill ${classe(pagamento)}">${esc(pagamento)}</span></td>
-        <td><span class="pill ${classe(x.statusInscricao)}">${esc(x.statusInscricao || "Pendente")}</span></td>
+        <td>${esc(x.formaPagamento || "—")}</td>
+        <td>${esc(x.dataPagamento || "—")}</td>
+        <td>${x.comprovanteUrl ? `<a href="${esc(x.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="action">🧾 VER</a>` : "—"}</td>
         <td class="payment-actions">
           <button class="action payment-details" data-id="${id}">DETALHES</button>
           <button class="action payment-change" data-id="${id}">ALTERAR</button>
         </td>
       </tr>`;
   }).join("") || `
-    <tr><td colspan="7" style="text-align:center;padding:30px">Nenhum pagamento encontrado.</td></tr>`;
+    <tr><td colspan="9" style="text-align:center;padding:30px">Nenhum pagamento encontrado.</td></tr>`;
 
   body.querySelectorAll(".payment-details").forEach(b => {
     b.onclick = () => detalhes(b.dataset.id);

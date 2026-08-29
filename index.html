@@ -79,7 +79,7 @@
     </select>
   </div>
   <article class="panel table">
-    <table><thead><tr><th>Nº</th><th>Atleta</th><th>Categoria</th><th>Pagamento</th><th>Inscrição</th><th></th></tr></thead>
+    <table><thead><tr><th>Nº</th><th>Atleta</th><th>CPF</th><th>Categoria</th><th>Valor</th><th>Pagamento</th><th>Inscrição</th><th>Data inscrição</th><th></th></tr></thead>
     <tbody id="rows"></tbody></table>
   </article>
 </section>
@@ -170,6 +170,17 @@
         <div><small>PAGAMENTO</small><div id="dPagamento" class="pill pending">Pendente</div></div>
         <div><small>INSCRIÇÃO</small><div id="dStatus" class="pill pending">Pendente</div></div>
       </div>
+      <div class="detail-grid payment-detail-grid">
+        <div class="detail-field"><small>VALOR</small><b id="dValor">—</b></div>
+        <div class="detail-field"><small>DATA DA INSCRIÇÃO</small><b id="dDataInscricao">—</b></div>
+        <div class="detail-field"><small>ORDER NSU</small><b id="dOrderNsu">—</b></div>
+        <div class="detail-field"><small>FORMA DE PAGAMENTO</small><b id="dFormaPagamento">—</b></div>
+        <div class="detail-field"><small>TRANSACTION NSU</small><b id="dTransactionNsu">—</b></div>
+        <div class="detail-field"><small>DATA DO PAGAMENTO</small><b id="dDataPagamento">—</b></div>
+        <div class="detail-field wide"><small>CHECKOUT INFINITEPAY</small><b id="dCheckoutUrl">—</b></div>
+        <div class="detail-field wide"><small>COMPROVANTE DO PAGAMENTO</small><b id="dComprovante">—</b></div>
+        <div class="detail-field wide"><small>OBSERVAÇÃO</small><b id="dObservacao">—</b></div>
+      </div>
       <div class="documents">
         <div class="documents-head">
           <div><span>DOCUMENTOS</span><h3>Comprovantes</h3></div>
@@ -257,7 +268,9 @@
           <th>Categoria</th>
           <th>Valor</th>
           <th>Pagamento</th>
-          <th>Inscrição</th>
+          <th>Forma</th>
+          <th>Data pagamento</th>
+          <th>Comprovante</th>
           <th></th>
         </tr>
       </thead>

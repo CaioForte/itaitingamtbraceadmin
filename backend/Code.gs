@@ -3080,7 +3080,25 @@ function obterTodasInscricoes_() {
         ),
 
       observacao:
-        linha[10] || ''
+        linha[10] || '',
+
+      orderNsu:
+        String(linha[11] || '').trim(),
+
+      formaPagamento:
+        String(linha[12] || '').trim(),
+
+      transactionNsu:
+        String(linha[13] || '').trim(),
+
+      comprovanteUrl:
+        String(linha[14] || '').trim(),
+
+      dataPagamento:
+        formatarData_(linha[15]),
+
+      checkoutUrl:
+        String(linha[16] || '').trim()
     });
   }
 
