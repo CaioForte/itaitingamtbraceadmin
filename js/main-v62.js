@@ -1074,52 +1074,163 @@ document
   });
 
 let categoriasConfig = [];
+let lotesConfig = [];
+
+let loteEditandoId = null;
 
 function normalizarCategorias_(valor) {
-  try {
-    const arr = Array.isArray(valor) ? valor : JSON.parse(String(valor || "[]"));
-    return arr.map(x => ({ nome: String(x.nome || "").trim(), valor: Number(x.valor) }))
-      .filter(x => x.nome && Number.isFinite(x.valor) && x.valor >= 0);
-  } catch (_) {
-    return [];
-  }
+  const arr = Array.isArray(valor) ? valor : [];
+  return arr.map(x => ({
+    id: String(x.id || "").trim(),
+    nome: String(x.nome || "").trim(),
+    idadeMaxima: x.idadeMaxima === null || x.idadeMaxima === undefined || x.idadeMaxima === ""
+      ? null
+      : Number(x.idadeMaxima),
+    ativo: x.ativo === true || String(x.ativo || "").toUpperCase() === "SIM"
+  })).filter(x => x.nome);
+}
+
+function normalizarLotes_(valor) {
+  const arr = Array.isArray(valor) ? valor : [];
+  return arr.map(x => ({
+    id: String(x.id || "").trim(),
+    nome: String(x.nome || "").trim(),
+    dataInicio: String(x.dataInicio || "").trim(),
+    dataFim: String(x.dataFim || "").trim(),
+    valor: Number(x.valor || 0),
+    ativo: x.ativo === true || String(x.ativo || "").toUpperCase() === "SIM"
+  })).filter(x => x.nome);
 }
 
 function preencherSelectCategorias_(id, selecionada = "") {
   const select = document.getElementById(id);
   if (!select) return;
   const atual = selecionada || select.value;
+  const disponiveis = categoriasConfig.filter(c => c.ativo);
   select.innerHTML = '<option value="">Selecione a categoria</option>' +
-    categoriasConfig.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("");
-  if (categoriasConfig.some(c => c.nome === atual)) select.value = atual;
+    disponiveis.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("");
+  if (disponiveis.some(c => c.nome === atual)) select.value = atual;
 }
 
 function atualizarValorPorCategoria_(categoriaId, valorId) {
-  const categoria = document.getElementById(categoriaId)?.value || "";
   const campo = document.getElementById(valorId);
-  const item = categoriasConfig.find(c => c.nome === categoria);
-  if (campo && item) campo.value = Number(item.valor).toFixed(2);
+  if (!campo) return;
+  const lote = obterLoteVigente_();
+  campo.value = lote ? Number(lote.valor).toFixed(2) : "";
+}
+
+function obterLoteVigente_() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  return lotesConfig.find(l => {
+    if (!l.ativo) return false;
+    const inicio = parseDataLocal_(l.dataInicio);
+    const fim = parseDataLocal_(l.dataFim);
+    return inicio && fim && hoje >= inicio && hoje <= fim;
+  }) || null;
+}
+
+function parseDataLocal_(value) {
+
+  const s =
+    String(value || '')
+      .trim();
+
+  if (!s) {
+    return null;
+  }
+
+  let dia;
+  let mes;
+  let ano;
+
+  /* ---------------------------------------------
+     Formato: DD/MM/YYYY
+     Aceita também DD/MM/YYYY HH:mm:ss
+     --------------------------------------------- */
+
+  let match =
+    s.match(
+      /^(\d{2})\/(\d{2})\/(\d{4})/
+    );
+
+  if (match) {
+
+    dia = Number(match[1]);
+    mes = Number(match[2]);
+    ano = Number(match[3]);
+
+  } else {
+
+    /* -------------------------------------------
+       Formato: YYYY-MM-DD
+       Aceita também YYYY-MM-DDTHH:mm:ss
+       ------------------------------------------- */
+
+    match =
+      s.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+      );
+
+    if (!match) {
+      return null;
+    }
+
+    ano = Number(match[1]);
+    mes = Number(match[2]);
+    dia = Number(match[3]);
+  }
+
+  const d =
+    new Date(
+      ano,
+      mes - 1,
+      dia
+    );
+
+  d.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  return d;
+}
+
+function formatarDataInput_(value) {
+  const d = parseDataLocal_(value);
+  if (!d) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatarDataCurta_(value) {
+  const d = parseDataLocal_(value);
+  if (!d) return "—";
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
 async function carregarConfiguracoes_() {
   const s = getSession();
   if (!s?.token) return;
   try {
-    const dados = await apiPost("configuracoes", { token: s.token });
-    categoriasConfig = normalizarCategorias_(dados?.configuracoes?.Categorias);
-    if (!categoriasConfig.length) categoriasConfig = [
-      {nome:"Elite Masculino", valor:80},
-      {nome:"Elite Feminino", valor:80},
-      {nome:"Sport Masculino", valor:80},
-      {nome:"Sport Feminino", valor:80}
-    ];
+    const [categorias, lotes] = await Promise.all([
+      apiGet("adminCategorias", { token: s.token }),
+      apiGet("lotes", { token: s.token })
+    ]);
+
+    categoriasConfig = normalizarCategorias_(categorias?.categorias);
+    lotesConfig = normalizarLotes_(lotes?.lotes);
+
     preencherSelectCategorias_("newCategoria");
     preencherSelectCategorias_("editCategoria");
     atualizarValorPorCategoria_("newCategoria", "newValor");
     renderCategoriasConfig_();
+    renderLotesConfig_();
     renderCategoryFilter_();
   } catch (e) {
-    console.warn("Não foi possível carregar categorias", e);
+    console.warn("Não foi possível carregar categorias/lotes", e);
+    notificar("error", "ERRO NAS CONFIGURAÇÕES", e.message || "Não foi possível carregar os cadastros.");
   }
 }
 
@@ -1127,75 +1238,337 @@ function renderCategoryFilter_() {
   const select = document.getElementById("categoryFilter");
   if (!select) return;
   const atual = select.value || "todas";
-  select.innerHTML = '<option value="todas">Todas as categorias</option>' + categoriasConfig.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("");
-  if (categoriasConfig.some(c => c.nome === atual)) select.value = atual;
+  const categorias = categoriasConfig.filter(c => c.ativo);
+  select.innerHTML = '<option value="todas">Todas as categorias</option>' + categorias.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("");
+  if (categorias.some(c => c.nome === atual)) select.value = atual;
 }
 
 function renderCategoriasConfig_() {
   const box = document.getElementById("categoriesList");
   const empty = document.getElementById("categoriesEmpty");
-  if (!box) return;
+  if (!box || !empty) return;
   empty.hidden = categoriasConfig.length > 0;
-  box.innerHTML = categoriasConfig.map((c, i) => `
-    <div class="category-config-row" data-index="${i}">
-      <div class="category-config-name"><small>CATEGORIA</small><input class="category-name-input" value="${esc(c.nome)}" maxlength="80"></div>
-      <div class="category-config-value"><small>VALOR</small><div class="money-input"><span>R$</span><input class="category-value-input" type="number" min="0" step="0.01" value="${Number(c.valor).toFixed(2)}"></div></div>
-      <button type="button" class="category-delete" title="Excluir categoria">EXCLUIR</button>
+  box.innerHTML = categoriasConfig.map(c => `
+    <div class="management-row ${c.ativo ? "is-active" : "is-inactive"}" data-id="${esc(c.id)}">
+      <div class="management-main"><small>CATEGORIA</small><b>${esc(c.nome)}</b><span>${c.idadeMaxima ? `Idade máxima: ${c.idadeMaxima} anos` : "Sem idade máxima definida"}</span></div>
+      <span class="status-badge ${c.ativo ? "status-active" : "status-inactive"}">${c.ativo ? "ATIVA" : "INATIVA"}</span>
+      <button type="button" class="management-toggle category-toggle" data-id="${esc(c.id)}" data-active="${c.ativo}">${c.ativo ? "DESATIVAR" : "ATIVAR"}</button>
     </div>`).join("");
 }
 
-async function salvarCategoriasConfig_() {
-  const s = getSession();
-  if (!s?.token) throw new Error("Sessão expirada.");
-  const rows = [...document.querySelectorAll(".category-config-row")];
-  const novas = rows.map(row => ({
-    nome: row.querySelector(".category-name-input")?.value.trim(),
-    valor: Number(row.querySelector(".category-value-input")?.value)
-  })).filter(x => x.nome && Number.isFinite(x.valor) && x.valor >= 0);
-  const nomes = novas.map(x => x.nome.toLowerCase());
-  if (nomes.length !== new Set(nomes).size) throw new Error("Não pode haver categorias com o mesmo nome.");
-  if (!novas.length) throw new Error("Cadastre pelo menos uma categoria.");
-  await apiPost("alterarConfiguracao", { token: s.token, chave: "Categorias", valor: JSON.stringify(novas) });
-  categoriasConfig = novas;
-  preencherSelectCategorias_("newCategoria");
-  preencherSelectCategorias_("editCategoria", document.getElementById("editCategoria")?.value);
-  atualizarValorPorCategoria_("newCategoria", "newValor");
-  renderCategoryFilter_();
-  renderCategoriasConfig_();
+function renderLotesConfig_() {
+
+  const box =
+    document.getElementById(
+      "lotsList"
+    );
+
+  const empty =
+    document.getElementById(
+      "lotsEmpty"
+    );
+
+  if (!box || !empty) {
+    return;
+  }
+
+  empty.hidden =
+    lotesConfig.length > 0;
+
+  const vigente =
+    obterLoteVigente_();
+
+  box.innerHTML =
+    lotesConfig
+      .map(l => `
+
+        <div
+          class="management-row ${l.ativo ? "is-active" : "is-inactive"}"
+          data-id="${esc(l.id)}"
+        >
+
+          <div class="management-main">
+
+            <small>LOTE</small>
+
+            <b>
+              ${esc(l.nome)}
+            </b>
+
+            <span>
+              Vigência:
+              ${formatarDataCurta_(l.dataInicio)}
+              →
+              ${formatarDataCurta_(l.dataFim)}
+            </span>
+
+          </div>
+
+
+          <div class="management-price">
+
+            <small>VALOR</small>
+
+            <b>
+              R$
+              ${Number(l.valor)
+                .toFixed(2)
+                .replace(".", ",")}
+            </b>
+
+          </div>
+
+
+          <span
+            class="status-badge ${
+              l.ativo
+                ? "status-active"
+                : "status-inactive"
+            }"
+          >
+
+            ${
+              l.ativo
+                ? (
+                    vigente &&
+                    vigente.id === l.id
+                      ? "VIGENTE"
+                      : "ATIVO"
+                  )
+                : "INATIVO"
+            }
+
+          </span>
+
+
+          <div class="management-actions">
+
+            <button
+              type="button"
+              class="management-edit lot-edit"
+              data-id="${esc(l.id)}"
+            >
+              EDITAR
+            </button>
+
+            <button
+              type="button"
+              class="management-toggle lot-toggle"
+              data-id="${esc(l.id)}"
+              data-active="${l.ativo}"
+            >
+              ${
+                l.ativo
+                  ? "DESATIVAR"
+                  : "ATIVAR"
+              }
+            </button>
+
+          </div>
+
+        </div>
+
+      `)
+      .join("");
 }
 
-document.getElementById("addCategoryBtn")?.addEventListener("click", async () => {
-  let n = 1;
-  let nome = `Nova Categoria ${n}`;
-  while (categoriasConfig.some(c => c.nome.toLowerCase() === nome.toLowerCase())) { n++; nome = `Nova Categoria ${n}`; }
-  categoriasConfig.push({ nome, valor: 80 });
-  renderCategoriasConfig_();
+function abrirModal_(id) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = false;
+}
+function fecharModal_(id) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = true;
+}
+
+function mostrarErroConfig_(id, mensagem) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = mensagem;
+  el.hidden = false;
+}
+function limparErroConfig_(id) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = ""; el.hidden = true; }
+}
+
+function abrirEdicaoLote_(id) {
+
+  const lote =
+    lotesConfig.find(
+      l =>
+        String(l.id) ===
+        String(id)
+    );
+
+  if (!lote) {
+
+    notificar(
+      "error",
+      "LOTE NÃO ENCONTRADO",
+      "Não foi possível localizar o lote."
+    );
+
+    return;
+  }
+
+  loteEditandoId =
+    lote.id;
+
+  document.getElementById(
+    "lotModalTitle"
+  ).textContent =
+    "Editar lote";
+
+  document.getElementById(
+    "lotNome"
+  ).value =
+    lote.nome || "";
+
+  document.getElementById(
+    "lotDataInicio"
+  ).value =
+    formatarDataInput_(
+      lote.dataInicio
+    );
+
+  document.getElementById(
+    "lotDataFim"
+  ).value =
+    formatarDataInput_(
+      lote.dataFim
+    );
+
+  document.getElementById(
+    "lotValor"
+  ).value =
+    Number(
+      lote.valor || 0
+    ).toFixed(2);
+
+  document.getElementById(
+    "saveLot"
+  ).textContent =
+    "SALVAR ALTERAÇÕES";
+
+  limparErroConfig_(
+    "lotError"
+  );
+
+  abrirModal_(
+    "lotModal"
+  );
+}
+
+document.getElementById("addLotBtn")?.addEventListener("click", () => {
+  document.getElementById("lotForm")?.reset();
+  limparErroConfig_("lotError");
+  abrirModal_("lotModal");
+  document.getElementById("lotNome")?.focus();
+});
+document.getElementById("closeLotModal")?.addEventListener("click", () => fecharModal_("lotModal"));
+document.getElementById("cancelLot")?.addEventListener("click", () => fecharModal_("lotModal"));
+
+document.getElementById("lotForm")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const s = getSession();
+  if (!s?.token) return showLogin();
+  limparErroConfig_("lotError");
+  const nome = document.getElementById("lotNome").value.trim();
+  const dataInicio = document.getElementById("lotDataInicio").value;
+  const dataFim = document.getElementById("lotDataFim").value;
+  const valor = Number(document.getElementById("lotValor").value);
+  if (!nome || !dataInicio || !dataFim || !valor || valor <= 0) return mostrarErroConfig_("lotError", "Preencha todos os campos do lote.");
+  if (dataInicio > dataFim) return mostrarErroConfig_("lotError", "A data inicial não pode ser maior que a data final.");
+  const btn = document.getElementById("saveLot");
+  btn.disabled = true; btn.textContent = "CRIANDO...";
   try {
-    await salvarCategoriasConfig_();
-    notificar("success", "CATEGORIA CRIADA", "A nova categoria foi cadastrada.");
+    await apiPost("criarLote", { token: s.token, nome, dataInicio, dataFim, valor });
+    fecharModal_("lotModal");
+    await carregarConfiguracoes_();
+    notificar("success", "LOTE CRIADO", "O lote foi cadastrado com sucesso.");
   } catch (err) {
-    categoriasConfig = categoriasConfig.filter(c => c.nome !== nome);
-    renderCategoriasConfig_();
-    notificar("error", "ERRO NAS CATEGORIAS", err.message);
+    mostrarErroConfig_("lotError", err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "CRIAR LOTE";
   }
 });
 
-document.getElementById("categoriesList")?.addEventListener("click", async e => {
-  const btn = e.target.closest(".category-delete");
-  if (!btn) return;
-  const row = btn.closest(".category-config-row");
-  if (!row) return;
-  const nome = row.querySelector(".category-name-input")?.value || "esta categoria";
-  if (!confirm(`Excluir a categoria "${nome}"?`)) return;
-  row.remove();
-  try { await salvarCategoriasConfig_(); notificar("success", "CATEGORIA ATUALIZADA", "Categoria removida com sucesso."); }
-  catch (err) { notificar("error", "ERRO NAS CATEGORIAS", err.message); renderCategoriasConfig_(); }
+document.getElementById("addCategoryBtn")?.addEventListener("click", () => {
+  document.getElementById("categoryForm")?.reset();
+  limparErroConfig_("categoryError");
+  abrirModal_("categoryModal");
+  document.getElementById("categoryNome")?.focus();
+});
+document.getElementById("closeCategoryModal")?.addEventListener("click", () => fecharModal_("categoryModal"));
+document.getElementById("cancelCategory")?.addEventListener("click", () => fecharModal_("categoryModal"));
+
+document.getElementById("categoryForm")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const s = getSession();
+  if (!s?.token) return showLogin();
+  limparErroConfig_("categoryError");
+  const nome = document.getElementById("categoryNome").value.trim();
+  const idadeMaxima = document.getElementById("categoryIdadeMaxima").value;
+  if (!nome) return mostrarErroConfig_("categoryError", "Informe o nome da categoria.");
+  const duplicada = categoriasConfig.some(c => c.nome.toLowerCase() === nome.toLowerCase());
+  if (duplicada) return mostrarErroConfig_("categoryError", "Já existe uma categoria com este nome.");
+  const btn = document.getElementById("saveCategory");
+  btn.disabled = true; btn.textContent = "CRIANDO...";
+  try {
+    await apiPost("criarCategoria", { token: s.token, nome, idadeMaxima });
+    fecharModal_("categoryModal");
+    await carregarConfiguracoes_();
+    notificar("success", "CATEGORIA CRIADA", "A categoria foi cadastrada com sucesso.");
+  } catch (err) {
+    mostrarErroConfig_("categoryError", err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "CRIAR CATEGORIA";
+  }
 });
 
-document.getElementById("categoriesList")?.addEventListener("change", async e => {
-  if (!e.target.matches(".category-name-input,.category-value-input")) return;
-  try { await salvarCategoriasConfig_(); notificar("success", "CONFIGURAÇÃO SALVA", "Categoria e valor atualizados."); }
-  catch (err) { notificar("error", "ERRO NAS CATEGORIAS", err.message); await carregarConfiguracoes_(); }
+async function alterarStatusCadastro_(tipo, id, ativo) {
+  const s = getSession();
+  if (!s?.token) return showLogin();
+  try {
+    if (tipo === "categoria") {
+      await apiPost("alterarStatusCategoria", { token: s.token, id, ativo });
+    } else {
+      await apiPost("alterarStatusLote", { token: s.token, id, ativo });
+    }
+    await carregarConfiguracoes_();
+    notificar("success", "STATUS ATUALIZADO", `${tipo === "categoria" ? "Categoria" : "Lote"} ${ativo ? "ativado" : "desativado"} com sucesso.`);
+  } catch (err) {
+    notificar("error", "ERRO AO ALTERAR STATUS", err.message);
+  }
+}
+
+document.getElementById("categoriesList")?.addEventListener("click", e => {
+  const btn = e.target.closest(".category-toggle");
+  if (!btn) return;
+  alterarStatusCadastro_("categoria", btn.dataset.id, btn.dataset.active !== "true");
+});
+
+document.getElementById("lotsList")?.addEventListener("click", e => {
+  const btn = e.target.closest(".lot-toggle");
+  if (!btn) return;
+  alterarStatusCadastro_("lote", btn.dataset.id, btn.dataset.active !== "true");
+});
+
+document.getElementById("lotsList")?.addEventListener("click", e => {
+
+  const btn =
+    e.target.closest(
+      ".lot-edit"
+    );
+
+  if (!btn) {
+    return;
+  }
+
+  abrirEdicaoLote_(
+    btn.dataset.id
+  );
 });
 
 document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));

@@ -390,15 +390,67 @@
 
 <section class="page" id="configuracoes">
   <div class="section-head">
-    <div><span>SISTEMA</span><h2>Configurações</h2><p>Cadastre as categorias do evento e defina o valor de cada uma.</p></div>
-    <button class="primary small" type="button" id="addCategoryBtn">+ NOVA CATEGORIA</button>
+    <div><span>SISTEMA</span><h2>Configurações</h2><p>Gerencie os lotes de inscrição e as categorias do evento.</p></div>
   </div>
-  <article class="panel settings categories-settings">
-    <div class="settings-section-head"><div><b>Categorias e valores</b><small>O valor definido aqui será aplicado automaticamente ao cadastrar ou alterar a categoria de um atleta.</small></div></div>
-    <div id="categoriesList" class="categories-list"></div>
+
+  <article class="panel settings management-settings">
+    <div class="settings-section-head settings-section-head-actions">
+      <div><b>Lotes de inscrição</b><small>O valor da inscrição será definido pelo lote vigente.</small></div>
+      <button class="primary small" type="button" id="addLotBtn">+ NOVO LOTE</button>
+    </div>
+    <div id="lotsList" class="management-list"></div>
+    <div id="lotsEmpty" class="categories-empty" hidden>Nenhum lote cadastrado.</div>
+  </article>
+
+  <article class="panel settings management-settings category-management-panel">
+    <div class="settings-section-head settings-section-head-actions">
+      <div><b>Categorias</b><small>Defina a idade máxima e controle quais categorias ficam disponíveis para inscrição.</small></div>
+      <button class="primary small" type="button" id="addCategoryBtn">+ NOVA CATEGORIA</button>
+    </div>
+    <div id="categoriesList" class="management-list"></div>
     <div id="categoriesEmpty" class="categories-empty" hidden>Nenhuma categoria cadastrada.</div>
   </article>
 </section>
+
+<div id="lotModal" class="modal-backdrop" hidden>
+  <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="lotModalTitle">
+    <div class="modal-head">
+      <div><span>LOTE DE INSCRIÇÃO</span><h2 id="lotModalTitle">Novo lote</h2></div>
+      <button type="button" class="modal-close" id="closeLotModal">×</button>
+    </div>
+    <form id="lotForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide"><small>NOME DO LOTE *</small><input id="lotNome" type="text" maxlength="80" placeholder="Ex.: 1º Lote" required></label>
+          <label class="registration-field"><small>DATA INÍCIO *</small><input id="lotDataInicio" type="date" required></label>
+          <label class="registration-field"><small>DATA FIM *</small><input id="lotDataFim" type="date" required></label>
+          <label class="registration-field"><small>VALOR *</small><div class="money-input"><span>R$</span><input id="lotValor" type="number" min="0.01" step="0.01" placeholder="80,00" required></div></label>
+        </div>
+        <div id="lotError" class="registration-error" hidden></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="modal-secondary" id="cancelLot">CANCELAR</button><button type="submit" class="modal-primary" id="saveLot">CRIAR LOTE</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="categoryModal" class="modal-backdrop" hidden>
+  <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+    <div class="modal-head">
+      <div><span>CATEGORIA</span><h2 id="categoryModalTitle">Nova categoria</h2></div>
+      <button type="button" class="modal-close" id="closeCategoryModal">×</button>
+    </div>
+    <form id="categoryForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide"><small>NOME DA CATEGORIA *</small><input id="categoryNome" type="text" maxlength="80" placeholder="Ex.: Sport Masculino" required></label>
+          <label class="registration-field"><small>IDADE MÁXIMA</small><input id="categoryIdadeMaxima" type="number" min="1" max="120" placeholder="Ex.: 39"></label>
+        </div>
+        <div id="categoryError" class="registration-error" hidden></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="modal-secondary" id="cancelCategory">CANCELAR</button><button type="submit" class="modal-primary" id="saveCategory">CRIAR CATEGORIA</button></div>
+    </form>
+  </div>
+</div>
 </div></section>
 </main>
 <script src="js/main-v62.js?v=620"></script>
