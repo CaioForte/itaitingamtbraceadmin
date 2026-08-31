@@ -1078,6 +1078,10 @@ let lotesConfig = [];
 
 let loteEditandoId = null;
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
 function normalizarCategorias_(valor) {
   const arr = Array.isArray(valor) ? valor : [];
   return arr.map(x => ({
@@ -1244,6 +1248,110 @@ function renderCategoryFilter_() {
 }
 
 function renderCategoriasConfig_() {
+<<<<<<< HEAD
+
+  const box =
+    document.getElementById(
+      "categoriesList"
+    );
+
+  const empty =
+    document.getElementById(
+      "categoriesEmpty"
+    );
+
+  if (!box || !empty) {
+    return;
+  }
+
+  empty.hidden =
+    categoriasConfig.length > 0;
+
+  box.innerHTML =
+    categoriasConfig
+      .map(c => `
+
+        <div
+          class="management-row ${c.ativo ? "is-active" : "is-inactive"}"
+          data-id="${esc(c.id)}"
+        >
+
+          <div class="management-main">
+
+            <small>
+              CATEGORIA
+            </small>
+
+            <b>
+              ${esc(c.nome)}
+            </b>
+
+            <span>
+              ${
+                c.idadeMaxima
+                  ? `Idade máxima: ${c.idadeMaxima} anos`
+                  : "Sem idade máxima definida"
+              }
+            </span>
+
+          </div>
+
+
+          <span
+            class="status-badge ${
+              c.ativo
+                ? "status-active"
+                : "status-inactive"
+            }"
+          >
+            ${
+              c.ativo
+                ? "ATIVA"
+                : "INATIVA"
+            }
+          </span>
+
+
+          <div class="management-actions">
+
+            <button
+              type="button"
+              class="management-edit category-edit"
+              data-id="${esc(c.id)}"
+            >
+              EDITAR
+            </button>
+
+
+            <button
+              type="button"
+              class="management-toggle category-toggle"
+              data-id="${esc(c.id)}"
+              data-active="${c.ativo}"
+            >
+              ${
+                c.ativo
+                  ? "DESATIVAR"
+                  : "ATIVAR"
+              }
+            </button>
+
+
+            <button
+              type="button"
+              class="management-delete category-delete"
+              data-id="${esc(c.id)}"
+            >
+              EXCLUIR
+            </button>
+
+          </div>
+
+        </div>
+
+      `)
+      .join("");
+=======
   const box = document.getElementById("categoriesList");
   const empty = document.getElementById("categoriesEmpty");
   if (!box || !empty) return;
@@ -1254,6 +1362,7 @@ function renderCategoriasConfig_() {
       <span class="status-badge ${c.ativo ? "status-active" : "status-inactive"}">${c.ativo ? "ATIVA" : "INATIVA"}</span>
       <button type="button" class="management-toggle category-toggle" data-id="${esc(c.id)}" data-active="${c.ativo}">${c.ativo ? "DESATIVAR" : "ATIVAR"}</button>
     </div>`).join("");
+>>>>>>> origin/main
 }
 
 function renderLotesConfig_() {
@@ -1340,6 +1449,40 @@ function renderLotesConfig_() {
 
           </span>
 
+<<<<<<< HEAD
+<div class="management-actions">
+
+  <button
+    type="button"
+    class="management-edit lot-edit"
+    data-id="${esc(l.id)}"
+  >
+    EDITAR
+  </button>
+
+  <button
+    type="button"
+    class="management-toggle lot-toggle"
+    data-id="${esc(l.id)}"
+    data-active="${l.ativo}"
+  >
+    ${
+      l.ativo
+        ? "DESATIVAR"
+        : "ATIVAR"
+    }
+  </button>
+
+  <button
+    type="button"
+    class="management-delete lot-delete"
+    data-id="${esc(l.id)}"
+  >
+    EXCLUIR
+  </button>
+
+</div>
+=======
 
           <div class="management-actions">
 
@@ -1365,6 +1508,7 @@ function renderLotesConfig_() {
             </button>
 
           </div>
+>>>>>>> origin/main
 
         </div>
 
@@ -1470,6 +1614,184 @@ document.getElementById("closeLotModal")?.addEventListener("click", () => fechar
 document.getElementById("cancelLot")?.addEventListener("click", () => fecharModal_("lotModal"));
 
 document.getElementById("lotForm")?.addEventListener("submit", async e => {
+<<<<<<< HEAD
+
+  e.preventDefault();
+
+  const s = getSession();
+
+  if (!s?.token) {
+    return showLogin();
+  }
+
+  limparErroConfig_("lotError");
+
+  const nome =
+    document.getElementById("lotNome")
+      .value
+      .trim();
+
+  const dataInicio =
+    document.getElementById("lotDataInicio")
+      .value;
+
+  const dataFim =
+    document.getElementById("lotDataFim")
+      .value;
+
+  const valor =
+    Number(
+      document.getElementById("lotValor")
+        .value
+    );
+
+  if (
+    !nome ||
+    !dataInicio ||
+    !dataFim ||
+    !valor ||
+    valor <= 0
+  ) {
+
+    return mostrarErroConfig_(
+      "lotError",
+      "Preencha todos os campos do lote."
+    );
+  }
+
+  if (dataInicio > dataFim) {
+
+    return mostrarErroConfig_(
+      "lotError",
+      "A data inicial não pode ser maior que a data final."
+    );
+  }
+
+  const btn =
+    document.getElementById("saveLot");
+
+  btn.disabled = true;
+
+
+  /* =================================================
+     MODO EDIÇÃO
+     ================================================= */
+
+  if (loteEditandoId) {
+
+    btn.textContent =
+      "SALVANDO...";
+      
+console.log(
+  "EDITANDO LOTE - ID:",
+  loteEditandoId
+);
+    try {
+
+      await apiPost(
+        "editarLote",
+        {
+          token: s.token,
+
+          id:
+            loteEditandoId,
+
+          nome:
+            nome,
+
+          dataInicio:
+            dataInicio,
+
+          dataFim:
+            dataFim,
+
+          valor:
+            valor
+        }
+      );
+
+      loteEditandoId =
+        null;
+
+      fecharModal_(
+        "lotModal"
+      );
+
+      await carregarConfiguracoes_();
+
+      notificar(
+        "success",
+        "LOTE ATUALIZADO",
+        "As alterações do lote foram salvas com sucesso."
+      );
+
+    } catch (err) {
+
+      mostrarErroConfig_(
+        "lotError",
+        err.message
+      );
+
+    } finally {
+
+      btn.disabled = false;
+
+      btn.textContent =
+        "CRIAR LOTE";
+    }
+
+    return;
+  }
+
+
+  /* =================================================
+     MODO NOVO LOTE
+     ================================================= */
+
+  btn.textContent =
+    "CRIANDO...";
+
+  try {
+
+    await apiPost(
+      "criarLote",
+      {
+        token: s.token,
+        nome,
+        dataInicio,
+        dataFim,
+        valor
+      }
+    );
+
+    fecharModal_(
+      "lotModal"
+    );
+
+    await carregarConfiguracoes_();
+
+    notificar(
+      "success",
+      "LOTE CRIADO",
+      "O lote foi cadastrado com sucesso."
+    );
+
+  } catch (err) {
+
+    mostrarErroConfig_(
+      "lotError",
+      err.message
+    );
+
+  } finally {
+
+    btn.disabled = false;
+
+    btn.textContent =
+      "CRIAR LOTE";
+  }
+
+=======
   e.preventDefault();
   const s = getSession();
   if (!s?.token) return showLogin();
@@ -1492,6 +1814,7 @@ document.getElementById("lotForm")?.addEventListener("submit", async e => {
   } finally {
     btn.disabled = false; btn.textContent = "CRIAR LOTE";
   }
+>>>>>>> origin/main
 });
 
 document.getElementById("addCategoryBtn")?.addEventListener("click", () => {
@@ -1504,6 +1827,190 @@ document.getElementById("closeCategoryModal")?.addEventListener("click", () => f
 document.getElementById("cancelCategory")?.addEventListener("click", () => fecharModal_("categoryModal"));
 
 document.getElementById("categoryForm")?.addEventListener("submit", async e => {
+<<<<<<< HEAD
+
+  e.preventDefault();
+
+  const s = getSession();
+
+  if (!s?.token) {
+    return showLogin();
+  }
+
+  limparErroConfig_("categoryError");
+
+  const nome =
+    document
+      .getElementById("categoryNome")
+      .value
+      .trim();
+
+  const idadeMaxima =
+    document
+      .getElementById("categoryIdadeMaxima")
+      .value;
+
+  if (!nome) {
+
+    return mostrarErroConfig_(
+      "categoryError",
+      "Informe o nome da categoria."
+    );
+  }
+
+
+  /* =================================================
+     VERIFICA SE É EDIÇÃO
+     ================================================= */
+
+  const categoriaEditandoId =
+    window.categoriaEditandoId;
+
+
+  /* =================================================
+     VERIFICA CATEGORIA DUPLICADA
+     ================================================= */
+
+  const duplicada =
+    categoriasConfig.some(c => {
+
+      if (
+        categoriaEditandoId &&
+        String(c.id) ===
+        String(categoriaEditandoId)
+      ) {
+        return false;
+      }
+
+      return (
+        String(c.nome || "")
+          .trim()
+          .toLowerCase() ===
+        nome.toLowerCase()
+      );
+
+    });
+
+
+  if (duplicada) {
+
+    return mostrarErroConfig_(
+      "categoryError",
+      "Já existe uma categoria com este nome."
+    );
+  }
+
+
+  const btn =
+    document.getElementById(
+      "saveCategory"
+    );
+
+  btn.disabled = true;
+
+  btn.textContent =
+    categoriaEditandoId
+      ? "SALVANDO..."
+      : "CRIANDO...";
+
+
+  try {
+
+    /* =================================================
+       EDITAR
+       ================================================= */
+
+    if (categoriaEditandoId) {
+
+      await apiPost(
+        "editarCategoria",
+        {
+          token:
+            s.token,
+
+          id:
+            categoriaEditandoId,
+
+          nome:
+            nome,
+
+          idadeMaxima:
+            idadeMaxima
+        }
+      );
+
+
+      fecharModal_(
+        "categoryModal"
+      );
+
+      window.categoriaEditandoId =
+        null;
+
+      await carregarConfiguracoes_();
+
+      notificar(
+        "success",
+        "CATEGORIA ATUALIZADA",
+        "A categoria foi alterada com sucesso."
+      );
+
+    }
+
+
+    /* =================================================
+       CRIAR
+       ================================================= */
+
+    else {
+
+      await apiPost(
+        "criarCategoria",
+        {
+          token:
+            s.token,
+
+          nome:
+            nome,
+
+          idadeMaxima:
+            idadeMaxima
+        }
+      );
+
+
+      fecharModal_(
+        "categoryModal"
+      );
+
+      await carregarConfiguracoes_();
+
+      notificar(
+        "success",
+        "CATEGORIA CRIADA",
+        "A categoria foi cadastrada com sucesso."
+      );
+
+    }
+
+  } catch (err) {
+
+    mostrarErroConfig_(
+      "categoryError",
+      err.message
+    );
+
+  } finally {
+
+    btn.disabled = false;
+
+    btn.textContent =
+      categoriaEditandoId
+        ? "SALVAR ALTERAÇÕES"
+        : "CRIAR CATEGORIA";
+  }
+
+=======
   e.preventDefault();
   const s = getSession();
   if (!s?.token) return showLogin();
@@ -1525,6 +2032,7 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
   } finally {
     btn.disabled = false; btn.textContent = "CRIAR CATEGORIA";
   }
+>>>>>>> origin/main
 });
 
 async function alterarStatusCadastro_(tipo, id, ativo) {
@@ -1542,6 +2050,256 @@ async function alterarStatusCadastro_(tipo, id, ativo) {
     notificar("error", "ERRO AO ALTERAR STATUS", err.message);
   }
 }
+<<<<<<< HEAD
+/* =====================================================
+   ABRIR EDIÇÃO DE CATEGORIA
+   ===================================================== */
+
+function abrirEdicaoCategoria_(id) {
+
+  const categoria =
+    categoriasConfig.find(
+      c =>
+        String(c.id) ===
+        String(id)
+    );
+
+  if (!categoria) {
+
+    notificar(
+      "error",
+      "CATEGORIA NÃO ENCONTRADA",
+      "Não foi possível localizar a categoria."
+    );
+
+    return;
+  }
+
+  /* Guarda o ID que está sendo editado */
+
+  window.categoriaEditandoId =
+    categoria.id;
+
+
+  /* Preenche os campos */
+
+  const nome =
+    document.getElementById(
+      "categoryNome"
+    );
+
+  const idade =
+    document.getElementById(
+      "categoryIdadeMaxima"
+    );
+
+  if (nome) {
+
+    nome.value =
+      categoria.nome || "";
+
+  }
+
+  if (idade) {
+
+    idade.value =
+      categoria.idadeMaxima ?? "";
+
+  }
+
+
+  /* Altera o título */
+
+  const titulo =
+    document.getElementById(
+      "categoryModalTitle"
+    );
+
+  if (titulo) {
+
+    titulo.textContent =
+      "Editar categoria";
+
+  }
+
+
+  /* Altera o botão */
+
+  const salvar =
+    document.getElementById(
+      "saveCategory"
+    );
+
+  if (salvar) {
+
+    salvar.textContent =
+      "SALVAR ALTERAÇÕES";
+
+  }
+
+
+  /* Limpa mensagem anterior */
+
+  const erro =
+    document.getElementById(
+      "categoryError"
+    );
+
+  if (erro) {
+
+    erro.hidden =
+      true;
+
+    erro.textContent =
+      "";
+
+  }
+
+
+  /* Abre o mesmo modal */
+
+  abrirModal_(
+    "categoryModal"
+  );
+}
+
+/* =====================================================
+   ABRIR EXCLUSÃO DE CATEGORIA
+   ===================================================== */
+
+function abrirExclusaoCategoria_(id) {
+
+  const categoria =
+    categoriasConfig.find(
+      c =>
+        String(c.id) ===
+        String(id)
+    );
+
+  if (!categoria) {
+
+    notificar(
+      "error",
+      "CATEGORIA NÃO ENCONTRADA",
+      "Não foi possível localizar a categoria."
+    );
+
+    return;
+  }
+
+
+  window.categoriaExcluindoId =
+    categoria.id;
+
+
+  const mensagem =
+    document.getElementById(
+      "deleteCategoryMessage"
+    );
+
+  if (mensagem) {
+
+    mensagem.innerHTML =
+      `Você está prestes a excluir a categoria <strong>${esc(categoria.nome)}</strong>.<br>` +
+      `<strong>Esta ação não poderá ser desfeita.</strong>`;
+
+  }
+
+
+  abrirModal_(
+    "deleteCategoryModal"
+  );
+}
+/* =====================================================
+   FECHAR MODAL DE EXCLUSÃO DE CATEGORIA
+   ===================================================== */
+
+document
+  .getElementById("closeDeleteCategoryModal")
+  ?.addEventListener("click", () => {
+
+    fecharModal_(
+      "deleteCategoryModal"
+    );
+
+    window.categoriaExcluindoId =
+      null;
+  });
+
+
+document
+  .getElementById("cancelDeleteCategory")
+  ?.addEventListener("click", () => {
+
+    fecharModal_(
+      "deleteCategoryModal"
+    );
+
+    window.categoriaExcluindoId =
+      null;
+  });
+
+document.getElementById("categoriesList")?.addEventListener("click", e => {
+
+  /* =============================================
+     EDITAR CATEGORIA
+     ============================================= */
+
+  const btnEditar =
+    e.target.closest(
+      ".category-edit"
+    );
+
+  if (btnEditar) {
+
+    abrirEdicaoCategoria_(
+      btnEditar.dataset.id
+    );
+
+    return;
+  }
+
+
+  /* =============================================
+     EXCLUIR CATEGORIA
+     ============================================= */
+
+  const btnExcluir =
+    e.target.closest(
+      ".category-delete"
+    );
+
+  if (btnExcluir) {
+
+    abrirExclusaoCategoria_(
+      btnExcluir.dataset.id
+    );
+
+    return;
+  }
+
+
+  /* =============================================
+     ATIVAR / DESATIVAR CATEGORIA
+     ============================================= */
+
+  const btn =
+    e.target.closest(
+      ".category-toggle"
+    );
+
+  if (!btn) {
+    return;
+  }
+
+  alterarStatusCadastro_(
+    "categoria",
+    btn.dataset.id,
+    btn.dataset.active !== "true"
+  );
+
+});
+=======
 
 document.getElementById("categoriesList")?.addEventListener("click", e => {
   const btn = e.target.closest(".category-toggle");
@@ -1549,19 +2307,323 @@ document.getElementById("categoriesList")?.addEventListener("click", e => {
   alterarStatusCadastro_("categoria", btn.dataset.id, btn.dataset.active !== "true");
 });
 
+>>>>>>> origin/main
 document.getElementById("lotsList")?.addEventListener("click", e => {
   const btn = e.target.closest(".lot-toggle");
   if (!btn) return;
   alterarStatusCadastro_("lote", btn.dataset.id, btn.dataset.active !== "true");
 });
 
+<<<<<<< HEAD
+/* =====================================================
+   CONFIRMAR EXCLUSÃO DE CATEGORIA
+   ===================================================== */
+
+document
+  .getElementById("confirmDeleteCategory")
+  ?.addEventListener("click", async () => {
+
+    const id =
+      window.categoriaExcluindoId;
+
+    if (!id) {
+
+      notificar(
+        "error",
+        "CATEGORIA NÃO INFORMADA",
+        "Não foi possível identificar a categoria."
+      );
+
+      return;
+    }
+
+    const s =
+      getSession();
+
+    if (!s?.token) {
+
+      fecharModal_(
+        "deleteCategoryModal"
+      );
+
+      return showLogin();
+    }
+
+
+    const btn =
+      document.getElementById(
+        "confirmDeleteCategory"
+      );
+
+    btn.disabled = true;
+
+    btn.textContent =
+      "EXCLUINDO...";
+
+
+    try {
+
+      await apiPost(
+        "excluirCategoria",
+        {
+          token:
+            s.token,
+
+          id:
+            id
+        }
+      );
+
+
+      fecharModal_(
+        "deleteCategoryModal"
+      );
+
+      window.categoriaExcluindoId =
+        null;
+
+
+      await carregarConfiguracoes_();
+
+
+      notificar(
+        "success",
+        "CATEGORIA EXCLUÍDA",
+        "A categoria foi excluída com sucesso."
+      );
+
+
+    } catch (err) {
+
+      console.error(
+        err
+      );
+
+      notificar(
+        "error",
+        "ERRO AO EXCLUIR CATEGORIA",
+        err.message ||
+        "Não foi possível excluir a categoria."
+      );
+
+    } finally {
+
+      btn.disabled = false;
+
+      btn.textContent =
+        "EXCLUIR CATEGORIA";
+    }
+
+  });
+
+
+document.getElementById("lotsList")?.addEventListener("click", async e => {
+
+  /* =============================================
+     EDITAR LOTE
+     ============================================= */
+
+  const btnEditar =
+=======
 document.getElementById("lotsList")?.addEventListener("click", e => {
 
   const btn =
+>>>>>>> origin/main
     e.target.closest(
       ".lot-edit"
     );
 
+<<<<<<< HEAD
+  if (btnEditar) {
+
+    abrirEdicaoLote_(
+      btnEditar.dataset.id
+    );
+
+    return;
+  }
+
+
+  /* =============================================
+     EXCLUIR LOTE
+     ============================================= */
+
+  const btnExcluir =
+    e.target.closest(
+      ".lot-delete"
+    );
+
+  if (!btnExcluir) {
+    return;
+  }
+
+  const loteId =
+    btnExcluir.dataset.id;
+
+  const lote =
+    lotesConfig.find(
+      l =>
+        String(l.id) ===
+        String(loteId)
+    );
+
+  const mensagem =
+    document.getElementById(
+      "deleteLotMessage"
+    );
+
+  if (mensagem) {
+
+    mensagem.innerHTML =
+      lote
+        ? `Você está prestes a excluir o lote <strong>${esc(lote.nome)}</strong>.<br><strong>Esta ação não poderá ser desfeita.</strong>`
+        : "Esta ação não poderá ser desfeita.";
+  }
+
+  window.loteExclusaoId =
+    loteId;
+
+  abrirModal_(
+    "deleteLotModal"
+  );
+
+  return;
+});
+
+document
+  .getElementById("confirmDeleteLot")
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      const loteId =
+        window.loteExclusaoId;
+
+      if (!loteId) {
+        return;
+      }
+
+      const btn =
+        document.getElementById(
+          "confirmDeleteLot"
+        );
+
+      const erro =
+        document.getElementById(
+          "deleteLotError"
+        );
+
+      try {
+
+        const s =
+          getSession();
+
+        if (!s?.token) {
+
+          throw new Error(
+            "Sessão não encontrada."
+          );
+        }
+
+        btn.disabled = true;
+        btn.textContent =
+          "EXCLUINDO...";
+
+        if (erro) {
+          erro.hidden = true;
+        }
+
+        await apiPost(
+          "excluirLote",
+          {
+            token:
+              s.token,
+
+            id:
+              loteId
+          }
+        );
+
+        fecharModal_(
+          "deleteLotModal"
+        );
+
+        window.loteExclusaoId =
+          null;
+
+        renderLotesConfig_();
+
+        notificar(
+          "success",
+          "LOTE EXCLUÍDO",
+          "O lote foi excluído com sucesso."
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+        if (erro) {
+
+          erro.textContent =
+            err.message ||
+            "Erro ao excluir o lote.";
+
+          erro.hidden = false;
+
+        } else {
+
+          notificar(
+            "error",
+            "ERRO AO EXCLUIR",
+            err.message ||
+            "Erro ao excluir o lote."
+          );
+        }
+
+      } finally {
+
+        btn.disabled = false;
+        btn.textContent =
+          "EXCLUIR LOTE";
+      }
+
+    }
+  );
+
+  document
+  .getElementById("cancelDeleteLot")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      window.loteExclusaoId =
+        null;
+
+      fecharModal_(
+        "deleteLotModal"
+      );
+
+    }
+  );
+
+  document
+  .getElementById("closeDeleteLotModal")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      window.loteExclusaoId =
+        null;
+
+      fecharModal_(
+        "deleteLotModal"
+      );
+
+    }
+  );
+
+=======
   if (!btn) {
     return;
   }
@@ -1571,6 +2633,7 @@ document.getElementById("lotsList")?.addEventListener("click", e => {
   );
 });
 
+>>>>>>> origin/main
 document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
 
@@ -1788,8 +2851,63 @@ function valor(
 
   return "—";
 }
+<<<<<<< HEAD
+function formatarDataNascimento_(data) {
+
+  if (!data) {
+    return "—";
+  }
+
+  const texto =
+    String(data).trim();
+
+  // Data ISO: 1993-12-17T02:00:00.000Z
+  if (
+    /^\d{4}-\d{2}-\d{2}T/.test(texto)
+  ) {
+
+    const partes =
+      texto.substring(0, 10).split("-");
+
+    return (
+      partes[2] +
+      "/" +
+      partes[1] +
+      "/" +
+      partes[0]
+    );
+  }
+
+  // Data simples: 1993-12-17
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(texto)
+  ) {
+
+    const partes =
+      texto.split("-");
+
+    return (
+      partes[2] +
+      "/" +
+      partes[1] +
+      "/" +
+      partes[0]
+    );
+  }
+
+  // Já está em DD/MM/AAAA
+  if (
+    /^\d{2}\/\d{2}\/\d{4}$/.test(texto)
+  ) {
+    return texto;
+  }
+
+  return texto;
+}
+=======
 
 
+>>>>>>> origin/main
 function preencherDetalhes(x) {
 
   const n =
@@ -1820,6 +2938,21 @@ function preencherDetalhes(x) {
     .textContent =
       valor(x, "categoria");
 
+<<<<<<< HEAD
+ const nascimento =
+  valor(
+    x,
+    "dataNascimento",
+    "nascimento"
+  );
+
+document
+  .getElementById("dNascimento")
+  .textContent =
+    nascimento !== "—"
+      ? nascimento.substring(0, 10).split("-").reverse().join("/")
+      : "—";
+=======
   document
     .getElementById("dNascimento")
     .textContent =
@@ -1828,6 +2961,7 @@ function preencherDetalhes(x) {
         "dataNascimento",
         "nascimento"
       );
+>>>>>>> origin/main
 
   document
     .getElementById("dCidade")

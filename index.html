@@ -17,7 +17,7 @@
       <label>Senha</label>
       <div class="pass"><input id="password" type="password" placeholder="Digite sua senha" autocomplete="current-password"><button type="button" id="showPass">Mostrar</button></div>
       <div id="error" class="error" hidden></div>
-      <button class="primary" type="submit">ENTRAR NO PAINEL <b>→</b></button>
+      <button class="primary" type="submit">ENTRAR NO PAINEL<b>→</b></button>
     </form>
     <footer>Itaitinga MTB Race • Painel Administrativo</footer>
   </section>
@@ -433,6 +433,187 @@
   </div>
 </div>
 
+<<<<<<< HEAD
+<!-- =====================================================
+     MODAL - CONFIRMAR EXCLUSÃO DE LOTE
+     ===================================================== -->
+
+<div id="deleteLotModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal management-modal delete-confirm-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteLotModalTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>GERENCIAMENTO DE LOTES</span>
+
+        <h2 id="deleteLotModalTitle">
+          Excluir lote
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteLotModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="delete-confirm-content">
+
+        <div class="delete-confirm-icon">
+          !
+        </div>
+
+        <div>
+
+          <h3>
+            Tem certeza que deseja excluir este lote?
+          </h3>
+
+          <p id="deleteLotMessage">
+            Esta ação não poderá ser desfeita.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div
+        id="deleteLotError"
+        class="registration-error"
+        hidden
+      ></div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteLot"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-danger"
+        id="confirmDeleteLot"
+      >
+        EXCLUIR LOTE
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL EXCLUIR CATEGORIA
+     ===================================================== -->
+
+<div
+  id="deleteCategoryModal"
+  class="modal-backdrop"
+  hidden
+>
+  <div
+    class="detail-modal management-modal delete-confirm-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteCategoryTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>EXCLUSÃO DE CATEGORIA</span>
+
+        <h2 id="deleteCategoryTitle">
+          Excluir categoria
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteCategoryModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="delete-confirm-content">
+
+        <div class="delete-confirm-icon">
+          !
+        </div>
+
+        <div>
+
+          <strong>
+            Atenção!
+          </strong>
+
+          <p id="deleteCategoryMessage">
+            Você está prestes a excluir esta categoria.
+            <br>
+            <strong>
+              Esta ação não poderá ser desfeita.
+            </strong>
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteCategory"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-danger"
+        id="confirmDeleteCategory"
+      >
+        EXCLUIR CATEGORIA
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+=======
+>>>>>>> origin/main
 <div id="categoryModal" class="modal-backdrop" hidden>
   <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
     <div class="modal-head">
