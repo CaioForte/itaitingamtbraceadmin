@@ -28,7 +28,9 @@ const CONFIG = {
   SHEETS: {
     ADMINS: 'Admins',
     INSCRICOES: 'Inscrições',
-    CONFIG: 'Configurações'
+    CONFIG: 'Configurações',
+    LOTES: 'Lotes',
+    CATEGORIAS: 'Categorias'
   },
 
   VALOR_INSCRICAO_PADRAO: 80,
@@ -69,6 +71,8 @@ function configurarSistema() {
   criarAbaAdmins_(ss);
   criarAbaInscricoes_(ss);
   criarAbaConfiguracoes_(ss);
+  criarAbaLotes_(ss);
+  criarAbaCategorias_(ss);
 
   criarAdminTeste_(ss);
   criarInscricaoTeste_(ss);
@@ -269,6 +273,1279 @@ function criarAbaConfiguracoes_(ss) {
   }
 }
 
+/* =====================================================
+   ABA LOTES
+   ===================================================== */
+
+function criarAbaLotes_(ss) {
+
+  let sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.LOTES
+    );
+
+  if (!sheet) {
+
+    sheet =
+      ss.insertSheet(
+        CONFIG.SHEETS.LOTES
+      );
+  }
+
+  garantirCabecalho_(
+    sheet,
+    [
+      'ID',
+      'Nome',
+      'DataInicio',
+      'DataFim',
+      'Valor',
+      'Ativo',
+      'CriadoEm'
+    ]
+  );
+}
+
+/* =====================================================
+   ABA CATEGORIAS
+   ===================================================== */
+
+function criarAbaCategorias_(ss) {
+
+  let sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.CATEGORIAS
+    );
+
+  if (!sheet) {
+
+    sheet =
+      ss.insertSheet(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+  }
+
+  garantirCabecalho_(
+    sheet,
+    [
+      'ID',
+      'Nome',
+      'IdadeMaxima',
+      'Ativo',
+      'CriadoEm'
+    ]
+  );
+}
+
+/* =====================================================
+   LISTAR LOTES
+   ===================================================== */
+
+function listarLotes_(token) {
+
+  validarSessao_(token);
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const lotes = [];
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (!dados[i][0]) {
+      continue;
+    }
+
+    lotes.push({
+
+      id:
+        String(dados[i][0]),
+
+      nome:
+        String(dados[i][1] || ''),
+
+      dataInicio:
+        formatarData_(dados[i][2]),
+
+      dataFim:
+        formatarData_(dados[i][3]),
+
+      valor:
+        Number(dados[i][4] || 0),
+
+      ativo:
+        String(
+          dados[i][5] || 'NAO'
+        ).toUpperCase() === 'SIM',
+
+      criadoEm:
+        formatarData_(dados[i][6])
+
+    });
+  }
+
+  return {
+    lotes: lotes
+  };
+}
+
+/* =====================================================
+   LOTE VIGENTE - PÚBLICO
+   ===================================================== */
+
+function obterLoteVigentePublico_() {
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const agora =
+    new Date();
+
+  const hoje =
+    new Date(
+      agora.getFullYear(),
+      agora.getMonth(),
+      agora.getDate()
+    );
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    const id =
+      dados[i][0];
+
+    if (!id) {
+      continue;
+    }
+
+    const ativo =
+      String(
+        dados[i][5] || ''
+      )
+      .trim()
+      .toUpperCase() === 'SIM';
+
+    if (!ativo) {
+      continue;
+    }
+
+    const dataInicio =
+      dados[i][2];
+
+    const dataFim =
+      dados[i][3];
+
+    if (
+      !(dataInicio instanceof Date) ||
+      !(dataFim instanceof Date)
+    ) {
+      continue;
+    }
+
+    const inicio =
+      new Date(
+        dataInicio.getFullYear(),
+        dataInicio.getMonth(),
+        dataInicio.getDate()
+      );
+
+    const fim =
+      new Date(
+        dataFim.getFullYear(),
+        dataFim.getMonth(),
+        dataFim.getDate()
+      );
+
+    if (
+      hoje >= inicio &&
+      hoje <= fim
+    ) {
+
+      return {
+
+        id:
+          String(id),
+
+        nome:
+          String(
+            dados[i][1] || ''
+          ),
+
+        dataInicio:
+          formatarData_(
+            dataInicio
+          ),
+
+        dataFim:
+          formatarData_(
+            dataFim
+          ),
+
+        valor:
+          Number(
+            dados[i][4] || 0
+          )
+      };
+    }
+  }
+
+  return null;
+}
+
+
+
+/* =====================================================
+   CRIAR LOTE
+   ===================================================== */
+
+function criarLote_(
+  token,
+  nome,
+  dataInicio,
+  dataFim,
+  valor
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  nome =
+    String(nome || '').trim();
+
+  if (!nome) {
+    throw new Error(
+      'Informe o nome do lote.'
+    );
+  }
+
+  const valorNumero =
+    Number(valor);
+
+  if (
+    !isFinite(valorNumero) ||
+    valorNumero <= 0
+  ) {
+    throw new Error(
+      'Informe um valor válido para o lote.'
+    );
+  }
+
+  if (!dataInicio || !dataFim) {
+    throw new Error(
+      'Informe a vigência do lote.'
+    );
+  }
+
+  const inicio =
+    new Date(dataInicio);
+
+  const fim =
+    new Date(dataFim);
+
+  if (
+    isNaN(inicio.getTime()) ||
+    isNaN(fim.getTime())
+  ) {
+    throw new Error(
+      'Datas de vigência inválidas.'
+    );
+  }
+
+  if (inicio > fim) {
+    throw new Error(
+      'A data inicial não pode ser maior que a data final.'
+    );
+  }
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const id =
+    'LOTE-' +
+    Utilities.getUuid()
+      .substring(0, 8)
+      .toUpperCase();
+
+  const agora =
+    new Date();
+
+  sheet.appendRow([
+    id,
+    nome,
+    inicio,
+    fim,
+    valorNumero,
+    'SIM',
+    agora
+  ]);
+
+  return {
+
+    criado: true,
+
+    id: id,
+
+    nome: nome,
+
+    dataInicio:
+      formatarData_(inicio),
+
+    dataFim:
+      formatarData_(fim),
+
+    valor:
+      valorNumero,
+
+    ativo: true,
+
+    criadoPor:
+      sessao.email
+  };
+}
+
+/* =====================================================
+   ALTERAR STATUS DO LOTE
+   ===================================================== */
+
+function alterarStatusLote_(
+  token,
+  id,
+  ativo
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]) ===
+      String(id)
+    ) {
+
+      const novoStatus =
+        ativo === true ||
+        String(ativo)
+          .toUpperCase() === 'SIM';
+
+      sheet
+        .getRange(
+          i + 1,
+          6
+        )
+        .setValue(
+          novoStatus
+            ? 'SIM'
+            : 'NAO'
+        );
+
+      return {
+
+        atualizado: true,
+
+        id: id,
+
+        ativo:
+          novoStatus,
+
+        alteradoPor:
+          sessao.email
+      };
+    }
+  }
+
+  throw new Error(
+    'Lote não encontrado.'
+  );
+}
+
+/* =====================================================
+   EXCLUIR LOTE
+   ===================================================== */
+
+function excluirLote_(
+  token,
+  id
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  id =
+    String(id || '').trim();
+
+  if (!id) {
+
+    throw new Error(
+      'Lote não informado.'
+    );
+  }
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]).trim() === id
+    ) {
+
+      /*
+       * i + 1 = linha real da planilha
+       */
+
+      sheet.deleteRow(
+        i + 1
+      );
+
+      SpreadsheetApp.flush();
+
+      return {
+
+        excluido: true,
+
+        id:
+          id,
+
+        excluidoPor:
+          sessao.email
+      };
+    }
+  }
+
+  throw new Error(
+    'Lote não encontrado.'
+  );
+}
+
+/* =====================================================
+   LISTAR CATEGORIAS
+   ===================================================== */
+
+function listarCategorias_(token) {
+
+  validarSessao_(token);
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const categorias = [];
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (!dados[i][0]) {
+      continue;
+    }
+
+    categorias.push({
+
+      id:
+        String(dados[i][0]),
+
+      nome:
+        String(dados[i][1] || ''),
+
+      idadeMaxima:
+        dados[i][2] === '' ||
+        dados[i][2] === null
+          ? null
+          : Number(dados[i][2]),
+
+      ativo:
+        String(
+          dados[i][3] || 'NAO'
+        ).toUpperCase() === 'SIM',
+
+      criadoEm:
+        formatarData_(dados[i][4])
+    });
+  }
+
+  return {
+    categorias: categorias
+  };
+}
+
+
+
+/* =====================================================
+   CRIAR CATEGORIA
+   ===================================================== */
+
+function criarCategoria_(
+  token,
+  nome,
+  idadeMaxima
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  nome =
+    String(nome || '').trim();
+
+  if (!nome) {
+    throw new Error(
+      'Informe o nome da categoria.'
+    );
+  }
+
+  let idade = null;
+
+  if (
+    idadeMaxima !== '' &&
+    idadeMaxima !== null &&
+    idadeMaxima !== undefined
+  ) {
+
+    idade =
+      Number(idadeMaxima);
+
+    if (
+      !isFinite(idade) ||
+      idade <= 0 ||
+      idade > 120
+    ) {
+      throw new Error(
+        'Informe uma idade máxima válida.'
+      );
+    }
+  }
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][1] || '')
+        .trim()
+        .toLowerCase()
+      ===
+      nome.toLowerCase()
+    ) {
+
+      throw new Error(
+        'Já existe uma categoria com este nome.'
+      );
+    }
+  }
+
+  const id =
+    'CAT-' +
+    Utilities.getUuid()
+      .substring(0, 8)
+      .toUpperCase();
+
+  const agora =
+    new Date();
+
+  sheet.appendRow([
+    id,
+    nome,
+    idade,
+    'SIM',
+    agora
+  ]);
+
+  return {
+
+    criado: true,
+
+    id: id,
+
+    nome: nome,
+
+    idadeMaxima: idade,
+
+    ativo: true,
+
+    criadoPor:
+      sessao.email
+  };
+}
+
+/* =====================================================
+   EDITAR CATEGORIA
+   ===================================================== */
+
+function editarCategoria_(
+  token,
+  id,
+  nome,
+  idadeMaxima
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  id =
+    String(id || '').trim();
+
+  nome =
+    String(nome || '').trim();
+
+  if (!id) {
+    throw new Error(
+      'Categoria não informada.'
+    );
+  }
+
+  if (!nome) {
+    throw new Error(
+      'Informe o nome da categoria.'
+    );
+  }
+
+
+  /* =================================================
+     VALIDAR IDADE MÁXIMA
+     ================================================= */
+
+  let idade = null;
+
+  if (
+    idadeMaxima !== '' &&
+    idadeMaxima !== null &&
+    idadeMaxima !== undefined
+  ) {
+
+    idade =
+      Number(idadeMaxima);
+
+    if (
+      !isFinite(idade) ||
+      idade <= 0 ||
+      idade > 120
+    ) {
+
+      throw new Error(
+        'Informe uma idade máxima válida.'
+      );
+    }
+  }
+
+
+  /* =================================================
+     LOCALIZAR ABA
+     ================================================= */
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
+
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+
+  /* =================================================
+     LOCALIZAR CATEGORIA
+     ================================================= */
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]).trim() === id
+    ) {
+
+      /* =============================================
+         VERIFICAR NOME DUPLICADO
+         ============================================= */
+
+      for (
+        let j = 1;
+        j < dados.length;
+        j++
+      ) {
+
+        if (j === i) {
+          continue;
+        }
+
+        if (
+          String(dados[j][1] || '')
+            .trim()
+            .toLowerCase()
+          ===
+          nome.toLowerCase()
+        ) {
+
+          throw new Error(
+            'Já existe uma categoria com este nome.'
+          );
+        }
+      }
+
+
+      /*
+       * A = ID
+       * B = Nome
+       * C = Idade máxima
+       * D = Ativo
+       * E = Criado em
+       */
+
+
+      sheet
+        .getRange(
+          i + 1,
+          2
+        )
+        .setValue(
+          nome
+        );
+
+
+      sheet
+        .getRange(
+          i + 1,
+          3
+        )
+        .setValue(
+          idade
+        );
+
+
+      SpreadsheetApp.flush();
+
+
+      return {
+
+        atualizado: true,
+
+        id:
+          id,
+
+        nome:
+          nome,
+
+        idadeMaxima:
+          idade,
+
+        ativo:
+          String(
+            dados[i][3] || 'NAO'
+          )
+            .toUpperCase() === 'SIM',
+
+        alteradoPor:
+          sessao.email
+      };
+    }
+  }
+
+
+  throw new Error(
+    'Categoria não encontrada.'
+  );
+}
+
+
+/* =====================================================
+   EXCLUIR CATEGORIA
+   ===================================================== */
+
+function excluirCategoria_(
+  token,
+  id
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  id =
+    String(id || '').trim();
+
+  if (!id) {
+
+    throw new Error(
+      'Categoria não informada.'
+    );
+  }
+
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
+
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]).trim() === id
+    ) {
+
+      const nome =
+        String(
+          dados[i][1] || ''
+        ).trim();
+
+
+      /*
+       * Exclui a linha inteira
+       */
+
+      sheet.deleteRow(
+        i + 1
+      );
+
+
+      SpreadsheetApp.flush();
+
+
+      return {
+
+        excluido: true,
+
+        id:
+          id,
+
+        nome:
+          nome,
+
+        excluidoPor:
+          sessao.email
+      };
+    }
+  }
+
+
+  throw new Error(
+    'Categoria não encontrada.'
+  );
+}
+
+/* =====================================================
+   EDITAR LOTE
+   ===================================================== */
+
+function editarLote_(
+  token,
+  id,
+  nome,
+  dataInicio,
+  dataFim,
+  valor
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  id =
+    String(id || '').trim();
+
+  nome =
+    String(nome || '').trim();
+
+  if (!id) {
+    throw new Error(
+      'Lote não informado.'
+    );
+  }
+
+  if (!nome) {
+    throw new Error(
+      'Informe o nome do lote.'
+    );
+  }
+
+  const valorNumero =
+    Number(valor);
+
+  if (
+    !isFinite(valorNumero) ||
+    valorNumero <= 0
+  ) {
+
+    throw new Error(
+      'Informe um valor válido para o lote.'
+    );
+  }
+
+  if (!dataInicio || !dataFim) {
+
+    throw new Error(
+      'Informe a vigência do lote.'
+    );
+  }
+
+  const inicio =
+    new Date(dataInicio);
+
+  const fim =
+    new Date(dataFim);
+
+  if (
+    isNaN(inicio.getTime()) ||
+    isNaN(fim.getTime())
+  ) {
+
+    throw new Error(
+      'Datas de vigência inválidas.'
+    );
+  }
+
+  if (inicio > fim) {
+
+    throw new Error(
+      'A data inicial não pode ser maior que a data final.'
+    );
+  }
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]).trim() === id
+    ) {
+
+      /*
+       * A = ID
+       * B = Nome
+       * C = Data início
+       * D = Data fim
+       * E = Valor
+       * F = Ativo
+       * G = Criado em
+       */
+
+      sheet
+        .getRange(
+          i + 1,
+          2
+        )
+        .setValue(
+          nome
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          3
+        )
+        .setValue(
+          inicio
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          4
+        )
+        .setValue(
+          fim
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          5
+        )
+        .setValue(
+          valorNumero
+        );
+
+      SpreadsheetApp.flush();
+
+      return {
+
+        atualizado: true,
+
+        id:
+          id,
+
+        nome:
+          nome,
+
+        dataInicio:
+          formatarData_(inicio),
+
+        dataFim:
+          formatarData_(fim),
+
+        valor:
+          valorNumero,
+
+        ativo:
+          String(
+            dados[i][5] || 'NAO'
+          )
+            .toUpperCase() === 'SIM',
+
+        alteradoPor:
+          sessao.email
+      };
+    }
+  }
+
+  throw new Error(
+    'Lote não encontrado.'
+  );
+}
+
+/* =====================================================
+   ALTERAR STATUS DA CATEGORIA
+   ===================================================== */
+
+function alterarStatusCategoria_(
+  token,
+  id,
+  ativo
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.CATEGORIAS
+      );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]) ===
+      String(id)
+    ) {
+
+      const novoStatus =
+        ativo === true ||
+        String(ativo)
+          .toUpperCase() === 'SIM';
+
+      sheet
+        .getRange(
+          i + 1,
+          4
+        )
+        .setValue(
+          novoStatus
+            ? 'SIM'
+            : 'NAO'
+        );
+
+      return {
+
+        atualizado: true,
+
+        id: id,
+
+        ativo:
+          novoStatus,
+
+        alteradoPor:
+          sessao.email
+      };
+    }
+  }
+
+  throw new Error(
+    'Categoria não encontrada.'
+  );
+}
 
 /* =====================================================
    ADMIN DE TESTE
@@ -495,6 +1772,81 @@ function doGet(e) {
           null,
           'Ação não encontrada.'
         );
+
+        case 'lotes':
+
+  return resposta_(
+    true,
+    listarLotes_(
+      params.token
+    )
+  );
+
+
+case 'publicLoteVigente':
+
+  return resposta_(
+    true,
+    obterLoteVigentePublico_()
+  );
+
+case 'adminCategorias':
+
+  return resposta_(
+    true,
+    listarCategorias_(
+      params.token
+    )
+  );
+
+  case 'criarLote':
+
+  return resposta_(
+    true,
+    criarLote_(
+      body.token,
+      body.nome,
+      body.dataInicio,
+      body.dataFim,
+      body.valor
+    )
+  );
+
+
+case 'alterarStatusLote':
+
+  return resposta_(
+    true,
+    alterarStatusLote_(
+      body.token,
+      body.id,
+      body.ativo
+    )
+  );
+
+
+case 'criarCategoria':
+
+  return resposta_(
+    true,
+    criarCategoria_(
+      body.token,
+      body.nome,
+      body.idadeMaxima
+    )
+  );
+
+
+case 'alterarStatusCategoria':
+
+  return resposta_(
+    true,
+    alterarStatusCategoria_(
+      body.token,
+      body.id,
+      body.ativo
+    )
+  );
     }
 
   } catch (erro) {
@@ -505,6 +1857,7 @@ function doGet(e) {
       erro.message
     );
   }
+
 }
 
 
@@ -686,6 +2039,10 @@ function doPost(e) {
         );
 
 
+      /* =================================================
+         CONFIGURAÇÕES
+         ================================================= */
+
       case 'configuracoes':
 
         return resposta_(
@@ -716,6 +2073,135 @@ function doPost(e) {
         );
 
 
+     /* =================================================
+   LOTES
+   ================================================= */
+
+case 'listarLotes':
+
+  return resposta_(
+    true,
+    listarLotes_(
+      body.token
+    )
+  );
+
+
+case 'criarLote':
+
+  return resposta_(
+    true,
+    criarLote_(
+      body.token,
+      body.nome,
+      body.dataInicio,
+      body.dataFim,
+      body.valor
+    )
+  );
+
+  case 'excluirLote':
+
+  return resposta_(
+    true,
+
+    excluirLote_(
+      body.token,
+      body.id
+    )
+
+  );
+
+
+case 'editarLote':
+
+  return resposta_(
+    true,
+    editarLote_(
+      body.token,
+      body.id,
+      body.nome,
+      body.dataInicio,
+      body.dataFim,
+      body.valor
+    )
+  );
+
+
+case 'alterarStatusLote':
+
+  return resposta_(
+    true,
+    alterarStatusLote_(
+      body.token,
+      body.id,
+      body.ativo
+    )
+  );
+
+           /* =================================================
+         CATEGORIAS
+         ================================================= */
+
+      case 'listarCategorias':
+
+        return resposta_(
+          true,
+          listarCategorias_(
+            body.token
+          )
+        );
+
+
+      case 'criarCategoria':
+
+        return resposta_(
+          true,
+          criarCategoria_(
+            body.token,
+            body.nome,
+            body.idadeMaxima
+          )
+        );
+
+
+      case 'editarCategoria':
+
+        return resposta_(
+          true,
+          editarCategoria_(
+            body.token,
+            body.id,
+            body.nome,
+            body.idadeMaxima
+          )
+        );
+
+        case 'excluirCategoria':
+
+  return resposta_(
+    true,
+    excluirCategoria_(
+      body.token,
+      body.id
+    )
+  );
+
+      case 'alterarStatusCategoria':
+
+        return resposta_(
+          true,
+          alterarStatusCategoria_(
+            body.token,
+            body.id,
+            body.ativo
+          )
+        );
+
+      /* =================================================
+         CADASTRO PÚBLICO
+         ================================================= */
+
       case 'publicCadastrar':
       case 'cadastrarPublico':
 
@@ -725,7 +2211,12 @@ function doPost(e) {
             body
           )
         );
+        
 
+
+      /* =================================================
+         AÇÃO NÃO ENCONTRADA
+         ================================================= */
 
       default:
 
@@ -746,6 +2237,195 @@ function doPost(e) {
   }
 }
 
+/* =====================================================
+   EDITAR LOTE
+   ===================================================== */
+
+function editarLote_(
+  token,
+  id,
+  nome,
+  dataInicio,
+  dataFim,
+  valor
+) {
+
+  const sessao =
+    validarSessao_(token);
+
+  id =
+    String(id || '').trim();
+
+  nome =
+    String(nome || '').trim();
+
+  if (!id) {
+    throw new Error(
+      'Lote não informado.'
+    );
+  }
+
+  if (!nome) {
+    throw new Error(
+      'Informe o nome do lote.'
+    );
+  }
+
+  const valorNumero =
+    Number(valor);
+
+  if (
+    !isFinite(valorNumero) ||
+    valorNumero <= 0
+  ) {
+
+    throw new Error(
+      'Informe um valor válido para o lote.'
+    );
+  }
+
+  if (!dataInicio || !dataFim) {
+
+    throw new Error(
+      'Informe a vigência do lote.'
+    );
+  }
+
+  const inicio =
+    new Date(dataInicio);
+
+  const fim =
+    new Date(dataFim);
+
+  if (
+    isNaN(inicio.getTime()) ||
+    isNaN(fim.getTime())
+  ) {
+
+    throw new Error(
+      'Datas de vigência inválidas.'
+    );
+  }
+
+  if (inicio > fim) {
+
+    throw new Error(
+      'A data inicial não pode ser maior que a data final.'
+    );
+  }
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.LOTES
+      );
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Lotes não existe.'
+    );
+  }
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    if (
+      String(dados[i][0]).trim() === id
+    ) {
+
+      /*
+       * A = ID
+       * B = Nome
+       * C = Data início
+       * D = Data fim
+       * E = Valor
+       * F = Ativo
+       * G = Criado em
+       */
+
+      sheet
+        .getRange(
+          i + 1,
+          2
+        )
+        .setValue(
+          nome
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          3
+        )
+        .setValue(
+          inicio
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          4
+        )
+        .setValue(
+          fim
+        );
+
+      sheet
+        .getRange(
+          i + 1,
+          5
+        )
+        .setValue(
+          valorNumero
+        );
+
+      SpreadsheetApp.flush();
+
+      return {
+
+        atualizado: true,
+
+        id:
+          id,
+
+        nome:
+          nome,
+
+        dataInicio:
+          formatarData_(inicio),
+
+        dataFim:
+          formatarData_(fim),
+
+        valor:
+          valorNumero,
+
+        ativo:
+          String(
+            dados[i][5] || 'NAO'
+          )
+            .toUpperCase() === 'SIM',
+
+        alteradoPor:
+          sessao.email
+      };
+    }
+  }
+
+  throw new Error(
+    'Lote não encontrado.'
+  );
+}
 
 /* =====================================================
    LOGIN
@@ -3041,10 +4721,10 @@ function obterTodasInscricoes_() {
   formaPagamento: linha[12] || '',
   transactionNsu: linha[13] || '',
   receiptUrl: linha[14] || '',
-  checkoutUrl: linha[15] || '',
-  dataPagamento: linha[16] || '',
+dataPagamento: linha[15] || '',
+checkoutUrl: linha[16] || '',
 
-  dataNascimento: linha[17] || '',
+dataNascimento: linha[17] || '',
   estado: linha[18] || '',
   cidade: linha[19] || '',
   pcd: linha[20] || '',
@@ -3544,221 +5224,74 @@ function formatarCpfPublico_(cpf) {
 
 
 /* =====================================================
-   CATEGORIAS PÚBLICAS
+   CATEGORIAS PÚBLICAS - NOVA ESTRUTURA
    ===================================================== */
 
 function obterCategoriasPublicas_() {
-
-  const categorias = [];
-  const nomes = {};
-
-  const configuracoes =
-    obterTodasConfiguracoes_();
-
-  /* ---------------------------------------------
-     1. Configuração "Categorias" em JSON
-     --------------------------------------------- */
-
-  if (
-    configuracoes.Categorias !== undefined &&
-    configuracoes.Categorias !== null &&
-    String(
-      configuracoes.Categorias
-    ).trim() !== ''
-  ) {
-
-    try {
-
-      const lista =
-        JSON.parse(
-          String(
-            configuracoes.Categorias
-          ).trim()
-        );
-
-      if (Array.isArray(lista)) {
-
-        lista.forEach(
-          function(item) {
-
-            if (!item) {
-              return;
-            }
-
-            const nome =
-              String(
-                item.nome ||
-                item.categoria ||
-                ''
-              ).trim();
-
-            if (!nome) {
-              return;
-            }
-
-            const valor =
-              Number(
-                item.valor !== undefined
-                  ? item.valor
-                  : 0
-              );
-
-            if (
-              nomes[nome] === undefined
-            ) {
-
-              categorias.push({
-                nome: nome,
-                valor:
-                  isFinite(valor)
-                    ? valor
-                    : 0
-              });
-
-              nomes[nome] = true;
-            }
-          }
-        );
-      }
-
-    } catch (erro) {
-
-      console.log(
-        'Configuração Categorias inválida: ' +
-        erro.message
-      );
-    }
-  }
-
-  /* ---------------------------------------------
-     2. Configurações Categoria:NOME
-     --------------------------------------------- */
-
-  Object.keys(
-    configuracoes
-  ).forEach(
-    function(chave) {
-
-      const prefixo =
-        'Categoria:';
-
-      if (
-        chave
-          .substring(
-            0,
-            prefixo.length
-          )
-          .toLowerCase()
-        !==
-        prefixo.toLowerCase()
-      ) {
-        return;
-      }
-
-      const nome =
-        chave
-          .substring(
-            prefixo.length
-          )
-          .trim();
-
-      if (!nome) {
-        return;
-      }
-
-      const valor =
-        Number(
-          configuracoes[chave]
-        );
-
-      if (
-        nomes[nome] === undefined
-      ) {
-
-        categorias.push({
-
-          nome: nome,
-
-          valor:
-            isFinite(valor)
-              ? valor
-              : Number(
-                  configuracoes.ValorInscricao ||
-                  CONFIG.VALOR_INSCRICAO_PADRAO
-                )
-        });
-
-        nomes[nome] = true;
-      }
-    }
-  );
-
-  /* ---------------------------------------------
-     3. Fallback: categorias da aba Inscrições
-     --------------------------------------------- */
 
   const sheet =
     SpreadsheetApp
       .getActiveSpreadsheet()
       .getSheetByName(
-        CONFIG.SHEETS.INSCRICOES
+        CONFIG.SHEETS.CATEGORIAS
       );
 
-  if (sheet) {
+  if (!sheet) {
+    throw new Error(
+      'A aba Categorias não existe.'
+    );
+  }
 
-    const dados =
-      sheet
-        .getDataRange()
-        .getValues();
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
 
-    for (
-      let i = 1;
-      i < dados.length;
-      i++
-    ) {
+  const categorias = [];
 
-      const nome =
-        String(
-          dados[i][5] || ''
-        ).trim();
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
 
-      if (!nome) {
-        continue;
-      }
-
-      if (
-        nomes[nome] !== undefined
-      ) {
-        continue;
-      }
-
-      const valor =
-        Number(
-          dados[i][8] || 0
-        );
-
-      categorias.push({
-
-        nome: nome,
-
-        valor:
-          isFinite(valor)
-            ? valor
-            : Number(
-                configuracoes.ValorInscricao ||
-                CONFIG.VALOR_INSCRICAO_PADRAO
-              )
-      });
-
-      nomes[nome] = true;
+    if (!dados[i][0]) {
+      continue;
     }
+
+    const ativo =
+      String(
+        dados[i][3] || 'NAO'
+      ).toUpperCase() === 'SIM';
+
+    if (!ativo) {
+      continue;
+    }
+
+    categorias.push({
+
+      id:
+        String(dados[i][0]),
+
+      nome:
+        String(dados[i][1] || ''),
+
+      idadeMaxima:
+        dados[i][2] === '' ||
+        dados[i][2] === null
+          ? null
+          : Number(dados[i][2]),
+
+      ativo:
+        true
+
+    });
   }
 
   return {
     categorias: categorias
   };
 }
-
 
 /* =====================================================
    VALOR DA CATEGORIA
