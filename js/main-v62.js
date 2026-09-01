@@ -3103,7 +3103,60 @@ if (newCortesia) {
 }
 //document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
+const newCortesia =
+  document.getElementById("newCortesia");
 
+const newValor =
+  document.getElementById("newValor");
+
+console.log("Cortesia:", newCortesia);
+console.log("Valor:", newValor);
+
+newCortesia?.addEventListener(
+  "change",
+  async function () {
+
+    console.log(
+      "Cortesia mudou:",
+      this.checked
+    );
+
+    if (!newValor) return;
+
+    if (this.checked) {
+
+      newValor.value = "0.00";
+      newValor.readOnly = true;
+
+      return;
+    }
+
+    newValor.readOnly = false;
+
+    try {
+
+      const lote =
+        await apiGet(
+          "publicLoteVigente",
+          {
+            evento: EVENTO_ATUAL
+          }
+        );
+
+      newValor.value =
+        Number(
+          lote?.valor || 0
+        ).toFixed(2);
+
+    } catch (err) {
+
+      console.error(
+        "Erro ao carregar lote:",
+        err
+      );
+    }
+  }
+);
 registrationForm?.addEventListener("submit", async e => {
   e.preventDefault();
 
