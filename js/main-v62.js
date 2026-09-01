@@ -1085,8 +1085,7 @@ function render() {
       ?.value ||
     "todas";
 
-  const rows =
-    inscricoes.filter(x => {
+ return inscricoes.filter(x => {
 
       const t = [
         x.numeroInscricao,
