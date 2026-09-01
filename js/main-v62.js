@@ -981,8 +981,6 @@ function obterInscricoesFiltradas_() {
       .toLowerCase();
 
 
-    /* BUSCA */
-
     if (
       q &&
       !t.includes(q)
@@ -990,8 +988,6 @@ function obterInscricoesFiltradas_() {
       return false;
     }
 
-
-    /* CATEGORIA */
 
     if (
       cat !== "todas" &&
@@ -1001,8 +997,6 @@ function obterInscricoesFiltradas_() {
     }
 
 
-    /* PAGAMENTO */
-
     const p =
       String(
         x.pagamento || ""
@@ -1011,8 +1005,6 @@ function obterInscricoesFiltradas_() {
         .toLowerCase();
 
 
-    /* STATUS DA INSCRIÇÃO */
-
     const st =
       String(
         x.statusInscricao || ""
@@ -1020,8 +1012,6 @@ function obterInscricoesFiltradas_() {
         .trim()
         .toLowerCase();
 
-
-    /* FILTRO DE STATUS */
 
     return (
 
@@ -1058,8 +1048,8 @@ function obterInscricoesFiltradas_() {
     );
 
   });
-
 }
+
 
 function render() {
 
@@ -1070,91 +1060,8 @@ function render() {
     return;
   }
 
- const rows =
-  obterInscricoesFiltradas_();
-
-  const f =
-    document
-      .getElementById("filter")
-      ?.value ||
-    "todos";
-
-  const cat =
-    document
-      .getElementById("categoryFilter")
-      ?.value ||
-    "todas";
-
- return inscricoes.filter(x => {
-
-      const t = [
-        x.numeroInscricao,
-        x.nome,
-        x.cpf,
-        x.email,
-        x.telefone,
-        x.categoria
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (
-        q &&
-        !t.includes(q)
-      ) {
-        return false;
-      }
-
-      if (
-        cat !== "todas" &&
-        String(x.categoria || "") !== cat
-      ) {
-        return false;
-      }
-
-      const p =
-        String(
-          x.pagamento || ""
-        ).toLowerCase();
-
-      const st =
-        String(
-          x.statusInscricao || ""
-        ).toLowerCase();
-
-      return (
-
-        f === "todos" ||
-
-        (
-          f === "pagamento-pendente" &&
-          p === "pendente"
-        ) ||
-
-        (
-          f === "pago" &&
-          p === "pago"
-        ) ||
-
-        (
-          f === "inscricao-pendente" &&
-          st === "pendente"
-        ) ||
-
-        (
-          f === "confirmado" &&
-          st === "confirmado"
-        ) ||
-
-        (
-          f === "cancelado" &&
-          (
-            p === "cancelado" ||
-            st === "cancelado"
-          )
-        )
-      );
-    });
+  const rows =
+    obterInscricoesFiltradas_();
 
 
   body.innerHTML =
@@ -1230,149 +1137,6 @@ function render() {
           () =>
             detalhes(b.dataset.id)
     );
-}
-
-
-/* =====================================================
-   UTILITÁRIOS FRONT-END
-   ===================================================== */
-
-const esc =
-  v =>
-    String(v ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
-
-// Alias usado pelos modais de seleção.
-// Corrige o erro que interrompia a abertura do modal de pagamento/status.
-const escapeHtml_ = esc;
-
-
-const classe =
-  v => {
-
-    v =
-      String(v || "")
-        .toLowerCase();
-
-    return (
-      v === "pago" ||
-      v === "confirmado"
-    )
-      ? "paid"
-      : v === "cancelado"
-        ? "cancelled"
-        : "pending";
-  };
-
-
-let inscricaoAtual = null;
-
-
-
-/* =====================================================
-   NOVA INSCRIÇÃO
-   ===================================================== */
-
-const registrationModal =
-  document.getElementById("registrationModal");
-
-const registrationForm =
-  document.getElementById("registrationForm");
-
-const registrationError =
-  document.getElementById("registrationError");
-
-async function abrirModalCadastro() {
-
-  if (!registrationModal) return;
-
-  registrationForm.reset();
-
-  const valorInput =
-    document.getElementById("newValor");
-
-  const categoriaSelect =
-    document.getElementById("newCategoria");
-
-  if (
-    categoriaSelect &&
-    categoriasConfig.length
-  ) {
-    categoriaSelect.value =
-      categoriasConfig[0].nome;
-  }
-
-  if (valorInput) {
-    valorInput.value = "";
-    valorInput.placeholder =
-      "Carregando lote vigente...";
-  }
-
-  if (registrationError) {
-    registrationError.hidden = true;
-    registrationError.textContent = "";
-  }
-
-  registrationModal.hidden = false;
-
-  document.body.classList.add(
-    "modal-open"
-  );
-
-  try {
-
-    const lote =
-      await apiGet(
-        "publicLoteVigente",
-        {
-          evento: EVENTO_ATUAL
-        }
-      );
-
-    if (
-      valorInput &&
-      lote &&
-      lote.valor !== undefined
-    ) {
-
-      valorInput.value =
-        Number(
-          lote.valor || 0
-        ).toFixed(2);
-
-      valorInput.placeholder = "";
-
-    } else if (valorInput) {
-
-      valorInput.value = "";
-      valorInput.placeholder =
-        "Nenhum lote vigente";
-    }
-
-  } catch (err) {
-
-    console.error(
-      "Erro ao carregar lote vigente:",
-      err
-    );
-
-    if (valorInput) {
-      valorInput.value = "";
-      valorInput.placeholder =
-        "Erro ao carregar lote";
-    }
-  }
-
-  setTimeout(() => {
-    document
-      .getElementById("newNome")
-      ?.focus();
-  }, 50);
 }
 /* =====================================================
    EXPORTAR INSCRIÇÕES
