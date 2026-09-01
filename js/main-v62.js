@@ -1360,7 +1360,144 @@ async function abrirModalCadastro() {
       ?.focus();
   }, 50);
 }
+/* =====================================================
+   EXPORTAR INSCRIÇÕES
+   ===================================================== */
 
+function exportarInscricoes_() {
+
+  const rows =
+    obterInscricoesFiltradas_();
+
+  if (!rows.length) {
+
+    notificar(
+      "error",
+      "NADA PARA EXPORTAR",
+      "Nenhuma inscrição corresponde aos filtros atuais."
+    );
+
+    return;
+  }
+
+
+  const cabecalho = [
+    "Nº Inscrição",
+    "Nome",
+    "CPF",
+    "Data de Nascimento",
+    "Categoria",
+    "Equipe",
+    "Cidade",
+    "Estado",
+    "PCD",
+    "Pagamento",
+    "Status"
+  ];
+
+
+  const dados =
+    rows.map(x => [
+
+      x.numeroInscricao || "",
+      x.nome || "",
+      x.cpf || "",
+      x.dataNascimento || "",
+      x.categoria || "",
+      x.equipe || "",
+      x.cidade || "",
+      x.estado || "",
+      x.pcd || "",
+      x.pagamento || "",
+      x.statusInscricao || ""
+
+    ]);
+
+
+  const csv =
+    [cabecalho, ...dados]
+      .map(linha =>
+        linha
+          .map(valor => {
+
+            const texto =
+              String(valor ?? "")
+                .replaceAll('"', '""');
+
+            return `"${texto}"`;
+
+          })
+          .join(";")
+      )
+      .join("\r\n");
+
+
+  /*
+   * BOM UTF-8
+   * Evita problemas com acentos no Excel.
+   */
+  const blob =
+    new Blob(
+      [
+        "\uFEFF",
+        csv
+      ],
+      {
+        type:
+          "text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const link =
+    document.createElement("a");
+
+
+  const evento =
+    EVENTO_ATUAL === "TRAIL2026"
+      ? "trail"
+      : "mtb";
+
+
+  const hoje =
+    new Date()
+      .toLocaleDateString("pt-BR")
+      .replaceAll("/", "-");
+
+
+  link.href = url;
+
+  link.download =
+    `inscricoes-${evento}-${hoje}.csv`;
+
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+
+
+  notificar(
+    "success",
+    "EXPORTAÇÃO CONCLUÍDA",
+    `${rows.length} inscrição(ões) exportada(s).`
+  );
+}
+
+
+document
+  .getElementById("exportRegistrationsBtn")
+  ?.addEventListener(
+    "click",
+    exportarInscricoes_
+  );
 function fecharModalCadastro() {
   if (!registrationModal) return;
 
