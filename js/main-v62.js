@@ -3103,8 +3103,6 @@ if (newCortesia) {
 }
 //document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
-const newCortesia =
-  document.getElementById("newCortesia");
 
 const newValor =
   document.getElementById("newValor");
