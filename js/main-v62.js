@@ -3036,48 +3036,71 @@ document
 
     }
   );
-document
-  .getElementById("newCortesia")
-  ?.addEventListener(
+// =====================================================
+// CORTESIA - NOVA INSCRIÇÃO
+// =====================================================
+
+const newCortesia =
+  document.getElementById("newCortesia");
+
+const newValor =
+  document.getElementById("newValor");
+
+if (newCortesia) {
+
+  newCortesia.addEventListener(
     "change",
-    async e => {
+    async function () {
 
-      const valorInput =
-        document.getElementById("newValor");
+      if (!newValor) return;
 
-      if (!valorInput) return;
+      // CORTESIA MARCADA
+      if (this.checked) {
 
-      if (e.target.checked) {
+        newValor.value = "0.00";
+        newValor.readOnly = true;
 
-        valorInput.value = "0.00";
-        valorInput.disabled = true;
+        console.log("Cortesia ativada");
 
-      } else {
+        return;
+      }
 
-        valorInput.disabled = false;
+      // CORTESIA DESMARCADA
+      newValor.readOnly = false;
 
-        try {
+      console.log("Cortesia desativada");
 
-          const lote =
-            await apiGet(
-              "publicLoteVigente",
-              {
-                evento: EVENTO_ATUAL
-              }
-            );
+      try {
 
-          valorInput.value =
-            Number(
-              lote?.valor || 0
-            ).toFixed(2);
+        const lote =
+          await apiGet(
+            "publicLoteVigente",
+            {
+              evento: EVENTO_ATUAL
+            }
+          );
 
-        } catch (err) {
+        if (
+          lote &&
+          lote.valor !== undefined
+        ) {
 
-          valorInput.value = "";
+          newValor.value =
+            Number(lote.valor)
+              .toFixed(2);
+
         }
+
+      } catch (err) {
+
+        console.error(
+          "Erro ao recuperar lote:",
+          err
+        );
       }
     }
   );
+}
 //document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
 
