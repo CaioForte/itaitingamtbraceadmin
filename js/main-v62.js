@@ -3104,8 +3104,7 @@ if (newCortesia) {
 //document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
 
-const newValor =
-  document.getElementById("newValor");
+
 
 console.log("Cortesia:", newCortesia);
 console.log("Valor:", newValor);
