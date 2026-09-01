@@ -3,7 +3,36 @@ const API_URL =
 
 const SESSION_KEY = "mtbAdminSession";
 
+/* =====================================================
+   EVENTO ATUAL
+   ===================================================== */
 
+const EVENTO_KEY = "adminEventoAtual";
+
+let EVENTO_ATUAL =
+  localStorage.getItem(EVENTO_KEY) ||
+  "MTB2026";
+
+
+function aplicarEventoSelecionado_() {
+
+  const select =
+    document.getElementById("eventoAtual");
+
+  if (!select) {
+    return;
+  }
+
+  select.value = EVENTO_ATUAL;
+}
+
+
+function nomeEventoAtual_() {
+
+  return EVENTO_ATUAL === "TRAIL2026"
+    ? "Itaitinga Trail Run"
+    : "Itaitinga MTB Race";
+}
 /* =====================================================
    ELEMENTOS
    ===================================================== */
@@ -359,8 +388,37 @@ function showApp(s) {
     .getElementById("userEmail")
     .textContent =
       s?.administrador?.email || "";
+
+  aplicarEventoSelecionado_();
 }
 
+document
+  .getElementById("eventoAtual")
+  ?.addEventListener(
+    "change",
+    async e => {
+
+      EVENTO_ATUAL =
+        String(
+          e.target.value ||
+          "MTB2026"
+        )
+          .trim()
+          .toUpperCase();
+
+      localStorage.setItem(
+        EVENTO_KEY,
+        EVENTO_ATUAL
+      );
+
+      notificar(
+        "success",
+        "EVENTO ALTERADO",
+        `Evento atual: ${nomeEventoAtual_()}`
+      );
+
+    }
+  );
 
 function showLogin() {
 
