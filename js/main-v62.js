@@ -417,6 +417,9 @@ document
       if (paginaAtiva?.id === "inscricoes") {
         await carregarInscricoes();
       }
+      if (paginaAtiva?.id === "dashboard") {
+  await carregarDashboard();
+}
 
       notificar(
         "success",
@@ -790,13 +793,10 @@ async function carregarDashboard() {
 
   try {
 
-    const d =
-      await apiGet(
-        "dashboard",
-        {
-          token: s.token
-        }
-      );
+   const d = await apiGet("dashboard", {
+  token: s.token,
+  evento: EVENTO_ATUAL
+});
 
     atualizarDashboard(d);
 
