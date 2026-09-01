@@ -3126,14 +3126,15 @@ async function detalhes(id) {
 
   try {
 
-    const x =
-      await apiGet(
-        "inscricao",
-        {
-          token: s.token,
-          id
-        }
-      );
+   const x =
+  await apiGet(
+    "inscricao",
+    {
+      token: s.token,
+      id,
+      evento: EVENTO_ATUAL
+    }
+  );
 
     inscricaoAtual = x;
 
