@@ -898,13 +898,14 @@ async function carregarInscricoes() {
 
   try {
 
-    const d =
-      await apiGet(
-        "inscricoes",
-        {
-          token: s.token
-        }
-      );
+   const d =
+  await apiGet(
+    "inscricoes",
+    {
+      token: s.token,
+      evento: EVENTO_ATUAL
+    }
+  );
 
     inscricoes =
       d.inscricoes || [];
