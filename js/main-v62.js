@@ -3036,7 +3036,48 @@ document
 
     }
   );
+document
+  .getElementById("newCortesia")
+  ?.addEventListener(
+    "change",
+    async e => {
 
+      const valorInput =
+        document.getElementById("newValor");
+
+      if (!valorInput) return;
+
+      if (e.target.checked) {
+
+        valorInput.value = "0.00";
+        valorInput.disabled = true;
+
+      } else {
+
+        valorInput.disabled = false;
+
+        try {
+
+          const lote =
+            await apiGet(
+              "publicLoteVigente",
+              {
+                evento: EVENTO_ATUAL
+              }
+            );
+
+          valorInput.value =
+            Number(
+              lote?.valor || 0
+            ).toFixed(2);
+
+        } catch (err) {
+
+          valorInput.value = "";
+        }
+      }
+    }
+  );
 //document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
 
@@ -3052,17 +3093,19 @@ registrationForm?.addEventListener("submit", async e => {
 
   const saveBtn = document.getElementById("saveRegistration");
 
-  const payload = {
-    token: s.token,
-    nome: document.getElementById("newNome").value.trim(),
-    cpf: document.getElementById("newCpf").value.trim(),
-    email: document.getElementById("newEmail").value.trim(),
-    telefone: document.getElementById("newTelefone").value.trim(),
-    categoria: document.getElementById("newCategoria").value,
-    valor: document.getElementById("newValor").value,
-    observacao: document.getElementById("newObservacao").value.trim(),
-    evento: EVENTO_ATUAL
-  };
+const payload = {
+  token: s.token,
+  nome: document.getElementById("newNome").value.trim(),
+  cpf: document.getElementById("newCpf").value.trim(),
+  email: document.getElementById("newEmail").value.trim(),
+  telefone: document.getElementById("newTelefone").value.trim(),
+  categoria: document.getElementById("newCategoria").value,
+  valor: document.getElementById("newValor").value,
+  observacao: document.getElementById("newObservacao").value.trim(),
+  evento: EVENTO_ATUAL,
+  cortesia:
+    document.getElementById("newCortesia")?.checked || false
+};
 
   if (!payload.nome || !payload.cpf || !payload.email || !payload.categoria) {
     registrationError.textContent = "Preencha os campos obrigatórios.";
