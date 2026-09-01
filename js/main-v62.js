@@ -17,7 +17,7 @@ let EVENTO_ATUAL =
 function aplicarEventoSelecionado_() {
 
   const select =
-    document.getElementById("eventoAtual");
+    document.getElementById("");
 
   if (!select) {
     return;
@@ -27,7 +27,7 @@ function aplicarEventoSelecionado_() {
 }
 
 
-function nomeEventoAtual_() {
+function nome_() {
 
   return EVENTO_ATUAL === "TRAIL2026"
     ? "Itaitinga Trail Run"
@@ -411,6 +411,13 @@ document
         EVENTO_ATUAL
       );
 
+      const paginaAtiva =
+        document.querySelector(".page.active");
+
+      if (paginaAtiva?.id === "inscricoes") {
+        await carregarInscricoes();
+      }
+
       notificar(
         "success",
         "EVENTO ALTERADO",
@@ -419,7 +426,6 @@ document
 
     }
   );
-
 function showLogin() {
 
   app.hidden = true;
