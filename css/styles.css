@@ -441,3 +441,266 @@ body.modal-open{overflow:hidden}
   #pagamentos .payment-toolbar{grid-template-columns:1fr}
   #pagamentos .table table{min-width:1000px}
 }
+
+/* =====================================================
+   ADMIN MOBILE - LAYOUT RESPONSIVO
+   ===================================================== */
+
+@media (max-width: 780px) {
+
+  /* =========================================
+     APP
+     ========================================= */
+
+  #app {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .main {
+    width: 100%;
+    min-width: 0;
+    padding-bottom: 78px;
+  }
+
+
+  /* =========================================
+     SIDEBAR -> BARRA INFERIOR
+     ========================================= */
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+
+    z-index: 9999;
+
+    width: 100%;
+    min-height: 0;
+    height: 68px;
+
+    padding: 7px 10px;
+
+    display: block;
+
+    background: var(--dark);
+
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .sidebrand,
+  .sidebar .user {
+    display: none !important;
+  }
+
+  .sidebar nav {
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+
+    gap: 4px;
+    align-items: center;
+  }
+
+  .sidebar .nav {
+    width: 100%;
+    height: 52px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    text-align: center;
+    font-size: 17px;
+  }
+
+  .sidebar .nav span {
+    display: none;
+  }
+
+  .sidebar .nav.active {
+    box-shadow:
+      inset 0 -3px var(--green);
+
+    background: rgba(255,255,255,.08);
+  }
+
+
+  /* =========================================
+     CABEÇALHO
+     ========================================= */
+
+  .main > header {
+    width: 100%;
+    height: auto;
+    min-height: 88px;
+
+    padding: 13px 15px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .main > header > * {
+    min-width: 0;
+  }
+
+  .main header h1 {
+    font-size: 20px;
+  }
+
+  #eventoAtual {
+    width: 100%;
+    max-width: none;
+
+    min-height: 42px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .online {
+    margin-left: auto;
+  }
+
+
+  /* =========================================
+     CONTEÚDO
+     ========================================= */
+
+  .content {
+    width: 100%;
+
+    padding: 24px 15px 30px;
+  }
+
+  .section-head {
+    margin-bottom: 20px;
+  }
+
+  .section-head h2 {
+    font-size: 25px;
+  }
+
+  .section-head p {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+
+  /* =========================================
+     BOTÃO NOVA INSCRIÇÃO
+     ========================================= */
+
+  .section-head .primary.small {
+    width: 100%;
+
+    min-height: 44px;
+
+    justify-content: center;
+  }
+
+
+  /* =========================================
+     FILTROS
+     ========================================= */
+
+  .toolbar {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .toolbar input,
+  .toolbar select {
+    width: 100%;
+    height: 46px;
+
+    font-size: 13px;
+  }
+
+
+  /* =========================================
+     TABELAS
+     ========================================= */
+
+  .table {
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 16px;
+  }
+
+  .table table {
+    min-width: 720px;
+  }
+
+
+  /* =========================================
+     DASHBOARD
+     ========================================= */
+
+  .hero {
+    padding: 22px 20px;
+  }
+
+  .hero h2 {
+    font-size: 23px;
+  }
+
+  .hero strong {
+    display: none;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .lower {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-cards,
+  .money {
+    grid-template-columns: 1fr;
+  }
+
+
+  /* =========================================
+     CONFIGURAÇÕES
+     ========================================= */
+
+  .settings,
+  .management-settings,
+  .categories-settings {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .management-list,
+  .categories-list {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+}
