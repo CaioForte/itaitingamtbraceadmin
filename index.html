@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Itaitinga MTB Race — Admin</title>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=621">
 </head>
 <body>
 <main id="login" class="login">
@@ -30,6 +30,7 @@
     <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
     <button class="nav" data-page="inscricoes">♙ <span>Inscrições</span></button>
     <button class="nav" data-page="pagamentos">R$ <span>Pagamentos</span></button>
+    <button class="nav" data-page="conteudo">✎ <span>Conteúdo</span></button>
     <button class="nav" data-page="configuracoes">⚙ <span>Configurações</span></button>
     <button class="nav" data-page="usuarios">♙ <span>Usuários</span></button>
   </nav>
@@ -236,14 +237,6 @@
   </div>
 </div>
 <section class="page" id="pagamentos">
-  <div class="section-head">
-    <div>
-      <span>FINANCEIRO</span>
-      <h2>Pagamentos</h2>
-      <p>Acompanhe os pagamentos e atualize a situação dos atletas.</p>
-    </div>
-  </div>
-
   <div class="payment-cards">
     <div><small>Pendentes</small><b id="paymentPendingCount">0</b><span id="paymentPendingValue">R$ 0,00</span></div>
     <div><small>Confirmados</small><b id="paymentPaidCount">0</b><span id="paymentPaidValue">R$ 0,00</span></div>
@@ -388,30 +381,324 @@
   </div>
 </div>
 
-<section class="page" id="configuracoes">
+<!-- =====================================================
+     CONTEÚDO DO SITE
+     ===================================================== -->
+
+<section class="page" id="conteudo">
+
   <div class="section-head">
-    <div><span>SISTEMA</span><h2>Configurações</h2><p>Gerencie os lotes de inscrição e as categorias do evento.</p></div>
+    <div>
+      <span>SITE</span>
+      <h2>Conteúdo</h2>
+      <p>Gerencie as informações exibidas no site público do evento.</p>
+    </div>
   </div>
 
+
+  <!-- =====================================================
+       INFORMAÇÕES DO EVENTO
+       ===================================================== -->
+
   <article class="panel settings management-settings">
-    <div class="settings-section-head settings-section-head-actions">
-      <div><b>Lotes de inscrição</b><small>O valor da inscrição será definido pelo lote vigente.</small></div>
-      <button class="primary small" type="button" id="addLotBtn">+ NOVO LOTE</button>
+
+    <div class="settings-section-head">
+
+      <div>
+        <b>Informações do evento</b>
+        <small>
+          Informações principais exibidas no site público do evento.
+        </small>
+      </div>
+
     </div>
-    <div id="lotsList" class="management-list"></div>
-    <div id="lotsEmpty" class="categories-empty" hidden>Nenhum lote cadastrado.</div>
+
+
+    <div class="registration-grid">
+
+      <!-- NOME DO EVENTO -->
+
+      <label class="registration-field wide">
+
+        <small>NOME DO EVENTO</small>
+
+        <input
+          id="siteNomeEvento"
+          type="text"
+          maxlength="100"
+          value="Itaitinga MTB Race"
+          placeholder="Nome do evento"
+        >
+
+      </label>
+
+
+      <!-- MODALIDADE -->
+
+      <label class="registration-field">
+
+        <small>MODALIDADE</small>
+
+        <input
+          id="siteModalidade"
+          type="text"
+          maxlength="30"
+          value="XCP"
+          placeholder="Ex.: XCP"
+        >
+
+      </label>
+
+
+      <!-- DATA -->
+
+      <label class="registration-field">
+
+        <small>DATA DO EVENTO</small>
+
+        <input
+          id="siteDataEvento"
+          type="date"
+        >
+
+      </label>
+
+
+      <!-- HORÁRIO -->
+
+      <label class="registration-field">
+
+        <small>HORÁRIO DA LARGADA</small>
+
+        <input
+          id="siteHorario"
+          type="time"
+          value="08:00"
+        >
+
+      </label>
+
+
+      <!-- CIDADE -->
+
+      <label class="registration-field">
+
+        <small>CIDADE</small>
+
+        <input
+          id="siteCidade"
+          type="text"
+          maxlength="80"
+          value="Itaitinga"
+          placeholder="Cidade"
+        >
+
+      </label>
+
+
+      <!-- ESTADO -->
+
+      <label class="registration-field">
+
+        <small>ESTADO</small>
+
+        <input
+          id="siteEstado"
+          type="text"
+          maxlength="2"
+          value="CE"
+          placeholder="CE"
+        >
+
+      </label>
+
+
+      <!-- DISTÂNCIA -->
+
+      <label class="registration-field">
+
+        <small>DISTÂNCIA</small>
+
+        <div class="money-input">
+
+          <input
+            id="siteDistancia"
+            type="number"
+            min="0"
+            step="0.1"
+            value="50"
+          >
+
+          <span>KM</span>
+
+        </div>
+
+      </label>
+
+
+      <!-- ALTIMETRIA -->
+
+      <label class="registration-field">
+
+        <small>ALTIMETRIA</small>
+
+        <div class="money-input">
+
+          <input
+            id="siteAltimetria"
+            type="number"
+            min="0"
+            step="1"
+            value="1100"
+          >
+
+          <span>M+</span>
+
+        </div>
+
+      </label>
+
+    </div>
+
+
+    <!-- BOTÃO SALVAR -->
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="saveSiteConfig"
+      >
+        SALVAR INFORMAÇÕES
+      </button>
+
+    </div>
+
   </article>
 
-  <article class="panel settings management-settings category-management-panel">
-    <div class="settings-section-head settings-section-head-actions">
-      <div><b>Categorias</b><small>Defina a idade máxima e controle quais categorias ficam disponíveis para inscrição.</small></div>
-      <button class="primary small" type="button" id="addCategoryBtn">+ NOVA CATEGORIA</button>
-    </div>
-    <div id="categoriesList" class="management-list"></div>
-    <div id="categoriesEmpty" class="categories-empty" hidden>Nenhuma categoria cadastrada.</div>
-  </article>
 </section>
 
+
+<!-- =====================================================
+     CONFIGURAÇÕES
+     ===================================================== -->
+
+<section class="page" id="configuracoes">
+
+  <div class="section-head">
+
+    <div>
+
+      <span>SISTEMA</span>
+
+      <h2>Configurações</h2>
+
+      <p>
+        Gerencie os lotes de inscrição e as categorias do evento.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOTES DE INSCRIÇÃO
+       ===================================================== -->
+
+  <article class="panel settings management-settings">
+
+    <div class="settings-section-head settings-section-head-actions">
+
+      <div>
+
+        <b>Lotes de inscrição</b>
+
+        <small>
+          O valor da inscrição será definido pelo lote vigente.
+        </small>
+
+      </div>
+
+
+      <button
+        class="primary small"
+        type="button"
+        id="addLotBtn"
+      >
+        + NOVO LOTE
+      </button>
+
+    </div>
+
+
+    <div
+      id="lotsList"
+      class="management-list"
+    ></div>
+
+
+    <div
+      id="lotsEmpty"
+      class="categories-empty"
+      hidden
+    >
+      Nenhum lote cadastrado.
+    </div>
+
+  </article>
+
+
+  <!-- =====================================================
+       CATEGORIAS
+       ===================================================== -->
+
+  <article
+    class="panel settings management-settings category-management-panel"
+  >
+
+    <div class="settings-section-head settings-section-head-actions">
+
+      <div>
+
+        <b>Categorias</b>
+
+        <small>
+          Defina a idade máxima e controle quais categorias ficam disponíveis para inscrição.
+        </small>
+
+      </div>
+
+
+      <button
+        class="primary small"
+        type="button"
+        id="addCategoryBtn"
+      >
+        + NOVA CATEGORIA
+      </button>
+
+    </div>
+
+
+    <div
+      id="categoriesList"
+      class="management-list"
+    ></div>
+
+
+    <div
+      id="categoriesEmpty"
+      class="categories-empty"
+      hidden
+    >
+      Nenhuma categoria cadastrada.
+    </div>
+
+  </article>
+
+</section>
 <div id="lotModal" class="modal-backdrop" hidden>
   <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="lotModalTitle">
     <div class="modal-head">
@@ -631,6 +918,6 @@
 </div>
 </div></section>
 </main>
-<script src="js/main-v62.js?v=620"></script>
+<script src="js/main-v62.js?v=621"></script>
 </body>
 </html>

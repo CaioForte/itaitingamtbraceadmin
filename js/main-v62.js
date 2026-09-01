@@ -469,13 +469,15 @@ const titles = {
   pagamentos:
     ["FINANCEIRO", "Pagamentos"],
 
+  conteudo:
+    ["SITE", "Conteúdo"],
+
   configuracoes:
     ["SISTEMA", "Configurações"],
 
   usuarios:
     ["ADMINISTRAÇÃO", "Usuários"]
 };
-
 
 function go(
   page,
@@ -507,44 +509,41 @@ function go(
     .textContent =
       titles[page][0];
 
+ document
+  .getElementById("title")
+  .textContent =
+    titles[page][1];
+
+if (
+  filter &&
+  document.getElementById("filter")
+) {
+
   document
-    .getElementById("title")
-    .textContent =
-      titles[page][1];
+    .getElementById("filter")
+    .value = filter;
+}
 
-  if (
-    filter &&
-    document.getElementById("filter")
-  ) {
+if (page === "inscricoes") {
+  carregarInscricoes();
+}
 
-    document
-      .getElementById("filter")
-      .value = filter;
-  }
+if (page === "pagamentos") {
+  carregarPagamentos();
+}
 
-  if (page === "inscricoes") {
-    carregarInscricoes();
-  }
+if (page === "conteudo") {
+  carregarConteudoSite_();
+}
 
-  if (page === "pagamentos") {
-    carregarPagamentos();
-  }
+if (page === "configuracoes") {
+  carregarConfiguracoes_();
+}
 
-  if (page === "usuarios") {
-    carregarUsuarios();
-  }
+if (page === "usuarios") {
+  carregarUsuarios();
+}
 
-  if (page === "configuracoes") {
-    carregarConfiguracoes_();
-  }
-
-  if (page === "usuarios") {
-    carregarUsuarios();
-  }
-
-  if (page === "configuracoes") {
-    carregarConfiguracoes_();
-  }
 }
 
 
@@ -581,6 +580,135 @@ document
             b.dataset.filter
           )
   );
+
+  async function carregarConfiguracaoSitePublico_() {
+
+  try {
+
+    const url =
+      GOOGLE_SCRIPT_URL +
+      "?action=publicSiteConfig";
+
+    const response =
+      await fetch(url);
+
+    const json =
+      await response.json();
+
+    if (!json.sucesso) {
+      throw new Error(
+        json.mensagem ||
+        "Erro ao carregar informações."
+      );
+    }
+
+    const dados =
+      json.dados || {};
+
+
+    function preencherTexto(id, valor) {
+
+      const el =
+        document.getElementById(id);
+
+      if (
+        el &&
+        valor !== undefined &&
+        valor !== null &&
+        valor !== ""
+      ) {
+
+        el.textContent = valor;
+
+      }
+
+    }
+
+
+    preencherTexto(
+      "siteNomeEvento",
+      dados.nomeEvento
+    );
+
+    preencherTexto(
+      "siteModalidade",
+      dados.modalidade
+    );
+
+    preencherTexto(
+      "siteCidade",
+      dados.cidade
+    );
+
+    preencherTexto(
+      "siteEstado",
+      dados.estado
+    );
+
+    preencherTexto(
+      "siteDistancia",
+      dados.distancia
+    );
+
+    preencherTexto(
+      "siteAltimetria",
+      dados.altimetria
+    );
+
+    preencherTexto(
+      "siteHorario",
+      dados.horario
+    );
+
+
+    if (dados.dataEvento) {
+
+      const partes =
+        dados.dataEvento.split("-");
+
+      if (partes.length === 3) {
+
+        const dataFormatada =
+          `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+        preencherTexto(
+          "siteDataEvento",
+          dataFormatada
+        );
+
+      }
+
+    }
+
+
+  } catch (err) {
+
+    console.warn(
+      "Erro ao carregar configurações do site:",
+      err
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   CARREGAR CONFIGURAÇÕES DO SITE AO ABRIR A PÁGINA
+   ===================================================== */
+
+if (document.readyState === "loading") {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    carregarConfiguracaoSitePublico_
+  );
+
+} else {
+
+  carregarConfiguracaoSitePublico_();
+
+}
 
 
 /* =====================================================
@@ -1490,6 +1618,253 @@ function mostrarErroConfig_(id, mensagem) {
 function limparErroConfig_(id) {
   const el = document.getElementById(id);
   if (el) { el.textContent = ""; el.hidden = true; }
+}
+
+/* =====================================================
+   CONTEÚDO DO SITE
+   ===================================================== */
+
+document
+  .getElementById("saveSiteConfig")
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      const s = getSession();
+
+      if (!s?.token) {
+        showLogin();
+        return;
+      }
+
+
+      const btn =
+        document.getElementById(
+          "saveSiteConfig"
+        );
+
+      const textoOriginal =
+        btn.textContent;
+
+
+      const dados = {
+
+        token:
+          s.token,
+
+        nomeEvento:
+          document
+            .getElementById(
+              "siteNomeEvento"
+            )
+            ?.value
+            .trim() || "",
+
+        modalidade:
+          document
+            .getElementById(
+              "siteModalidade"
+            )
+            ?.value
+            .trim() || "",
+
+        dataEvento:
+          document
+            .getElementById(
+              "siteDataEvento"
+            )
+            ?.value || "",
+
+        horario:
+          document
+            .getElementById(
+              "siteHorario"
+            )
+            ?.value || "",
+
+        cidade:
+          document
+            .getElementById(
+              "siteCidade"
+            )
+            ?.value
+            .trim() || "",
+
+        estado:
+          document
+            .getElementById(
+              "siteEstado"
+            )
+            ?.value
+            .trim()
+            .toUpperCase() || "",
+
+        distancia:
+          document
+            .getElementById(
+              "siteDistancia"
+            )
+            ?.value || "",
+
+        altimetria:
+          document
+            .getElementById(
+              "siteAltimetria"
+            )
+            ?.value || ""
+
+      };
+
+
+      if (!dados.nomeEvento) {
+
+        notificar(
+          "error",
+          "CAMPO OBRIGATÓRIO",
+          "Informe o nome do evento."
+        );
+
+        return;
+      }
+
+
+      btn.disabled = true;
+
+      btn.textContent =
+        "SALVANDO...";
+
+
+      try {
+
+        await apiPost(
+          "salvarSiteConfig",
+          dados
+        );
+
+
+        notificar(
+          "success",
+          "INFORMAÇÕES SALVAS",
+          "O conteúdo do site foi atualizado com sucesso."
+        );
+
+
+      } catch (err) {
+
+        notificar(
+          "error",
+          "ERRO AO SALVAR",
+          err.message ||
+            "Não foi possível salvar as informações."
+        );
+
+
+      } finally {
+
+        btn.disabled = false;
+
+        btn.textContent =
+          textoOriginal;
+
+      }
+
+    }
+  );
+
+  async function carregarConteudoSite_() {
+
+  const s =
+    getSession();
+
+  if (!s?.token) {
+    return;
+  }
+
+
+  try {
+
+    const dados =
+      await apiGet(
+        "siteConfig",
+        {
+          token: s.token
+        }
+      );
+
+
+    const preencher = (
+      id,
+      valor
+    ) => {
+
+      const campo =
+        document.getElementById(id);
+
+      if (campo) {
+        campo.value =
+          valor ?? "";
+      }
+
+    };
+
+
+    preencher(
+      "siteNomeEvento",
+      dados.nomeEvento
+    );
+
+    preencher(
+      "siteModalidade",
+      dados.modalidade
+    );
+
+    preencher(
+      "siteDataEvento",
+      dados.dataEvento
+    );
+
+    preencher(
+      "siteHorario",
+      dados.horario
+    );
+
+    preencher(
+      "siteCidade",
+      dados.cidade
+    );
+
+    preencher(
+      "siteEstado",
+      dados.estado
+    );
+
+    preencher(
+      "siteDistancia",
+      dados.distancia
+    );
+
+    preencher(
+      "siteAltimetria",
+      dados.altimetria
+    );
+
+
+  } catch (err) {
+
+    console.warn(
+      "Não foi possível carregar o conteúdo do site:",
+      err
+    );
+
+    notificar(
+      "error",
+      "ERRO AO CARREGAR",
+      err.message ||
+        "Não foi possível carregar as informações do site."
+    );
+
+  }
+
 }
 
 function abrirEdicaoLote_(id) {
@@ -3904,7 +4279,7 @@ function renderPagamentos() {
         <td><span class="pill ${classe(pagamento)}">${esc(pagamento)}</span></td>
         <td>${esc(x.formaPagamento || "—")}</td>
         <td>${esc(x.dataPagamento || "—")}</td>
-        <td>${x.comprovanteUrl ? `<a href="${esc(x.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="action">🧾 VER</a>` : "—"}</td>
+        <td>${(x.receiptUrl || x.comprovanteUrl) ? `<a href="${esc(x.receiptUrl || x.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="action">🧾 VER</a>` : "—"}</td>
         <td class="payment-actions">
           <button class="action payment-details" data-id="${id}">DETALHES</button>
           <button class="action payment-change" data-id="${id}">ALTERAR</button>
@@ -3973,7 +4348,7 @@ async function carregarPagamentos() {
 
   const body = document.getElementById("paymentRows");
   if (body) {
-    body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px">Carregando pagamentos...</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px">Carregando pagamentos...</td></tr>';
   }
 
   try {

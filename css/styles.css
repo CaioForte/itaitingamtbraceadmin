@@ -373,3 +373,71 @@ body.modal-open{overflow:hidden}
   font-size: 20px;
   font-weight: 900;
 }
+
+/* =====================================================
+   PAGAMENTOS - CORRECAO DE LAYOUT
+   Mantem todas as 9 colunas visiveis no desktop.
+   ===================================================== */
+#pagamentos .payment-toolbar{
+  grid-template-columns:minmax(0,1fr) 190px;
+}
+
+#pagamentos .table{
+  width:100%;
+  overflow-x:auto;
+}
+
+#pagamentos .table table{
+  width:100%;
+  min-width:1080px;
+  table-layout:auto;
+}
+
+#pagamentos .table th,
+#pagamentos .table td{
+  padding:13px 12px;
+  vertical-align:middle;
+}
+
+#pagamentos .table th:nth-child(1),
+#pagamentos .table td:nth-child(1){width:55px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(2),
+#pagamentos .table td:nth-child(2){min-width:150px}
+
+#pagamentos .table th:nth-child(3),
+#pagamentos .table td:nth-child(3){min-width:125px}
+
+#pagamentos .table th:nth-child(4),
+#pagamentos .table td:nth-child(4){width:95px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(5),
+#pagamentos .table td:nth-child(5){width:105px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(6),
+#pagamentos .table td:nth-child(6){min-width:120px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(7),
+#pagamentos .table td:nth-child(7){min-width:130px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(8),
+#pagamentos .table td:nth-child(8){width:105px;white-space:nowrap}
+
+#pagamentos .table th:nth-child(9),
+#pagamentos .table td:nth-child(9){min-width:145px;white-space:nowrap;text-align:right}
+
+#pagamentos .payment-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:5px;
+}
+
+#pagamentos .payment-actions .action{
+  margin:0;
+  white-space:nowrap;
+}
+
+@media(max-width:780px){
+  #pagamentos .payment-toolbar{grid-template-columns:1fr}
+  #pagamentos .table table{min-width:1000px}
+}
