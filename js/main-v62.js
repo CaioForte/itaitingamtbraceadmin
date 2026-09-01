@@ -429,6 +429,9 @@ document
       if (paginaAtiva?.id === "pagamentos") {
   await carregarPagamentos();
 }
+      if (paginaAtiva?.id === "configuracoes") {
+  await carregarConfiguracoes_();
+}
 
       notificar(
         "success",
@@ -1418,9 +1421,16 @@ async function carregarConfiguracoes_() {
   if (!s?.token) return;
   try {
     const [categorias, lotes] = await Promise.all([
-      apiGet("adminCategorias", { token: s.token }),
-      apiGet("lotes", { token: s.token })
-    ]);
+  apiGet("adminCategorias", {
+    token: s.token,
+    evento: EVENTO_ATUAL
+  }),
+
+  apiGet("lotes", {
+    token: s.token,
+    evento: EVENTO_ATUAL
+  })
+]);
 
     categoriasConfig = normalizarCategorias_(categorias?.categorias);
     lotesConfig = normalizarLotes_(lotes?.lotes);
