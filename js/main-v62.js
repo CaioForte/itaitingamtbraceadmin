@@ -1410,6 +1410,20 @@ function formatarDataInput_(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function formatarDataHoraInput_(value) {
+  const d = parseDataLocal_(value);
+
+  if (!d) return "";
+
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  const hora = String(d.getHours()).padStart(2, "0");
+  const minuto = String(d.getMinutes()).padStart(2, "0");
+
+  return `${ano}-${mes}-${dia}T${hora}:${minuto}`;
+}
+
 function formatarDataCurta_(value) {
   const d = parseDataLocal_(value);
   if (!d) return "—";
@@ -1987,16 +2001,15 @@ function abrirEdicaoLote_(id) {
   document.getElementById(
     "lotDataInicio"
   ).value =
-    formatarDataInput_(
-      lote.dataInicio
-    );
-
+   formatarDataHoraInput_(
+  lote.dataInicio
+);
   document.getElementById(
     "lotDataFim"
   ).value =
-    formatarDataInput_(
-      lote.dataFim
-    );
+formatarDataHoraInput_(
+  lote.dataFim
+);
 
   document.getElementById(
     "lotValor"
