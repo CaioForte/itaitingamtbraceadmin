@@ -420,6 +420,9 @@ document
       if (paginaAtiva?.id === "dashboard") {
   await carregarDashboard();
 }
+      if (paginaAtiva?.id === "pagamentos") {
+  await carregarPagamentos();
+}
 
       notificar(
         "success",
@@ -4418,7 +4421,10 @@ async function carregarPagamentos() {
   }
 
   try {
-    const d = await apiGet("inscricoes", { token: s.token });
+    const d = await apiGet("inscricoes", {
+  token: s.token,
+  evento: EVENTO_ATUAL
+});
     inscricoes = d.inscricoes || [];
     atualizarCardsPagamentos(inscricoes);
     renderPagamentos();
