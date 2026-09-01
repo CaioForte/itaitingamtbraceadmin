@@ -2400,7 +2400,7 @@ async function alterarStatusCadastro_(tipo, id, ativo) {
     if (tipo === "categoria") {
       await apiPost("alterarStatusCategoria", { token: s.token, id, ativo });
     } else {
-      aawait apiPost("alterarStatusLote", {
+      await apiPost("alterarStatusLote", {
   token: s.token,
   id,
   ativo,
