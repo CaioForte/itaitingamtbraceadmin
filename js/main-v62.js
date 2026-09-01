@@ -943,6 +943,107 @@ async function carregarInscricoes() {
   }
 }
 
+function obterInscricoesFiltradas_() {
+
+  const q =
+    (
+      document
+        .getElementById("search")
+        ?.value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const f =
+    document
+      .getElementById("filter")
+      ?.value ||
+    "todos";
+
+  const cat =
+    document
+      .getElementById("categoryFilter")
+      ?.value ||
+    "todas";
+
+
+  return inscricoes.filter(x => {
+
+    const t = [
+      x.numeroInscricao,
+      x.nome,
+      x.cpf,
+      x.email,
+      x.telefone,
+      x.categoria
+    ]
+      .join(" ")
+      .toLowerCase();
+
+
+    if (
+      q &&
+      !t.includes(q)
+    ) {
+      return false;
+    }
+
+
+    if (
+      cat !== "todas" &&
+      String(x.categoria || "") !== cat
+    ) {
+      return false;
+    }
+
+
+    const p =
+      String(
+        x.pagamento || ""
+      ).toLowerCase();
+
+
+    const st =
+      String(
+        x.statusInscricao || ""
+      ).toLowerCase();
+
+
+    return (
+
+      f === "todos" ||
+
+      (
+        f === "pagamento-pendente" &&
+        p === "pendente"
+      ) ||
+
+      (
+        f === "pago" &&
+        p === "pago"
+      ) ||
+
+      (
+        f === "inscricao-pendente" &&
+        st === "pendente"
+      ) ||
+
+      (
+        f === "confirmado" &&
+        st === "confirmado"
+      ) ||
+
+      (
+        f === "cancelado" &&
+        (
+          p === "cancelado" ||
+          st === "cancelado"
+        )
+      )
+    );
+
+  });
+}
 
 function render() {
 
@@ -953,12 +1054,8 @@ function render() {
     return;
   }
 
-  const q =
-    (
-      document
-        .getElementById("search")
-        ?.value || ""
-    )
+ const rows =
+  obterInscricoesFiltradas_();
       .toLowerCase();
 
   const f =
