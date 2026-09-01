@@ -1176,18 +1176,30 @@ const registrationForm =
 const registrationError =
   document.getElementById("registrationError");
 
-function abrirModalCadastro() {
+async function abrirModalCadastro() {
+
   if (!registrationModal) return;
 
   registrationForm.reset();
 
-  const valorInput = document.getElementById("newValor");
-  const categoriaSelect = document.getElementById("newCategoria");
-  if (categoriaSelect && categoriasConfig.length) {
-    categoriaSelect.value = categoriasConfig[0].nome;
-    if (valorInput) valorInput.value = Number(categoriasConfig[0].valor).toFixed(2);
-  } else if (valorInput) {
+  const valorInput =
+    document.getElementById("newValor");
+
+  const categoriaSelect =
+    document.getElementById("newCategoria");
+
+  if (
+    categoriaSelect &&
+    categoriasConfig.length
+  ) {
+    categoriaSelect.value =
+      categoriasConfig[0].nome;
+  }
+
+  if (valorInput) {
     valorInput.value = "";
+    valorInput.placeholder =
+      "Carregando lote vigente...";
   }
 
   if (registrationError) {
@@ -1196,10 +1208,59 @@ function abrirModalCadastro() {
   }
 
   registrationModal.hidden = false;
-  document.body.classList.add("modal-open");
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+  try {
+
+    const lote =
+      await apiGet(
+        "publicLoteVigente",
+        {
+          evento: EVENTO_ATUAL
+        }
+      );
+
+    if (
+      valorInput &&
+      lote &&
+      lote.valor !== undefined
+    ) {
+
+      valorInput.value =
+        Number(
+          lote.valor || 0
+        ).toFixed(2);
+
+      valorInput.placeholder = "";
+
+    } else if (valorInput) {
+
+      valorInput.value = "";
+      valorInput.placeholder =
+        "Nenhum lote vigente";
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao carregar lote vigente:",
+      err
+    );
+
+    if (valorInput) {
+      valorInput.value = "";
+      valorInput.placeholder =
+        "Erro ao carregar lote";
+    }
+  }
 
   setTimeout(() => {
-    document.getElementById("newNome")?.focus();
+    document
+      .getElementById("newNome")
+      ?.focus();
   }, 50);
 }
 
@@ -1451,7 +1512,7 @@ async function carregarConfiguracoes_() {
 
     preencherSelectCategorias_("newCategoria");
     preencherSelectCategorias_("editCategoria");
-    atualizarValorPorCategoria_("newCategoria", "newValor");
+    //atualizarValorPorCategoria_("newCategoria", "newValor");
     renderCategoriasConfig_();
     renderLotesConfig_();
     renderCategoryFilter_();
@@ -2976,7 +3037,7 @@ document
     }
   );
 
-document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
+//document.getElementById("newCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("newCategoria", "newValor"));
 document.getElementById("editCategoria")?.addEventListener("change", () => atualizarValorPorCategoria_("editCategoria", "editValor"));
 
 registrationForm?.addEventListener("submit", async e => {
