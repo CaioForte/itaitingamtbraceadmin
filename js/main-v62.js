@@ -2319,18 +2319,12 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
       await apiPost(
         "editarCategoria",
         {
-          token:
-            s.token,
-
-          id:
-            categoriaEditandoId,
-
-          nome:
-            nome,
-
-          idadeMaxima:
-            idadeMaxima
-        }
+         token: s.token,
+    id: categoriaEditandoId,
+    nome: nome,
+    idadeMaxima: idadeMaxima,
+    evento: EVENTO_ATUAL
+  }
       );
 
 
@@ -2358,19 +2352,15 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
 
     else {
 
-      await apiPost(
-        "criarCategoria",
-        {
-          token:
-            s.token,
-
-          nome:
-            nome,
-
-          idadeMaxima:
-            idadeMaxima
-        }
-      );
+    await apiPost(
+  "criarCategoria",
+  {
+    token: s.token,
+    nome: nome,
+    idadeMaxima: idadeMaxima,
+    evento: EVENTO_ATUAL
+  }
+);
 
 
       fecharModal_(
@@ -2411,7 +2401,15 @@ async function alterarStatusCadastro_(tipo, id, ativo) {
   if (!s?.token) return showLogin();
   try {
     if (tipo === "categoria") {
-      await apiPost("alterarStatusCategoria", { token: s.token, id, ativo });
+await apiPost(
+  "alterarStatusCategoria",
+  {
+    token: s.token,
+    id,
+    ativo,
+    evento: EVENTO_ATUAL
+  }
+);
     } else {
       await apiPost("alterarStatusLote", {
   token: s.token,
@@ -2729,15 +2727,13 @@ document
     try {
 
       await apiPost(
-        "excluirCategoria",
-        {
-          token:
-            s.token,
-
-          id:
-            id
-        }
-      );
+  "excluirCategoria",
+  {
+    token: s.token,
+    id: id,
+    evento: EVENTO_ATUAL
+  }
+);
 
 
       fecharModal_(
