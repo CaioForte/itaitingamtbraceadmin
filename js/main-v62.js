@@ -15,13 +15,19 @@ let EVENTO_ATUAL =
 
 
 function aplicarEventoSelecionado_() {
-
   const select =
-    document.getElementById("");
+    document.getElementById("eventoAtual");
 
-  if (!select) {
-    return;
-  }
+  if (!select) return;
+
+  EVENTO_ATUAL =
+    String(
+      localStorage.getItem(EVENTO_KEY) ||
+      EVENTO_ATUAL ||
+      "MTB2026"
+    )
+      .trim()
+      .toUpperCase();
 
   select.value = EVENTO_ATUAL;
 }
