@@ -1276,6 +1276,117 @@ document
     "click",
     exportarInscricoes_
   );
+/* =====================================================
+   NOVA INSCRIÇÃO
+   ===================================================== */
+
+const registrationModal =
+  document.getElementById("registrationModal");
+
+const registrationForm =
+  document.getElementById("registrationForm");
+
+const registrationError =
+  document.getElementById("registrationError");
+
+
+async function abrirModalCadastro() {
+
+  if (!registrationModal) return;
+
+  registrationForm.reset();
+
+  const valorInput =
+    document.getElementById("newValor");
+
+  const categoriaSelect =
+    document.getElementById("newCategoria");
+
+  if (
+    categoriaSelect &&
+    categoriasConfig.length
+  ) {
+    categoriaSelect.value =
+      categoriasConfig[0].nome;
+  }
+
+  if (valorInput) {
+    valorInput.value = "";
+    valorInput.placeholder =
+      "Carregando lote vigente...";
+  }
+
+  if (registrationError) {
+    registrationError.hidden = true;
+    registrationError.textContent = "";
+  }
+
+  registrationModal.hidden = false;
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+
+  try {
+
+    const lote =
+      await apiGet(
+        "publicLoteVigente",
+        {
+          evento: EVENTO_ATUAL
+        }
+      );
+
+
+    if (
+      valorInput &&
+      lote &&
+      lote.valor !== undefined
+    ) {
+
+      valorInput.value =
+        Number(
+          lote.valor || 0
+        ).toFixed(2);
+
+      valorInput.placeholder = "";
+
+    } else if (valorInput) {
+
+      valorInput.value = "";
+
+      valorInput.placeholder =
+        "Nenhum lote vigente";
+    }
+
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao carregar lote vigente:",
+      err
+    );
+
+    if (valorInput) {
+
+      valorInput.value = "";
+
+      valorInput.placeholder =
+        "Erro ao carregar lote";
+    }
+  }
+
+
+  setTimeout(() => {
+
+    document
+      .getElementById("newNome")
+      ?.focus();
+
+  }, 50);
+}
+
 function fecharModalCadastro() {
   if (!registrationModal) return;
 
