@@ -2999,7 +2999,8 @@ registrationForm?.addEventListener("submit", async e => {
     telefone: document.getElementById("newTelefone").value.trim(),
     categoria: document.getElementById("newCategoria").value,
     valor: document.getElementById("newValor").value,
-    observacao: document.getElementById("newObservacao").value.trim()
+    observacao: document.getElementById("newObservacao").value.trim(),
+    evento: EVENTO_ATUAL
   };
 
   if (!payload.nome || !payload.cpf || !payload.email || !payload.categoria) {
