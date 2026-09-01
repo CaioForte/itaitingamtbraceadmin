@@ -943,7 +943,15 @@ async function carregarInscricoes() {
   }
 }
 
-function obterInscricoesFiltradas_() {
+
+function render() {
+
+  const body =
+    document.getElementById("rows");
+
+  if (!body) {
+    return;
+  }
 
   const q =
     (
@@ -951,7 +959,6 @@ function obterInscricoesFiltradas_() {
         .getElementById("search")
         ?.value || ""
     )
-      .trim()
       .toLowerCase();
 
   const f =
@@ -966,102 +973,77 @@ function obterInscricoesFiltradas_() {
       ?.value ||
     "todas";
 
-
-  return inscricoes.filter(x => {
-
-    const t = [
-      x.numeroInscricao,
-      x.nome,
-      x.cpf,
-      x.email,
-      x.telefone,
-      x.categoria
-    ]
-      .join(" ")
-      .toLowerCase();
-
-
-    if (
-      q &&
-      !t.includes(q)
-    ) {
-      return false;
-    }
-
-
-    if (
-      cat !== "todas" &&
-      String(x.categoria || "") !== cat
-    ) {
-      return false;
-    }
-
-
-    const p =
-      String(
-        x.pagamento || ""
-      )
-        .trim()
-        .toLowerCase();
-
-
-    const st =
-      String(
-        x.statusInscricao || ""
-      )
-        .trim()
-        .toLowerCase();
-
-
-    return (
-
-      f === "todos" ||
-
-      (
-        f === "pagamento-pendente" &&
-        p === "pendente"
-      ) ||
-
-      (
-        f === "pago" &&
-        p === "pago"
-      ) ||
-
-      (
-        f === "inscricao-pendente" &&
-        st === "pendente"
-      ) ||
-
-      (
-        f === "confirmado" &&
-        st === "confirmado"
-      ) ||
-
-      (
-        f === "cancelado" &&
-        (
-          p === "cancelado" ||
-          st === "cancelado"
-        )
-      )
-
-    );
-
-  });
-}
-
-
-function render() {
-
-  const body =
-    document.getElementById("rows");
-
-  if (!body) {
-    return;
-  }
-
   const rows =
-    obterInscricoesFiltradas_();
+    inscricoes.filter(x => {
+
+      const t = [
+        x.numeroInscricao,
+        x.nome,
+        x.cpf,
+        x.email,
+        x.telefone,
+        x.categoria
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      if (
+        q &&
+        !t.includes(q)
+      ) {
+        return false;
+      }
+
+      if (
+        cat !== "todas" &&
+        String(x.categoria || "") !== cat
+      ) {
+        return false;
+      }
+
+      const p =
+        String(
+          x.pagamento || ""
+        ).toLowerCase();
+
+      const st =
+        String(
+          x.statusInscricao || ""
+        ).toLowerCase();
+
+      return (
+
+        f === "todos" ||
+
+        (
+          f === "pagamento-pendente" &&
+          p === "pendente"
+        ) ||
+
+        (
+          f === "pago" &&
+          p === "pago"
+        ) ||
+
+        (
+          f === "inscricao-pendente" &&
+          st === "pendente"
+        ) ||
+
+        (
+          f === "confirmado" &&
+          st === "confirmado"
+        ) ||
+
+        (
+          f === "cancelado" &&
+          (
+            p === "cancelado" ||
+            st === "cancelado"
+          )
+        )
+      );
+    });
 
 
   body.innerHTML =
@@ -1138,144 +1120,49 @@ function render() {
             detalhes(b.dataset.id)
     );
 }
+
+
 /* =====================================================
-   EXPORTAR INSCRIÇÕES
+   UTILITÁRIOS FRONT-END
    ===================================================== */
 
-function exportarInscricoes_() {
-
-  const rows =
-    obterInscricoesFiltradas_();
-
-  if (!rows.length) {
-
-    notificar(
-      "error",
-      "NADA PARA EXPORTAR",
-      "Nenhuma inscrição corresponde aos filtros atuais."
-    );
-
-    return;
-  }
+const esc =
+  v =>
+    String(v ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 
 
-  const cabecalho = [
-    "Nº Inscrição",
-    "Nome",
-    "CPF",
-    "Data de Nascimento",
-    "Categoria",
-    "Equipe",
-    "Cidade",
-    "Estado",
-    "PCD",
-    "Pagamento",
-    "Status"
-  ];
+// Alias usado pelos modais de seleção.
+// Corrige o erro que interrompia a abertura do modal de pagamento/status.
+const escapeHtml_ = esc;
 
 
-  const dados =
-    rows.map(x => [
+const classe =
+  v => {
 
-      x.numeroInscricao || "",
-      x.nome || "",
-      x.cpf || "",
-      x.dataNascimento || "",
-      x.categoria || "",
-      x.equipe || "",
-      x.cidade || "",
-      x.estado || "",
-      x.pcd || "",
-      x.pagamento || "",
-      x.statusInscricao || ""
+    v =
+      String(v || "")
+        .toLowerCase();
 
-    ]);
-
-
-  const csv =
-    [cabecalho, ...dados]
-      .map(linha =>
-        linha
-          .map(valor => {
-
-            const texto =
-              String(valor ?? "")
-                .replaceAll('"', '""');
-
-            return `"${texto}"`;
-
-          })
-          .join(";")
-      )
-      .join("\r\n");
+    return (
+      v === "pago" ||
+      v === "confirmado"
+    )
+      ? "paid"
+      : v === "cancelado"
+        ? "cancelled"
+        : "pending";
+  };
 
 
-  /*
-   * BOM UTF-8
-   * Evita problemas com acentos no Excel.
-   */
-  const blob =
-    new Blob(
-      [
-        "\uFEFF",
-        csv
-      ],
-      {
-        type:
-          "text/csv;charset=utf-8;"
-      }
-    );
+let inscricaoAtual = null;
 
 
-  const url =
-    URL.createObjectURL(blob);
 
-
-  const link =
-    document.createElement("a");
-
-
-  const evento =
-    EVENTO_ATUAL === "TRAIL2026"
-      ? "trail"
-      : "mtb";
-
-
-  const hoje =
-    new Date()
-      .toLocaleDateString("pt-BR")
-      .replaceAll("/", "-");
-
-
-  link.href = url;
-
-  link.download =
-    `inscricoes-${evento}-${hoje}.csv`;
-
-
-  document.body.appendChild(link);
-
-  link.click();
-
-  link.remove();
-
-  URL.revokeObjectURL(url);
-
-
-  notificar(
-    "success",
-    "EXPORTAÇÃO CONCLUÍDA",
-    `${rows.length} inscrição(ões) exportada(s).`
-  );
-}
-
-
-document
-  .getElementById("exportRegistrationsBtn")
-  ?.addEventListener(
-    "click",
-    exportarInscricoes_
-  );
 /* =====================================================
    NOVA INSCRIÇÃO
    ===================================================== */
@@ -1288,7 +1175,6 @@ const registrationForm =
 
 const registrationError =
   document.getElementById("registrationError");
-
 
 async function abrirModalCadastro() {
 
@@ -1327,7 +1213,6 @@ async function abrirModalCadastro() {
     "modal-open"
   );
 
-
   try {
 
     const lote =
@@ -1337,7 +1222,6 @@ async function abrirModalCadastro() {
           evento: EVENTO_ATUAL
         }
       );
-
 
     if (
       valorInput &&
@@ -1355,11 +1239,9 @@ async function abrirModalCadastro() {
     } else if (valorInput) {
 
       valorInput.value = "";
-
       valorInput.placeholder =
         "Nenhum lote vigente";
     }
-
 
   } catch (err) {
 
@@ -1369,21 +1251,16 @@ async function abrirModalCadastro() {
     );
 
     if (valorInput) {
-
       valorInput.value = "";
-
       valorInput.placeholder =
         "Erro ao carregar lote";
     }
   }
 
-
   setTimeout(() => {
-
     document
       .getElementById("newNome")
       ?.focus();
-
   }, 50);
 }
 

@@ -25,13 +25,14 @@
    ===================================================== */
 
 const CONFIG = {
-  SHEETS: {
-    ADMINS: 'Admins',
-    INSCRICOES: 'Inscrições',
-    CONFIG: 'Configurações',
-    LOTES: 'Lotes',
-    CATEGORIAS: 'Categorias'
-  },
+ SHEETS: {
+  ADMINS: 'Admins',
+  INSCRICOES: 'Inscrições',
+  CONFIG: 'Configurações',
+  LOTES: 'Lotes',
+  CATEGORIAS: 'Categorias',
+  EVENTOS: 'Eventos'
+},
 
   VALOR_INSCRICAO_PADRAO: 80,
 
@@ -73,6 +74,7 @@ function configurarSistema() {
   criarAbaConfiguracoes_(ss);
   criarAbaLotes_(ss);
   criarAbaCategorias_(ss);
+  criarAbaEventos_(ss);
 
   criarAdminTeste_(ss);
   criarInscricaoTeste_(ss);
@@ -117,7 +119,80 @@ function criarAbaAdmins_(ss) {
   );
 }
 
+/* =====================================================
+   ABA EVENTOS
+   ===================================================== */
 
+function criarAbaEventos_(ss) {
+
+  let sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.EVENTOS
+    );
+
+  if (!sheet) {
+
+    sheet =
+      ss.insertSheet(
+        CONFIG.SHEETS.EVENTOS
+      );
+  }
+
+  garantirCabecalho_(
+    sheet,
+    [
+      'ID',
+      'Nome',
+      'Tipo',
+      'Ativo',
+      'CriadoEm'
+    ]
+  );
+
+
+  /* ---------------------------------------------
+     EVENTOS INICIAIS
+     --------------------------------------------- */
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const idsExistentes =
+    dados
+      .slice(1)
+      .map(linha =>
+        String(linha[0] || '')
+          .trim()
+          .toUpperCase()
+      );
+
+
+  if (!idsExistentes.includes('MTB2026')) {
+
+    sheet.appendRow([
+      'MTB2026',
+      'Itaitinga MTB Race',
+      'MTB',
+      'SIM',
+      new Date()
+    ]);
+  }
+
+
+  if (!idsExistentes.includes('TRAIL2026')) {
+
+    sheet.appendRow([
+      'TRAIL2026',
+      'Itaitinga Trail Run',
+      'TRAIL',
+      'SIM',
+      new Date()
+    ]);
+  }
+
+}
 /* =====================================================
    ABA INSCRIÇÕES
    ===================================================== */
@@ -338,12 +413,20 @@ function criarAbaCategorias_(ss) {
 }
 
 /* =====================================================
-   LISTAR LOTES
+   LISTAR LOTES - MULTI-EVENTOS
    ===================================================== */
 
-function listarLotes_(token) {
+function listarLotes_(token, evento) {
 
   validarSessao_(token);
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -358,12 +441,14 @@ function listarLotes_(token) {
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
 
   const lotes = [];
+
 
   for (
     let i = 1;
@@ -375,44 +460,91 @@ function listarLotes_(token) {
       continue;
     }
 
+
+    /* H = Evento */
+    const eventoLinha =
+      String(
+        dados[i][7] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+    if (
+      eventoLinha !== evento
+    ) {
+      continue;
+    }
+
+
     lotes.push({
 
       id:
-        String(dados[i][0]),
+        String(
+          dados[i][0]
+        ),
 
       nome:
-        String(dados[i][1] || ''),
+        String(
+          dados[i][1] || ''
+        ),
 
       dataInicio:
-        formatarData_(dados[i][2]),
+        formatarData_(
+          dados[i][2]
+        ),
 
       dataFim:
-        formatarData_(dados[i][3]),
+        formatarData_(
+          dados[i][3]
+        ),
 
       valor:
-        Number(dados[i][4] || 0),
+        Number(
+          dados[i][4] || 0
+        ),
 
       ativo:
         String(
           dados[i][5] || 'NAO'
-        ).toUpperCase() === 'SIM',
+        )
+          .trim()
+          .toUpperCase() === 'SIM',
 
       criadoEm:
-        formatarData_(dados[i][6])
+        formatarData_(
+          dados[i][6]
+        ),
+
+      evento:
+        eventoLinha
 
     });
   }
 
+
   return {
-    lotes: lotes
+    evento:
+      evento,
+
+    lotes:
+      lotes
   };
 }
 
 /* =====================================================
    LOTE VIGENTE - PÚBLICO
+   MULTI-EVENTOS
    ===================================================== */
 
-function obterLoteVigentePublico_() {
+function obterLoteVigentePublico_(evento) {
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -427,20 +559,15 @@ function obterLoteVigentePublico_() {
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
 
-  const agora =
-    new Date();
 
-  const hoje =
-    new Date(
-      agora.getFullYear(),
-      agora.getMonth(),
-      agora.getDate()
-    );
+  const agora = new Date();
+
 
   for (
     let i = 1;
@@ -455,16 +582,46 @@ function obterLoteVigentePublico_() {
       continue;
     }
 
+
+    /* =============================================
+       EVENTO
+       H = Evento
+       Índice 7
+       ============================================= */
+
+    const eventoLinha =
+      String(
+        dados[i][7] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+    if (
+      eventoLinha !== evento
+    ) {
+      continue;
+    }
+
+
+    /* =============================================
+       STATUS
+       ============================================= */
+
     const ativo =
       String(
         dados[i][5] || ''
       )
-      .trim()
-      .toUpperCase() === 'SIM';
+        .trim()
+        .toUpperCase() === 'SIM';
 
     if (!ativo) {
       continue;
     }
+
+
+    /* =============================================
+       VIGÊNCIA
+       ============================================= */
 
     const dataInicio =
       dados[i][2];
@@ -479,24 +636,18 @@ function obterLoteVigentePublico_() {
       continue;
     }
 
-    const inicio =
-      new Date(
-        dataInicio.getFullYear(),
-        dataInicio.getMonth(),
-        dataInicio.getDate()
-      );
 
-    const fim =
-      new Date(
-        dataFim.getFullYear(),
-        dataFim.getMonth(),
-        dataFim.getDate()
-      );
+    const inicio =
+  new Date(dataInicio);
+
+const fim =
+  new Date(dataFim);
+
 
     if (
-      hoje >= inicio &&
-      hoje <= fim
-    ) {
+  agora >= inicio &&
+  agora <= fim
+) {
 
       return {
 
@@ -521,18 +672,48 @@ function obterLoteVigentePublico_() {
         valor:
           Number(
             dados[i][4] || 0
-          )
+          ),
+
+        evento:
+          eventoLinha
       };
     }
   }
 
+return {
+
+  id:
+    String(id),
+
+  nome:
+    String(
+      dados[i][1] || ''
+    ),
+
+  dataInicio:
+    formatarData_(
+      dataInicio
+    ),
+
+  dataFim:
+    formatarData_(
+      dataFim
+    ),
+
+  valor:
+    Number(
+      dados[i][4] || 0
+    ),
+
+  evento:
+    eventoLinha
+};
   return null;
 }
 
 
-
 /* =====================================================
-   CRIAR LOTE
+   CRIAR LOTE - MULTI-EVENTOS
    ===================================================== */
 
 function criarLote_(
@@ -540,14 +721,25 @@ function criarLote_(
   nome,
   dataInicio,
   dataFim,
-  valor
+  valor,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
 
+
   nome =
     String(nome || '').trim();
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (!nome) {
     throw new Error(
@@ -555,23 +747,29 @@ function criarLote_(
     );
   }
 
+
   const valorNumero =
     Number(valor);
+
 
   if (
     !isFinite(valorNumero) ||
     valorNumero <= 0
   ) {
+
     throw new Error(
       'Informe um valor válido para o lote.'
     );
   }
 
+
   if (!dataInicio || !dataFim) {
+
     throw new Error(
       'Informe a vigência do lote.'
     );
   }
+
 
   const inicio =
     new Date(dataInicio);
@@ -579,20 +777,25 @@ function criarLote_(
   const fim =
     new Date(dataFim);
 
+
   if (
     isNaN(inicio.getTime()) ||
     isNaN(fim.getTime())
   ) {
+
     throw new Error(
       'Datas de vigência inválidas.'
     );
   }
 
+
   if (inicio > fim) {
+
     throw new Error(
       'A data inicial não pode ser maior que a data final.'
     );
   }
+
 
   const sheet =
     SpreadsheetApp
@@ -601,11 +804,14 @@ function criarLote_(
         CONFIG.SHEETS.LOTES
       );
 
+
   if (!sheet) {
+
     throw new Error(
       'A aba Lotes não existe.'
     );
   }
+
 
   const id =
     'LOTE-' +
@@ -613,8 +819,21 @@ function criarLote_(
       .substring(0, 8)
       .toUpperCase();
 
+
   const agora =
     new Date();
+
+
+  /*
+   * A = ID
+   * B = Nome
+   * C = DataInicio
+   * D = DataFim
+   * E = Valor
+   * F = Ativo
+   * G = CriadoEm
+   * H = Evento
+   */
 
   sheet.appendRow([
     id,
@@ -623,45 +842,76 @@ function criarLote_(
     fim,
     valorNumero,
     'SIM',
-    agora
+    agora,
+    evento
   ]);
+
+
+  SpreadsheetApp.flush();
+
 
   return {
 
-    criado: true,
+    criado:
+      true,
 
-    id: id,
+    id:
+      id,
 
-    nome: nome,
+    nome:
+      nome,
 
     dataInicio:
-      formatarData_(inicio),
+      formatarData_(
+        inicio
+      ),
 
     dataFim:
-      formatarData_(fim),
+      formatarData_(
+        fim
+      ),
 
     valor:
       valorNumero,
 
-    ativo: true,
+    ativo:
+      true,
+
+    evento:
+      evento,
 
     criadoPor:
       sessao.email
   };
 }
-
 /* =====================================================
-   ALTERAR STATUS DO LOTE
+   ALTERAR STATUS DO LOTE - MULTI-EVENTOS
    ===================================================== */
 
 function alterarStatusLote_(
   token,
   id,
-  ativo
+  ativo,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
+
+
+  id =
+    String(
+      id || ''
+    ).trim();
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -670,16 +920,19 @@ function alterarStatusLote_(
         CONFIG.SHEETS.LOTES
       );
 
+
   if (!sheet) {
     throw new Error(
       'A aba Lotes não existe.'
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -687,15 +940,33 @@ function alterarStatusLote_(
     i++
   ) {
 
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    const eventoLinha =
+      String(
+        dados[i][7] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
-      String(dados[i][0]) ===
-      String(id)
+      idLinha === id &&
+      eventoLinha === evento
     ) {
 
       const novoStatus =
         ativo === true ||
-        String(ativo)
+        String(
+          ativo
+        )
+          .trim()
           .toUpperCase() === 'SIM';
+
 
       sheet
         .getRange(
@@ -708,14 +979,23 @@ function alterarStatusLote_(
             : 'NAO'
         );
 
+
+      SpreadsheetApp.flush();
+
+
       return {
 
-        atualizado: true,
+        atualizado:
+          true,
 
-        id: id,
+        id:
+          id,
 
         ativo:
           novoStatus,
+
+        evento:
+          eventoLinha,
 
         alteradoPor:
           sessao.email
@@ -723,25 +1003,38 @@ function alterarStatusLote_(
     }
   }
 
+
   throw new Error(
-    'Lote não encontrado.'
+    'Lote não encontrado para o evento selecionado.'
   );
 }
-
 /* =====================================================
-   EXCLUIR LOTE
+   EXCLUIR LOTE - MULTI-EVENTOS
    ===================================================== */
 
 function excluirLote_(
   token,
-  id
+  id,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
 
+
   id =
-    String(id || '').trim();
+    String(
+      id || ''
+    ).trim();
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (!id) {
 
@@ -750,12 +1043,14 @@ function excluirLote_(
     );
   }
 
+
   const sheet =
     SpreadsheetApp
       .getActiveSpreadsheet()
       .getSheetByName(
         CONFIG.SHEETS.LOTES
       );
+
 
   if (!sheet) {
 
@@ -764,10 +1059,12 @@ function excluirLote_(
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -775,13 +1072,24 @@ function excluirLote_(
     i++
   ) {
 
-    if (
-      String(dados[i][0]).trim() === id
-    ) {
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
 
-      /*
-       * i + 1 = linha real da planilha
-       */
+
+    const eventoLinha =
+      String(
+        dados[i][7] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      idLinha === id &&
+      eventoLinha === evento
+    ) {
 
       sheet.deleteRow(
         i + 1
@@ -789,12 +1097,17 @@ function excluirLote_(
 
       SpreadsheetApp.flush();
 
+
       return {
 
-        excluido: true,
+        excluido:
+          true,
 
         id:
           id,
+
+        evento:
+          evento,
 
         excluidoPor:
           sessao.email
@@ -802,18 +1115,28 @@ function excluirLote_(
     }
   }
 
+
   throw new Error(
-    'Lote não encontrado.'
+    'Lote não encontrado para o evento selecionado.'
   );
 }
 
 /* =====================================================
-   LISTAR CATEGORIAS
+   LISTAR CATEGORIAS - MULTI-EVENTOS
    ===================================================== */
 
-function listarCategorias_(token) {
+function listarCategorias_(token, evento) {
 
   validarSessao_(token);
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -822,18 +1145,22 @@ function listarCategorias_(token) {
         CONFIG.SHEETS.CATEGORIAS
       );
 
+
   if (!sheet) {
     throw new Error(
       'A aba Categorias não existe.'
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
 
+
   const categorias = [];
+
 
   for (
     let i = 1;
@@ -845,45 +1172,80 @@ function listarCategorias_(token) {
       continue;
     }
 
+
+    /* F = Evento */
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      eventoLinha !== evento
+    ) {
+      continue;
+    }
+
+
     categorias.push({
 
       id:
-        String(dados[i][0]),
+        String(
+          dados[i][0]
+        ),
 
       nome:
-        String(dados[i][1] || ''),
+        String(
+          dados[i][1] || ''
+        ),
 
       idadeMaxima:
         dados[i][2] === '' ||
         dados[i][2] === null
           ? null
-          : Number(dados[i][2]),
+          : Number(
+              dados[i][2]
+            ),
 
       ativo:
         String(
           dados[i][3] || 'NAO'
-        ).toUpperCase() === 'SIM',
+        )
+          .trim()
+          .toUpperCase() === 'SIM',
 
       criadoEm:
-        formatarData_(dados[i][4])
+        formatarData_(
+          dados[i][4]
+        ),
+
+      evento:
+        eventoLinha
     });
   }
 
+
   return {
-    categorias: categorias
+
+    evento:
+      evento,
+
+    categorias:
+      categorias
   };
 }
 
-
-
 /* =====================================================
-   CRIAR CATEGORIA
+   CRIAR CATEGORIA - MULTI-EVENTOS
    ===================================================== */
 
 function criarCategoria_(
   token,
   nome,
-  idadeMaxima
+  idadeMaxima,
+  evento
 ) {
 
   const sessao =
@@ -892,11 +1254,20 @@ function criarCategoria_(
   nome =
     String(nome || '').trim();
 
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
+
   if (!nome) {
     throw new Error(
       'Informe o nome da categoria.'
     );
   }
+
 
   let idade = null;
 
@@ -914,11 +1285,13 @@ function criarCategoria_(
       idade <= 0 ||
       idade > 120
     ) {
+
       throw new Error(
         'Informe uma idade máxima válida.'
       );
     }
   }
+
 
   const sheet =
     SpreadsheetApp
@@ -927,16 +1300,20 @@ function criarCategoria_(
         CONFIG.SHEETS.CATEGORIAS
       );
 
+
   if (!sheet) {
+
     throw new Error(
       'A aba Categorias não existe.'
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -944,19 +1321,34 @@ function criarCategoria_(
     i++
   ) {
 
-    if (
-      String(dados[i][1] || '')
+    const nomeLinha =
+      String(
+        dados[i][1] || ''
+      )
         .trim()
-        .toLowerCase()
-      ===
-      nome.toLowerCase()
+        .toLowerCase();
+
+
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      nomeLinha ===
+        nome.toLowerCase() &&
+      eventoLinha === evento
     ) {
 
       throw new Error(
-        'Já existe uma categoria com este nome.'
+        'Já existe uma categoria com este nome neste evento.'
       );
     }
   }
+
 
   const id =
     'CAT-' +
@@ -964,53 +1356,88 @@ function criarCategoria_(
       .substring(0, 8)
       .toUpperCase();
 
+
   const agora =
     new Date();
+
+
+  /*
+   * A = ID
+   * B = Nome
+   * C = IdadeMaxima
+   * D = Ativo
+   * E = CriadoEm
+   * F = Evento
+   */
 
   sheet.appendRow([
     id,
     nome,
     idade,
     'SIM',
-    agora
+    agora,
+    evento
   ]);
+
+
+  SpreadsheetApp.flush();
+
 
   return {
 
-    criado: true,
+    criado:
+      true,
 
-    id: id,
+    id:
+      id,
 
-    nome: nome,
+    nome:
+      nome,
 
-    idadeMaxima: idade,
+    idadeMaxima:
+      idade,
 
-    ativo: true,
+    ativo:
+      true,
+
+    evento:
+      evento,
 
     criadoPor:
       sessao.email
   };
 }
 
+
 /* =====================================================
-   EDITAR CATEGORIA
+   EDITAR CATEGORIA - MULTI-EVENTOS
    ===================================================== */
 
 function editarCategoria_(
   token,
   id,
   nome,
-  idadeMaxima
+  idadeMaxima,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
+
 
   id =
     String(id || '').trim();
 
   nome =
     String(nome || '').trim();
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (!id) {
     throw new Error(
@@ -1064,6 +1491,7 @@ function editarCategoria_(
         CONFIG.SHEETS.CATEGORIAS
       );
 
+
   if (!sheet) {
 
     throw new Error(
@@ -1088,12 +1516,28 @@ function editarCategoria_(
     i++
   ) {
 
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    /* F = Evento */
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
-      String(dados[i][0]).trim() === id
+      idLinha === id &&
+      eventoLinha === evento
     ) {
 
       /* =============================================
-         VERIFICAR NOME DUPLICADO
+         VERIFICAR NOME DUPLICADO NO MESMO EVENTO
          ============================================= */
 
       for (
@@ -1106,16 +1550,31 @@ function editarCategoria_(
           continue;
         }
 
-        if (
-          String(dados[j][1] || '')
+
+        const nomeComparacao =
+          String(
+            dados[j][1] || ''
+          )
             .trim()
-            .toLowerCase()
-          ===
-          nome.toLowerCase()
+            .toLowerCase();
+
+
+        const eventoComparacao =
+          String(
+            dados[j][5] || 'MTB2026'
+          )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+          nomeComparacao ===
+            nome.toLowerCase() &&
+          eventoComparacao === evento
         ) {
 
           throw new Error(
-            'Já existe uma categoria com este nome.'
+            'Já existe uma categoria com este nome neste evento.'
           );
         }
       }
@@ -1127,6 +1586,7 @@ function editarCategoria_(
        * C = Idade máxima
        * D = Ativo
        * E = Criado em
+       * F = Evento
        */
 
 
@@ -1155,7 +1615,8 @@ function editarCategoria_(
 
       return {
 
-        atualizado: true,
+        atualizado:
+          true,
 
         id:
           id,
@@ -1170,7 +1631,11 @@ function editarCategoria_(
           String(
             dados[i][3] || 'NAO'
           )
+            .trim()
             .toUpperCase() === 'SIM',
+
+        evento:
+          eventoLinha,
 
         alteradoPor:
           sessao.email
@@ -1180,25 +1645,38 @@ function editarCategoria_(
 
 
   throw new Error(
-    'Categoria não encontrada.'
+    'Categoria não encontrada para o evento selecionado.'
   );
 }
 
 
 /* =====================================================
-   EXCLUIR CATEGORIA
+   EXCLUIR CATEGORIA - MULTI-EVENTOS
    ===================================================== */
 
 function excluirCategoria_(
   token,
-  id
+  id,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
 
+
   id =
-    String(id || '').trim();
+    String(
+      id || ''
+    ).trim();
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (!id) {
 
@@ -1215,6 +1693,7 @@ function excluirCategoria_(
         CONFIG.SHEETS.CATEGORIAS
       );
 
+
   if (!sheet) {
 
     throw new Error(
@@ -1235,8 +1714,24 @@ function excluirCategoria_(
     i++
   ) {
 
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    /* F = Evento */
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
-      String(dados[i][0]).trim() === id
+      idLinha === id &&
+      eventoLinha === evento
     ) {
 
       const nome =
@@ -1244,10 +1739,6 @@ function excluirCategoria_(
           dados[i][1] || ''
         ).trim();
 
-
-      /*
-       * Exclui a linha inteira
-       */
 
       sheet.deleteRow(
         i + 1
@@ -1259,13 +1750,17 @@ function excluirCategoria_(
 
       return {
 
-        excluido: true,
+        excluido:
+          true,
 
         id:
           id,
 
         nome:
           nome,
+
+        evento:
+          eventoLinha,
 
         excluidoPor:
           sessao.email
@@ -1275,12 +1770,12 @@ function excluirCategoria_(
 
 
   throw new Error(
-    'Categoria não encontrada.'
+    'Categoria não encontrada para o evento selecionado.'
   );
 }
 
 /* =====================================================
-   EDITAR LOTE
+   EDITAR LOTE - MULTI-EVENTOS
    ===================================================== */
 
 function editarLote_(
@@ -1289,17 +1784,27 @@ function editarLote_(
   nome,
   dataInicio,
   dataFim,
-  valor
+  valor,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
+
 
   id =
     String(id || '').trim();
 
   nome =
     String(nome || '').trim();
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (!id) {
     throw new Error(
@@ -1312,6 +1817,7 @@ function editarLote_(
       'Informe o nome do lote.'
     );
   }
+
 
   const valorNumero =
     Number(valor);
@@ -1326,6 +1832,7 @@ function editarLote_(
     );
   }
 
+
   if (!dataInicio || !dataFim) {
 
     throw new Error(
@@ -1333,11 +1840,13 @@ function editarLote_(
     );
   }
 
+
   const inicio =
     new Date(dataInicio);
 
   const fim =
     new Date(dataFim);
+
 
   if (
     isNaN(inicio.getTime()) ||
@@ -1349,12 +1858,14 @@ function editarLote_(
     );
   }
 
+
   if (inicio > fim) {
 
     throw new Error(
       'A data inicial não pode ser maior que a data final.'
     );
   }
+
 
   const sheet =
     SpreadsheetApp
@@ -1363,6 +1874,7 @@ function editarLote_(
         CONFIG.SHEETS.LOTES
       );
 
+
   if (!sheet) {
 
     throw new Error(
@@ -1370,10 +1882,12 @@ function editarLote_(
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -1381,8 +1895,24 @@ function editarLote_(
     i++
   ) {
 
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    /* H = Evento */
+    const eventoLinha =
+      String(
+        dados[i][7] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
-      String(dados[i][0]).trim() === id
+      idLinha === id &&
+      eventoLinha === evento
     ) {
 
       /*
@@ -1393,6 +1923,7 @@ function editarLote_(
        * E = Valor
        * F = Ativo
        * G = Criado em
+       * H = Evento
        */
 
       sheet
@@ -1404,6 +1935,7 @@ function editarLote_(
           nome
         );
 
+
       sheet
         .getRange(
           i + 1,
@@ -1412,6 +1944,7 @@ function editarLote_(
         .setValue(
           inicio
         );
+
 
       sheet
         .getRange(
@@ -1422,6 +1955,7 @@ function editarLote_(
           fim
         );
 
+
       sheet
         .getRange(
           i + 1,
@@ -1431,11 +1965,14 @@ function editarLote_(
           valorNumero
         );
 
+
       SpreadsheetApp.flush();
+
 
       return {
 
-        atualizado: true,
+        atualizado:
+          true,
 
         id:
           id,
@@ -1444,10 +1981,14 @@ function editarLote_(
           nome,
 
         dataInicio:
-          formatarData_(inicio),
+          formatarData_(
+            inicio
+          ),
 
         dataFim:
-          formatarData_(fim),
+          formatarData_(
+            fim
+          ),
 
         valor:
           valorNumero,
@@ -1456,7 +1997,11 @@ function editarLote_(
           String(
             dados[i][5] || 'NAO'
           )
+            .trim()
             .toUpperCase() === 'SIM',
+
+        evento:
+          eventoLinha,
 
         alteradoPor:
           sessao.email
@@ -1464,23 +2009,40 @@ function editarLote_(
     }
   }
 
+
   throw new Error(
-    'Lote não encontrado.'
+    'Lote não encontrado para o evento selecionado.'
   );
 }
 
 /* =====================================================
-   ALTERAR STATUS DA CATEGORIA
+   ALTERAR STATUS DA CATEGORIA - MULTI-EVENTOS
    ===================================================== */
 
 function alterarStatusCategoria_(
   token,
   id,
-  ativo
+  ativo,
+  evento
 ) {
 
   const sessao =
     validarSessao_(token);
+
+
+  id =
+    String(
+      id || ''
+    ).trim();
+
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -1489,16 +2051,19 @@ function alterarStatusCategoria_(
         CONFIG.SHEETS.CATEGORIAS
       );
 
+
   if (!sheet) {
     throw new Error(
       'A aba Categorias não existe.'
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -1506,15 +2071,34 @@ function alterarStatusCategoria_(
     i++
   ) {
 
+    const idLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    /* F = Evento */
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
-      String(dados[i][0]) ===
-      String(id)
+      idLinha === id &&
+      eventoLinha === evento
     ) {
 
       const novoStatus =
         ativo === true ||
-        String(ativo)
+        String(
+          ativo
+        )
+          .trim()
           .toUpperCase() === 'SIM';
+
 
       sheet
         .getRange(
@@ -1527,14 +2111,23 @@ function alterarStatusCategoria_(
             : 'NAO'
         );
 
+
+      SpreadsheetApp.flush();
+
+
       return {
 
-        atualizado: true,
+        atualizado:
+          true,
 
-        id: id,
+        id:
+          id,
 
         ativo:
           novoStatus,
+
+        evento:
+          eventoLinha,
 
         alteradoPor:
           sessao.email
@@ -1542,11 +2135,287 @@ function alterarStatusCategoria_(
     }
   }
 
+
   throw new Error(
-    'Categoria não encontrada.'
+    'Categoria não encontrada para o evento selecionado.'
   );
 }
 
+function salvarConfiguracaoSite_(token, dados) {
+
+  validarSessao_(token);
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.CONFIG
+    );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Configurações não existe.'
+    );
+  }
+
+  const configuracoes = {
+
+    SiteNomeEvento:
+      String(
+        dados.nomeEvento || ''
+      ).trim(),
+
+    SiteModalidade:
+      String(
+        dados.modalidade || ''
+      ).trim(),
+
+    SiteDataEvento:
+      String(
+        dados.dataEvento || ''
+      ).trim(),
+
+    SiteHorario:
+      String(
+        dados.horario || ''
+      ).trim(),
+
+    SiteCidade:
+      String(
+        dados.cidade || ''
+      ).trim(),
+
+    SiteEstado:
+      String(
+        dados.estado || ''
+      )
+        .trim()
+        .toUpperCase(),
+
+    SiteDistancia:
+      String(
+        dados.distancia || ''
+      ).trim(),
+
+    SiteAltimetria:
+      String(
+        dados.altimetria || ''
+      ).trim()
+
+  };
+
+
+  const valores =
+    sheet
+      .getDataRange()
+      .getValues();
+
+
+  Object
+    .keys(configuracoes)
+    .forEach(chave => {
+
+      let linhaEncontrada = -1;
+
+      for (
+        let i = 0;
+        i < valores.length;
+        i++
+      ) {
+
+        const chaveLinha =
+          String(
+            valores[i][0] || ''
+          ).trim();
+
+        if (chaveLinha === chave) {
+
+          linhaEncontrada =
+            i + 1;
+
+          break;
+        }
+
+      }
+
+
+      const valor =
+        configuracoes[chave];
+
+
+      if (linhaEncontrada > 0) {
+
+        sheet
+          .getRange(
+            linhaEncontrada,
+            2
+          )
+          .setValue(valor);
+
+      } else {
+
+        sheet.appendRow([
+          chave,
+          valor
+        ]);
+
+      }
+
+    });
+
+
+  return {
+    sucesso: true,
+    mensagem:
+      'Informações do site salvas com sucesso.'
+  };
+
+}
+
+function obterConfiguracaoSite_(token) {
+
+  validarSessao_(token);
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.CONFIG
+    );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Configurações não existe.'
+    );
+  }
+
+  const valores =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const mapa = {};
+
+  valores.forEach(linha => {
+
+    const chave =
+      String(
+        linha[0] || ''
+      ).trim();
+
+    if (!chave) return;
+
+    mapa[chave] =
+      linha[1];
+
+  });
+
+
+  /* =========================================
+     FORMATAR DATA
+     ========================================= */
+
+  function formatarData(valor) {
+
+    if (!valor) {
+      return '';
+    }
+
+    if (
+      Object.prototype.toString.call(valor) ===
+      '[object Date]'
+    ) {
+
+      return Utilities.formatDate(
+        valor,
+        Session.getScriptTimeZone(),
+        'yyyy-MM-dd'
+      );
+
+    }
+
+    return String(valor).trim();
+
+  }
+
+
+  /* =========================================
+     FORMATAR HORA
+     ========================================= */
+
+  function formatarHora(valor) {
+
+    if (!valor) {
+      return '';
+    }
+
+    if (
+      Object.prototype.toString.call(valor) ===
+      '[object Date]'
+    ) {
+
+      return Utilities.formatDate(
+        valor,
+        Session.getScriptTimeZone(),
+        'HH:mm'
+      );
+
+    }
+
+    return String(valor)
+      .trim()
+      .substring(0, 5);
+
+  }
+
+
+  return {
+
+    nomeEvento:
+      String(
+        mapa.SiteNomeEvento || ''
+      ),
+
+    modalidade:
+      String(
+        mapa.SiteModalidade || ''
+      ),
+
+    dataEvento:
+      formatarData(
+        mapa.SiteDataEvento
+      ),
+
+    horario:
+      formatarHora(
+        mapa.SiteHorario
+      ),
+
+    cidade:
+      String(
+        mapa.SiteCidade || ''
+      ),
+
+    estado:
+      String(
+        mapa.SiteEstado || ''
+      ),
+
+    distancia:
+      String(
+        mapa.SiteDistancia || ''
+      ),
+
+    altimetria:
+      String(
+        mapa.SiteAltimetria || ''
+      )
+
+  };
+
+}
 /* =====================================================
    ADMIN DE TESTE
    ===================================================== */
@@ -1668,6 +2537,14 @@ function doGet(e) {
 
     switch (action) {
 
+      case 'publicStatusPagamento':
+  return resposta_(
+    true,
+    consultarStatusPagamentoPublico_(
+      params.inscricao
+    )
+  );
+
       case 'status':
 
         return resposta_(
@@ -1685,35 +2562,40 @@ function doGet(e) {
         );
 
 
-      case 'dashboard':
+    case 'dashboard':
 
-        return resposta_(
-          true,
-          obterDashboard_(
-            params.token
-          )
-        );
+  return resposta_(
+    true,
+    obterDashboard_(
+      params.token,
+      params.evento
+    )
+  );
+
+        
 
 
-      case 'inscricoes':
+   case 'inscricoes':
 
-        return resposta_(
-          true,
-          listarInscricoes_(
-            params.token
-          )
-        );
+  return resposta_(
+    true,
+    listarInscricoes_(
+      params.token,
+      params.evento
+    )
+  );
 
 
       case 'inscricao':
 
-        return resposta_(
-          true,
-          consultarInscricao_(
-            params.token,
-            params.id
-          )
-        );
+  return resposta_(
+    true,
+    consultarInscricao_(
+      params.token,
+      params.id,
+      params.evento
+    )
+  );
 
 
       case 'usuarios':
@@ -1739,12 +2621,13 @@ function doGet(e) {
       case 'consultar':
       case 'publicConsultar':
 
-        return resposta_(
-          true,
-          consultarInscricaoPublica_(
-            params.cpf
-          )
-        );
+  return resposta_(
+    true,
+    consultarInscricaoPublica_(
+      params.cpf,
+      params.evento
+    )
+  );
 
         case 'publicConsultarOrder':
 
@@ -1759,11 +2642,12 @@ function doGet(e) {
       case 'categorias':
       case 'publicCategorias':
 
-        return resposta_(
-          true,
-          obterCategoriasPublicas_()
-        );
-
+  return resposta_(
+    true,
+    obterCategoriasPublicas_(
+      params.evento
+    )
+  );
 
       default:
 
@@ -1773,12 +2657,12 @@ function doGet(e) {
           'Ação não encontrada.'
         );
 
-        case 'lotes':
-
+       case 'lotes':
   return resposta_(
     true,
     listarLotes_(
-      params.token
+      params.token,
+      params.evento
     )
   );
 
@@ -1787,7 +2671,9 @@ case 'publicLoteVigente':
 
   return resposta_(
     true,
-    obterLoteVigentePublico_()
+    obterLoteVigentePublico_(
+      params.evento
+    )
   );
 
 case 'adminCategorias':
@@ -1795,6 +2681,15 @@ case 'adminCategorias':
   return resposta_(
     true,
     listarCategorias_(
+      params.token,
+  params.evento
+    )
+  );
+
+  case 'siteConfig':
+  return resposta_(
+    true,
+    obterConfiguracaoSite_(
       params.token
     )
   );
@@ -1831,8 +2726,9 @@ case 'criarCategoria':
     true,
     criarCategoria_(
       body.token,
-      body.nome,
-      body.idadeMaxima
+  body.nome,
+  body.idadeMaxima,
+  body.evento
     )
   );
 
@@ -1856,7 +2752,96 @@ case 'alterarStatusCategoria':
       null,
       erro.message
     );
+    
   }
+  
+
+}
+
+
+function consultarStatusPagamentoPublico_(numeroInscricao) {
+
+  const numero =
+    String(
+      numeroInscricao || ''
+    ).trim();
+
+  if (!numero) {
+
+    throw new Error(
+      'Número da inscrição não informado.'
+    );
+
+  }
+
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(
+        CONFIG.SHEETS.INSCRICOES
+      );
+
+
+  if (!sheet) {
+
+    throw new Error(
+      'A aba Inscrições não existe.'
+    );
+
+  }
+
+
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+
+  for (
+    let i = 1;
+    i < dados.length;
+    i++
+  ) {
+
+    const numeroLinha =
+      String(
+        dados[i][0] || ''
+      ).trim();
+
+
+    if (
+      numeroLinha === numero
+    ) {
+
+      return {
+
+        encontrado: true,
+
+        numeroInscricao:
+          dados[i][0],
+
+        categoria:
+          dados[i][5] || '',
+
+        pagamento:
+          dados[i][6] || '',
+
+        statusInscricao:
+          dados[i][7] || ''
+
+      };
+
+    }
+
+  }
+
+
+  return {
+
+    encontrado: false
+
+  };
 
 }
 
@@ -1961,20 +2946,22 @@ function doPost(e) {
 
         return resposta_(
           true,
-          obterDashboard_(
-            body.token
-          )
+        obterDashboard_(
+  body.token,
+  body.evento
+)
         );
 
 
       case 'inscricoes':
 
-        return resposta_(
-          true,
-          listarInscricoes_(
-            body.token
-          )
-        );
+  return resposta_(
+    true,
+    listarInscricoes_(
+      body.token,
+      body.evento
+    )
+  );
 
 
       case 'inscricao':
@@ -1986,6 +2973,16 @@ function doPost(e) {
             body.id
           )
         );
+
+        case 'salvarSiteConfig':
+
+  return resposta_(
+    true,
+    salvarConfiguracaoSite_(
+      body.token,
+      body
+    )
+  );
 
 
       case 'cadastrarInscricao':
@@ -2071,7 +3068,19 @@ function doPost(e) {
           true,
           uploadArquivo_(body)
         );
+case 'siteConfig':
+  return resposta_(
+    true,
+    obterConfiguracaoSite_(
+      params.token
+    )
+  );
 
+  case 'publicSiteConfig':
+  return resposta_(
+    true,
+    obterConfiguracaoSitePublica_()
+  );
 
      /* =================================================
    LOTES
@@ -2082,7 +3091,8 @@ case 'listarLotes':
   return resposta_(
     true,
     listarLotes_(
-      body.token
+       body.token,
+  body.evento
     )
   );
 
@@ -2096,20 +3106,21 @@ case 'criarLote':
       body.nome,
       body.dataInicio,
       body.dataFim,
-      body.valor
+      body.valor,
+      body.evento
     )
   );
 
-  case 'excluirLote':
+
+case 'excluirLote':
 
   return resposta_(
     true,
-
     excluirLote_(
       body.token,
-      body.id
+      body.id,
+      body.evento
     )
-
   );
 
 
@@ -2123,7 +3134,8 @@ case 'editarLote':
       body.nome,
       body.dataInicio,
       body.dataFim,
-      body.valor
+      body.valor,
+      body.evento
     )
   );
 
@@ -2135,10 +3147,10 @@ case 'alterarStatusLote':
     alterarStatusLote_(
       body.token,
       body.id,
-      body.ativo
+      body.ativo,
+      body.evento
     )
   );
-
            /* =================================================
          CATEGORIAS
          ================================================= */
@@ -2148,7 +3160,8 @@ case 'alterarStatusLote':
         return resposta_(
           true,
           listarCategorias_(
-            body.token
+            body.token,
+  body.evento
           )
         );
 
@@ -2159,8 +3172,9 @@ case 'alterarStatusLote':
           true,
           criarCategoria_(
             body.token,
-            body.nome,
-            body.idadeMaxima
+  body.nome,
+  body.idadeMaxima,
+  body.evento
           )
         );
 
@@ -2171,9 +3185,10 @@ case 'alterarStatusLote':
           true,
           editarCategoria_(
             body.token,
-            body.id,
-            body.nome,
-            body.idadeMaxima
+  body.id,
+  body.nome,
+  body.idadeMaxima,
+  body.evento
           )
         );
 
@@ -2183,7 +3198,8 @@ case 'alterarStatusLote':
     true,
     excluirCategoria_(
       body.token,
-      body.id
+  body.id,
+  body.evento
     )
   );
 
@@ -2193,8 +3209,9 @@ case 'alterarStatusLote':
           true,
           alterarStatusCategoria_(
             body.token,
-            body.id,
-            body.ativo
+  body.id,
+  body.ativo,
+  body.evento
           )
         );
 
@@ -2237,6 +3254,138 @@ case 'alterarStatusLote':
   }
 }
 
+
+function obterConfiguracaoSitePublica_() {
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.SHEETS.CONFIG
+    );
+
+  if (!sheet) {
+    throw new Error(
+      'A aba Configurações não existe.'
+    );
+  }
+
+  const valores =
+    sheet
+      .getDataRange()
+      .getValues();
+
+  const mapa = {};
+
+  valores.forEach(linha => {
+
+    const chave =
+      String(
+        linha[0] || ''
+      ).trim();
+
+    if (!chave) return;
+
+    mapa[chave] =
+      linha[1];
+
+  });
+
+
+  function formatarData(valor) {
+
+    if (!valor) {
+      return '';
+    }
+
+    if (
+      Object.prototype.toString.call(valor) ===
+      '[object Date]'
+    ) {
+
+      return Utilities.formatDate(
+        valor,
+        Session.getScriptTimeZone(),
+        'yyyy-MM-dd'
+      );
+
+    }
+
+    return String(valor).trim();
+  }
+
+
+  function formatarHora(valor) {
+
+    if (!valor) {
+      return '';
+    }
+
+    if (
+      Object.prototype.toString.call(valor) ===
+      '[object Date]'
+    ) {
+
+      return Utilities.formatDate(
+        valor,
+        Session.getScriptTimeZone(),
+        'HH:mm'
+      );
+
+    }
+
+    return String(valor)
+      .trim()
+      .substring(0, 5);
+  }
+
+
+  return {
+
+    nomeEvento:
+      String(
+        mapa.SiteNomeEvento || ''
+      ),
+
+    modalidade:
+      String(
+        mapa.SiteModalidade || ''
+      ),
+
+    dataEvento:
+      formatarData(
+        mapa.SiteDataEvento
+      ),
+
+    horario:
+      formatarHora(
+        mapa.SiteHorario
+      ),
+
+    cidade:
+      String(
+        mapa.SiteCidade || ''
+      ),
+
+    estado:
+      String(
+        mapa.SiteEstado || ''
+      ),
+
+    distancia:
+      String(
+        mapa.SiteDistancia || ''
+      ),
+
+    altimetria:
+      String(
+        mapa.SiteAltimetria || ''
+      )
+
+  };
+
+}
 /* =====================================================
    EDITAR LOTE
    ===================================================== */
@@ -2894,16 +4043,23 @@ function validarSessao_(
    ===================================================== */
 
 function obterDashboard_(
-  token
+  token,
+  evento
 ) {
 
   validarSessao_(
     token
   );
 
+  evento =
+    String(evento || 'MTB2026')
+      .trim()
+      .toUpperCase();
 
   const inscricoes =
-    obterTodasInscricoes_();
+    obterTodasInscricoes_(
+      evento
+    );
 
 
   let total = 0;
@@ -3038,9 +4194,9 @@ function obterDashboard_(
       aReceber:
         aReceber,
 
-      totalPotencial:
-        total *
-        valorInscricao
+     totalPotencial:
+    arrecadado +
+    aReceber
     }
   };
 }
@@ -3051,16 +4207,25 @@ function obterDashboard_(
    ===================================================== */
 
 function listarInscricoes_(
-  token
+  token,
+  evento
 ) {
 
   validarSessao_(
     token
   );
 
+  evento =
+    String(evento || 'MTB2026')
+      .trim()
+      .toUpperCase();
+
   return {
+    evento: evento,
     inscricoes:
-      obterTodasInscricoes_()
+      obterTodasInscricoes_(
+        evento
+      )
   };
 }
 
@@ -3071,7 +4236,8 @@ function listarInscricoes_(
 
 function consultarInscricao_(
   token,
-  id
+  id,
+  evento
 ) {
 
   validarSessao_(
@@ -3086,10 +4252,11 @@ function consultarInscricao_(
   }
 
 
-  const encontrada =
-    obterInscricaoPorId_(
-      id
-    );
+const encontrada =
+  obterInscricaoPorId_(
+    id,
+    evento
+  );
 
 
   if (!encontrada) {
@@ -3156,14 +4323,60 @@ function cadastrarInscricao_(body) {
   const sessao = validarSessao_(body.token);
 
   const nome = String(body.nome || '').trim();
-  const cpf = String(body.cpf || '').trim();
-  const email = String(body.email || '').trim();
-  const telefone = String(body.telefone || '').trim();
-  const categoria = String(body.categoria || '').trim();
-  const pagamento = String(body.pagamento || 'Pendente').trim();
-  const status = String(body.status || 'Pendente').trim();
-  const observacao = String(body.observacao || '').trim();
 
+  const cpf = String(body.cpf || '').trim();
+
+  const email = String(body.email || '').trim();
+
+  const telefone = String(body.telefone || '').trim();
+
+  const categoria = String(body.categoria || '').trim();
+
+  // CORTESIA
+  const cortesia =
+    body.cortesia === true ||
+    String(body.cortesia || '')
+      .trim()
+      .toLowerCase() === 'true';
+
+  const pagamento =
+    cortesia
+      ? 'Pago'
+      : String(
+          body.pagamento || 'Pendente'
+        ).trim();
+
+  const status =
+    cortesia
+      ? 'Confirmado'
+      : String(
+          body.status || 'Pendente'
+        ).trim();
+
+  const observacaoOriginal =
+    String(body.observacao || '')
+      .trim();
+
+  const observacao =
+    cortesia
+      ? (
+          observacaoOriginal
+            ? 'Cortesia | ' + observacaoOriginal
+            : 'Cortesia'
+        )
+      : observacaoOriginal;
+
+const evento =
+  String(body.evento || 'MTB2026')
+    .trim()
+    .toUpperCase();
+
+if (
+  evento !== 'MTB2026' &&
+  evento !== 'TRAIL2026'
+) {
+  throw new Error('Evento inválido.');
+}
   if (!nome) throw new Error('Informe o nome do atleta.');
   if (!cpf) throw new Error('Informe o CPF do atleta.');
 
@@ -3196,11 +4409,14 @@ function cadastrarInscricao_(body) {
     throw new Error('Status da inscrição inválido.');
   }
 
-  const valor = Number(
-    body.valor === '' || body.valor === undefined
-      ? obterConfiguracao_('ValorInscricao')
-      : body.valor
-  );
+ const valor =
+  cortesia
+    ? 0
+    : Number(
+        body.valor === '' || body.valor === undefined
+          ? obterConfiguracao_('ValorInscricao')
+          : body.valor
+      );
 
   if (!isFinite(valor) || valor < 0) {
     throw new Error('Valor da inscrição inválido.');
@@ -3226,20 +4442,29 @@ function cadastrarInscricao_(body) {
 
   for (let i = 1; i < dados.length; i++) {
 
-    const cpfExistente = String(
+  const cpfExistente =
+    String(
       dados[i][2] || ''
     ).replace(/\D/g, '');
 
-    if (
-      cpfNovo &&
-      cpfExistente &&
-      cpfNovo === cpfExistente
-    ) {
-      throw new Error(
-        'Já existe uma inscrição cadastrada para este CPF.'
-      );
-    }
+  const eventoExistente =
+    String(
+      dados[i][22] || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
+  if (
+    cpfNovo &&
+    cpfExistente &&
+    cpfNovo === cpfExistente &&
+    eventoExistente === evento
+  ) {
+    throw new Error(
+      'Já existe uma inscrição cadastrada para este CPF neste evento.'
+    );
   }
+}
 
   let maiorNumero = 0;
 
@@ -3258,18 +4483,40 @@ function cadastrarInscricao_(body) {
   const agora = new Date();
 
   sheet.appendRow([
-    numeroInscricao,
-    nome,
-    cpf,
-    email,
-    telefone,
-    categoria,
-    pagamento,
-    status,
-    valor,
-    agora,
-    observacao
-  ]);
+
+  numeroInscricao,              // A - NumeroInscricao
+  nome,                         // B - Nome
+  cpf,                          // C - CPF
+  email,                        // D - Email
+  telefone,                     // E - Telefone
+  categoria,                    // F - Categoria
+  pagamento,                    // G - Pagamento
+  status,                       // H - StatusInscricao
+  valor,                        // I - Valor
+  agora,                        // J - DataInscricao
+  observacao,                   // K - Observacao
+
+  '',                           // L - OrderNSU
+
+  cortesia
+    ? 'Cortesia'
+    : '',                       // M - FormaPagamento
+
+  '',                           // N - TransactionNSU
+  '',                           // O - ComprovantePagamento
+  '',                           // P - DataPagamento
+  '',                           // Q - CheckoutURL
+  '',                           // R - DataNascimento
+  '',                           // S - Estado
+  '',                           // T - Cidade
+  '',                           // U - PCD
+  '',                           // V - Equipe
+
+  evento,                       // W - Evento
+
+  ''                            // X - EmailPagamentoEnviado
+
+]);
 
   SpreadsheetApp.flush();
 
@@ -3286,6 +4533,7 @@ function cadastrarInscricao_(body) {
     valor: valor,
     dataInscricao: formatarData_(agora),
     observacao: observacao,
+    evento: evento,
     cadastradoPor: sessao.email
   };
 }
@@ -3528,6 +4776,18 @@ function editarInscricao_(body) {
   const telefone = String(body.telefone || '').trim();
   const categoria = String(body.categoria || '').trim();
   const observacao = String(body.observacao || '').trim();
+
+  const evento =
+  String(body.evento || 'MTB2026')
+    .trim()
+    .toUpperCase();
+
+if (
+  evento !== 'MTB2026' &&
+  evento !== 'TRAIL2026'
+) {
+  throw new Error('Evento inválido.');
+}
 
   if (!nome) throw new Error('Informe o nome do atleta.');
   if (!cpf) throw new Error('Informe o CPF do atleta.');
@@ -4632,11 +5892,14 @@ function paginaArquivoErro_(
    ===================================================== */
 
 function obterInscricaoPorId_(
-  id
+  id,
+  evento
 ) {
 
   const inscricoes =
-    obterTodasInscricoes_();
+    obterTodasInscricoes_(
+      evento
+    );
 
   return inscricoes.find(
     function(item) {
@@ -4655,7 +5918,12 @@ function obterInscricaoPorId_(
    TODAS AS INSCRIÇÕES
    ===================================================== */
 
-function obterTodasInscricoes_() {
+function obterTodasInscricoes_(evento) {
+
+  evento =
+  String(evento || 'MTB2026')
+    .trim()
+    .toUpperCase();
 
   const ss =
     SpreadsheetApp.getActiveSpreadsheet();
@@ -4703,6 +5971,17 @@ function obterTodasInscricoes_() {
       continue;
     }
 
+    const eventoLinha =
+  String(
+    linha[22] || 'MTB2026'
+  )
+    .trim()
+    .toUpperCase();
+
+if (eventoLinha !== evento) {
+  continue;
+}
+
 
    resultado.push({
 
@@ -4727,8 +6006,9 @@ checkoutUrl: linha[16] || '',
 dataNascimento: linha[17] || '',
   estado: linha[18] || '',
   cidade: linha[19] || '',
-  pcd: linha[20] || '',
-  equipe: linha[21] || ''
+pcd: linha[20] || '',
+equipe: linha[21] || '',
+evento: linha[22] || 'MTB2026'
 
 });
   }
@@ -5224,10 +6504,18 @@ function formatarCpfPublico_(cpf) {
 
 
 /* =====================================================
-   CATEGORIAS PÚBLICAS - NOVA ESTRUTURA
+   CATEGORIAS PÚBLICAS - MULTI-EVENTOS
    ===================================================== */
 
-function obterCategoriasPublicas_() {
+function obterCategoriasPublicas_(evento) {
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   const sheet =
     SpreadsheetApp
@@ -5242,12 +6530,15 @@ function obterCategoriasPublicas_() {
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
 
+
   const categorias = [];
+
 
   for (
     let i = 1;
@@ -5259,38 +6550,79 @@ function obterCategoriasPublicas_() {
       continue;
     }
 
+
+    /* =============================================
+       EVENTO
+       F = Evento
+       Índice 5
+       ============================================= */
+
+    const eventoLinha =
+      String(
+        dados[i][5] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+    if (
+      eventoLinha !== evento
+    ) {
+      continue;
+    }
+
+
+    /* =============================================
+       STATUS
+       ============================================= */
+
     const ativo =
       String(
         dados[i][3] || 'NAO'
-      ).toUpperCase() === 'SIM';
+      )
+        .trim()
+        .toUpperCase() === 'SIM';
 
     if (!ativo) {
       continue;
     }
 
+
     categorias.push({
 
       id:
-        String(dados[i][0]),
+        String(
+          dados[i][0]
+        ),
 
       nome:
-        String(dados[i][1] || ''),
+        String(
+          dados[i][1] || ''
+        ),
 
       idadeMaxima:
         dados[i][2] === '' ||
         dados[i][2] === null
           ? null
-          : Number(dados[i][2]),
+          : Number(
+              dados[i][2]
+            ),
 
       ativo:
-        true
+        true,
+
+      evento:
+        eventoLinha
 
     });
+
   }
 
+
   return {
-    categorias: categorias
+    categorias:
+      categorias
   };
+
 }
 
 /* =====================================================
@@ -5339,12 +6671,13 @@ function obterValorCategoriaPublica_(
 
 
 /* =====================================================
-   CADASTRO PÚBLICO - SITE DE INSCRIÇÕES
+   CADASTRO PÚBLICO - MULTI-EVENTOS
    ===================================================== */
 
 function cadastrarInscricaoPublica_(body) {
 
   body = body || {};
+
 
   const nome =
     String(body.nome || '').trim();
@@ -5361,75 +6694,133 @@ function cadastrarInscricaoPublica_(body) {
   const categoria =
     String(body.categoria || '').trim();
 
-    const dataNascimento =
-  String(body.dataNascimento || '').trim();
+  const dataNascimento =
+    String(body.dataNascimento || '').trim();
 
-const estado =
-  String(body.estado || '').trim();
+  const estado =
+    String(body.estado || '').trim();
 
-const cidade =
-  String(body.cidade || '').trim();
+  const cidade =
+    String(body.cidade || '').trim();
 
-const pcd =
-  String(body.pcd || '').trim();
+  const pcd =
+    String(body.pcd || '').trim();
 
-const equipe =
-  String(body.equipe || '').trim();
+  const equipe =
+    String(body.equipe || '').trim();
+
+
+  /* =================================================
+     EVENTO
+     ================================================= */
+
+  const evento =
+    String(
+      body.evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    evento !== 'MTB2026' &&
+    evento !== 'TRAIL2026'
+  ) {
+
+    throw new Error(
+      'Evento inválido.'
+    );
+  }
+
+
+  /* =================================================
+     VALIDAÇÕES
+     ================================================= */
 
   if (!nome) {
-    throw new Error('Informe o nome do atleta.');
+    throw new Error(
+      'Informe o nome do atleta.'
+    );
   }
 
+
   if (!cpf) {
-    throw new Error('Informe o CPF do atleta.');
+    throw new Error(
+      'Informe o CPF do atleta.'
+    );
   }
+
 
   const cpfNumeros =
     normalizarCpfPublico_(cpf);
+
 
   if (
     cpfNumeros.length !== 11 ||
     !validarCPF_(cpfNumeros)
   ) {
+
     throw new Error(
       'CPF inválido. Informe um CPF válido.'
     );
   }
 
+
   if (!email) {
-    throw new Error('Informe o e-mail do atleta.');
+    throw new Error(
+      'Informe o e-mail do atleta.'
+    );
   }
+
 
   if (!categoria) {
-    throw new Error('Selecione uma categoria.');
+    throw new Error(
+      'Selecione uma categoria.'
+    );
   }
 
+
+  /* =================================================
+     PLANILHA
+     ================================================= */
+
   const ss =
-    SpreadsheetApp.getActiveSpreadsheet();
+    SpreadsheetApp
+      .getActiveSpreadsheet();
+
 
   if (!ss) {
+
     throw new Error(
       'Não foi possível acessar a planilha.'
     );
   }
+
 
   const sheet =
     ss.getSheetByName(
       CONFIG.SHEETS.INSCRICOES
     );
 
+
   if (!sheet) {
+
     throw new Error(
       'A aba Inscrições não existe.'
     );
   }
 
-  const dados =
-    sheet.getDataRange().getValues();
 
-  /* ---------------------------------------------
+  const dados =
+    sheet
+      .getDataRange()
+      .getValues();
+
+
+  /* =================================================
      VERIFICA CPF DUPLICADO
-     --------------------------------------------- */
+     SOMENTE NO MESMO EVENTO
+     ================================================= */
 
   for (
     let i = 1;
@@ -5442,46 +6833,136 @@ const equipe =
         dados[i][2]
       );
 
+
+    /* W = Evento */
+    const eventoLinha =
+      String(
+        dados[i][22] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
       cpfExistente &&
-      cpfExistente === cpfNumeros
+      cpfExistente === cpfNumeros &&
+      eventoLinha === evento
     ) {
 
       return {
-        criado: false,
-        duplicado: true,
-        cpf_existente: true,
+
+        criado:
+          false,
+
+        duplicado:
+          true,
+
+        cpf_existente:
+          true,
+
         numero_inscricao:
           dados[i][0],
+
+        evento:
+          evento,
+
         mensagem:
-          'Já existe uma inscrição cadastrada para este CPF.'
+          'Já existe uma inscrição cadastrada para este CPF neste evento.'
       };
     }
   }
 
-  /* ---------------------------------------------
-     VALOR DA CATEGORIA
-     --------------------------------------------- */
 
-  const valor =
-    obterValorCategoriaPublica_(
-      categoria
+  /* =================================================
+     VALIDAR CATEGORIA DO EVENTO
+     ================================================= */
+
+  const categoriasPublicas =
+    obterCategoriasPublicas_(
+      evento
     );
 
-  if (
-    !isFinite(valor) ||
-    valor <= 0
+
+  const categorias =
+    categoriasPublicas &&
+    categoriasPublicas.categorias
+      ? categoriasPublicas.categorias
+      : [];
+
+
+  let categoriaValida = false;
+
+
+  for (
+    let i = 0;
+    i < categorias.length;
+    i++
   ) {
+
+    if (
+      String(
+        categorias[i].nome || ''
+      )
+        .trim()
+        .toLowerCase()
+      ===
+      categoria.toLowerCase()
+    ) {
+
+      categoriaValida = true;
+      break;
+    }
+  }
+
+
+  if (!categoriaValida) {
+
     throw new Error(
-      'O valor da categoria é inválido.'
+      'A categoria selecionada não está disponível para este evento.'
     );
   }
 
-  /* ---------------------------------------------
+
+  /* =================================================
+     VALOR DO LOTE VIGENTE DO EVENTO
+     ================================================= */
+
+  const loteVigente =
+    obterLoteVigentePublico_(
+      evento
+    );
+
+
+  if (
+    !loteVigente ||
+    !isFinite(
+      Number(
+        loteVigente.valor
+      )
+    ) ||
+    Number(
+      loteVigente.valor
+    ) <= 0
+  ) {
+
+    throw new Error(
+      'Não existe lote vigente com valor válido para este evento.'
+    );
+  }
+
+
+  const valor =
+    Number(
+      loteVigente.valor
+    );
+
+
+  /* =================================================
      PRÓXIMO NÚMERO
-     --------------------------------------------- */
+     ================================================= */
 
   let maiorNumero = 0;
+
 
   for (
     let i = 1;
@@ -5490,42 +6971,51 @@ const equipe =
   ) {
 
     const numero =
-      Number(dados[i][0]);
+      Number(
+        dados[i][0]
+      );
+
 
     if (
       isFinite(numero) &&
       numero > maiorNumero
     ) {
-      maiorNumero = numero;
+
+      maiorNumero =
+        numero;
     }
   }
+
 
   const numeroInscricao =
     maiorNumero + 1;
 
+
   const agora =
     new Date();
 
-  /* ---------------------------------------------
+
+  /* =================================================
      CRIA CHECKOUT INFINITEPAY
-     --------------------------------------------- */
+     ================================================= */
 
   const checkout =
     criarCheckoutInfinitePay_(
       numeroInscricao,
       valor,
       {
-        nome: nome,
-        email: email,
-        telefone: telefone
-      }
+        nome:
+          nome,
+
+        email:
+          email,
+
+        telefone:
+          telefone
+      },
+      evento
     );
 
-  /*
-   * IMPORTANTE:
-   * checkout é um objeto.
-   * A planilha recebe SOMENTE checkout.url.
-   */
 
   const checkoutUrl =
     String(
@@ -5535,80 +7025,105 @@ const equipe =
         : ''
     ).trim();
 
+
   if (!checkoutUrl) {
+
     throw new Error(
       'A InfinitePay não retornou uma URL de pagamento válida.'
     );
   }
 
+
+  /* =================================================
+     ORDER NSU
+     ================================================= */
+
+  const prefixoOrderNsu =
+    evento === 'TRAIL2026'
+      ? 'TRAIL-2026-'
+      : 'MTB-2026-';
+
+
   const orderNsu =
     String(
       checkout.order_nsu ||
       (
-        'MTB-2026-' +
-        String(numeroInscricao)
+        prefixoOrderNsu +
+        String(
+          numeroInscricao
+        )
       )
     ).trim();
-/* ---------------------------------------------
-   A-Q = dados principais da inscrição
-   R = DataNascimento
-   S = Estado
-   T = Cidade
-   U = PCD
-   V = Equipe
-   --------------------------------------------- */
 
-sheet.appendRow([
 
-  numeroInscricao,
-  nome,
-  formatarCpfPublico_(cpfNumeros),
-  email,
-  telefone,
-  categoria,
-  'Pendente',
-  'Pendente',
-  valor,
-  agora,
-  '',
-  orderNsu,
-  '',
-  '',
-  '',
-  '',
-  checkoutUrl,
+  /* =================================================
+     GRAVA INSCRIÇÃO
 
-  dataNascimento,
-  estado,
-  cidade,
-  pcd,
-  equipe
+     A = NumeroInscricao
+     B = Nome
+     C = CPF
+     D = Email
+     E = Telefone
+     F = Categoria
+     G = Pagamento
+     H = StatusInscricao
+     I = Valor
+     J = DataInscricao
+     K = Observacao
+     L = OrderNSU
+     M = FormaPagamento
+     N = TransactionNSU
+     O = ComprovantePagamento
+     P = DataPagamento
+     Q = CheckoutURL
+     R = DataNascimento
+     S = Estado
+     T = Cidade
+     U = PCD
+     V = Equipe
+     W = Evento
+     X = EmailPagamentoEnviado
+     ================================================= */
 
+  sheet.appendRow([
+  numeroInscricao,                    // A - NumeroInscricao
+  nome,                               // B - Nome
+  formatarCpfPublico_(cpfNumeros),    // C - CPF
+  email,                              // D - Email
+  telefone,                           // E - Telefone
+  categoria,                          // F - Categoria
+  'Pendente',                         // G - Pagamento
+  'Pendente',                         // H - StatusInscricao
+  valor,                              // I - Valor
+  agora,                              // J - DataInscricao
+  '',                                 // K - Observacao
+  orderNsu,                           // L - OrderNSU
+  '',                                 // M - FormaPagamento
+  '',                                 // N - TransactionNSU
+  '',                                 // O - ComprovantePagamento
+  '',                                 // P - DataPagamento
+  checkoutUrl,                        // Q - CheckoutURL
+  dataNascimento,                     // R - DataNascimento
+  estado,                             // S - Estado
+  cidade,                             // T - Cidade
+  pcd,                                // U - PCD
+  equipe,                             // V - Equipe
+  evento,                             // W - Evento
+  ''                                  // X - EmailPagamentoEnviado
 ]);
+
 
   SpreadsheetApp.flush();
 
-const linhaNova =
-  sheet.getLastRow();
 
-sheet
-  .getRange(
-    linhaNova,
-    18,
-    1,
-    5
-  )
-  .setValues([[
-    dataNascimento,
-    estado,
-    cidade,
-    pcd,
-    equipe
-  ]]);
+  /* =================================================
+     RETORNO
+     ================================================= */
 
   return {
 
-    criado: true,
+    criado:
+      true,
 
     numeroInscricao:
       numeroInscricao,
@@ -5646,6 +7161,9 @@ sheet
       formatarData_(
         agora
       ),
+
+    evento:
+      evento,
 
     order_nsu:
       orderNsu,
@@ -5730,10 +7248,18 @@ function obterCheckoutUrlDaLinha_(linha) {
    CONSULTAR INSCRIÇÃO PELO CPF
    ===================================================== */
 
-function consultarInscricaoPublica_(cpf) {
+function consultarInscricaoPublica_(cpf, evento) {
 
   const cpfBusca =
     normalizarCpfPublico_(cpf);
+
+  evento =
+    String(
+      evento || 'MTB2026'
+    )
+      .trim()
+      .toUpperCase();
+
 
   if (cpfBusca.length !== 11) {
 
@@ -5745,6 +7271,7 @@ function consultarInscricaoPublica_(cpf) {
     };
   }
 
+
   const sheet =
     SpreadsheetApp
       .getActiveSpreadsheet()
@@ -5752,16 +7279,20 @@ function consultarInscricaoPublica_(cpf) {
         CONFIG.SHEETS.INSCRICOES
       );
 
+
   if (!sheet) {
+
     throw new Error(
       'A aba Inscrições não existe.'
     );
   }
 
+
   const dados =
     sheet
       .getDataRange()
       .getValues();
+
 
   for (
     let i = 1;
@@ -5774,76 +7305,99 @@ function consultarInscricaoPublica_(cpf) {
         dados[i][2]
       );
 
+
+    /*
+     * Coluna W = Evento
+     *
+     * Inscrições antigas sem evento
+     * são consideradas MTB2026.
+     */
+    const eventoLinha =
+      String(
+        dados[i][22] || 'MTB2026'
+      )
+        .trim()
+        .toUpperCase();
+
+
     if (
       cpfLinha &&
-      cpfLinha === cpfBusca
+      cpfLinha === cpfBusca &&
+      eventoLinha === evento
     ) {
 
       return {
 
-  encontrado: true,
-  cpf_existente: true,
+        encontrado: true,
+        cpf_existente: true,
 
-  cpf:
-    formatarCpfPublico_(
-      dados[i][2]
-    ),
+        cpf:
+          formatarCpfPublico_(
+            dados[i][2]
+          ),
 
-  numero_inscricao:
-    dados[i][0],
+        numero_inscricao:
+          dados[i][0],
 
-  nome:
-    dados[i][1],
+        nome:
+          dados[i][1],
 
-  categoria:
-    dados[i][5],
+        categoria:
+          dados[i][5],
 
-  pagamento:
-    dados[i][6],
+        pagamento:
+          dados[i][6],
 
-  status:
-    dados[i][7],
+        status:
+          dados[i][7],
 
-  valor:
-    Number(dados[i][8] || 0),
+        valor:
+          Number(
+            dados[i][8] || 0
+          ),
 
-  data_inscricao:
-  formatarData_(
-    dados[i][9]
-  ),
+        data_inscricao:
+          formatarData_(
+            dados[i][9]
+          ),
 
-checkout_url:
-  String(
-    dados[i][16] || ''
-  ).trim(),
+        checkout_url:
+          String(
+            dados[i][16] || ''
+          ).trim(),
 
-dataNascimento:
-  String(
-    dados[i][17] || ''
-  ).trim(),
+        dataNascimento:
+          String(
+            dados[i][17] || ''
+          ).trim(),
 
-estado:
-  String(
-    dados[i][18] || ''
-  ).trim(),
+        estado:
+          String(
+            dados[i][18] || ''
+          ).trim(),
 
-cidade:
-  String(
-    dados[i][19] || ''
-  ).trim(),
+        cidade:
+          String(
+            dados[i][19] || ''
+          ).trim(),
 
-pcd:
-  String(
-    dados[i][20] || ''
-  ).trim(),
+        pcd:
+          String(
+            dados[i][20] || ''
+          ).trim(),
 
-equipe:
-  String(
-    dados[i][21] || ''
-  ).trim()
-};
+        equipe:
+          String(
+            dados[i][21] || ''
+          ).trim(),
+
+        evento:
+          eventoLinha
+
+      };
     }
   }
+
 
   return {
 
@@ -5854,7 +7408,6 @@ equipe:
       'CPF não encontrado. Não localizamos uma inscrição para este CPF.'
   };
 }
-
 
 /* =====================================================
    CONSULTAR INSCRIÇÃO PELO ORDER NSU
@@ -6359,5 +7912,161 @@ function testarCheckoutInfinitePay() {
 function testeInfinitePay() {
   Logger.log('TESTE OK');
 }
+
+}
+
+/* =====================================================
+   MIGRAÇÃO - ESTRUTURA MULTI-EVENTOS
+   Executar apenas para preparar a estrutura inicial
+   ===================================================== */
+
+function prepararEstruturaMultiEventos_() {
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+
+  /* =================================================
+     INSCRIÇÕES
+     X = Evento
+     ================================================= */
+
+  const inscricoes =
+    ss.getSheetByName(
+      CONFIG.SHEETS.INSCRICOES
+    );
+
+  if (inscricoes) {
+
+    // W = coluna 23
+inscricoes
+  .getRange(1, 23)
+  .setValue('Evento');
+
+    const ultimaLinha =
+      inscricoes.getLastRow();
+
+    if (ultimaLinha >= 2) {
+
+      const range =
+  inscricoes.getRange(
+    2,
+    23,
+    ultimaLinha - 1,
+    1
+  );
+
+      const valores =
+        range.getValues();
+
+      const novos =
+        valores.map(linha => [
+          String(linha[0] || '').trim()
+            ? linha[0]
+            : 'MTB2026'
+        ]);
+
+      range.setValues(novos);
+    }
+  }
+
+
+  /* =================================================
+     LOTES
+     H = Evento
+     ================================================= */
+
+  const lotes =
+    ss.getSheetByName(
+      CONFIG.SHEETS.LOTES
+    );
+
+  if (lotes) {
+
+    // H = coluna 8
+    lotes
+      .getRange(1, 8)
+      .setValue('Evento');
+
+    const ultimaLinha =
+      lotes.getLastRow();
+
+    if (ultimaLinha >= 2) {
+
+      const range =
+        lotes.getRange(
+          2,
+          8,
+          ultimaLinha - 1,
+          1
+        );
+
+      const valores =
+        range.getValues();
+
+      const novos =
+        valores.map(linha => [
+          String(linha[0] || '').trim()
+            ? linha[0]
+            : 'MTB2026'
+        ]);
+
+      range.setValues(novos);
+    }
+  }
+
+
+  /* =================================================
+     CATEGORIAS
+     F = Evento
+     ================================================= */
+
+  const categorias =
+    ss.getSheetByName(
+      CONFIG.SHEETS.CATEGORIAS
+    );
+
+  if (categorias) {
+
+    // F = coluna 6
+    categorias
+      .getRange(1, 6)
+      .setValue('Evento');
+
+    const ultimaLinha =
+      categorias.getLastRow();
+
+    if (ultimaLinha >= 2) {
+
+      const range =
+        categorias.getRange(
+          2,
+          6,
+          ultimaLinha - 1,
+          1
+        );
+
+      const valores =
+        range.getValues();
+
+      const novos =
+        valores.map(linha => [
+          String(linha[0] || '').trim()
+            ? linha[0]
+            : 'MTB2026'
+        ]);
+
+      range.setValues(novos);
+    }
+  }
+
+
+  SpreadsheetApp.flush();
+
+  return {
+    sucesso: true,
+    mensagem:
+      'Estrutura multi-eventos preparada com sucesso.'
+  };
 
 }
