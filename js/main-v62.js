@@ -2103,26 +2103,17 @@ console.log(
     try {
 
       await apiPost(
-        "editarLote",
-        {
-          token: s.token,
-
-          id:
-            loteEditandoId,
-
-          nome:
-            nome,
-
-          dataInicio:
-            dataInicio,
-
-          dataFim:
-            dataFim,
-
-          valor:
-            valor
-        }
-      );
+  "editarLote",
+  {
+    token: s.token,
+    id: loteEditandoId,
+    nome: nome,
+    dataInicio: dataInicio,
+    dataFim: dataFim,
+    valor: valor,
+    evento: EVENTO_ATUAL
+  }
+);
 
       loteEditandoId =
         null;
@@ -2170,11 +2161,12 @@ console.log(
     await apiPost(
       "criarLote",
       {
-        token: s.token,
-        nome,
-        dataInicio,
-        dataFim,
-        valor
+       token: s.token,
+  nome,
+  dataInicio,
+  dataFim,
+  valor,
+  evento: EVENTO_ATUAL
       }
     );
 
@@ -2408,7 +2400,12 @@ async function alterarStatusCadastro_(tipo, id, ativo) {
     if (tipo === "categoria") {
       await apiPost("alterarStatusCategoria", { token: s.token, id, ativo });
     } else {
-      await apiPost("alterarStatusLote", { token: s.token, id, ativo });
+      aawait apiPost("alterarStatusLote", {
+  token: s.token,
+  id,
+  ativo,
+  evento: EVENTO_ATUAL
+});
     }
     await carregarConfiguracoes_();
     notificar("success", "STATUS ATUALIZADO", `${tipo === "categoria" ? "Categoria" : "Lote"} ${ativo ? "ativado" : "desativado"} com sucesso.`);
@@ -2885,11 +2882,9 @@ document
         await apiPost(
           "excluirLote",
           {
-            token:
-              s.token,
-
-            id:
-              loteId
+            token: s.token,
+  id: loteId,
+  evento: EVENTO_ATUAL
           }
         );
 
