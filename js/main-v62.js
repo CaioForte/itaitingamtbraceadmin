@@ -981,6 +981,8 @@ function obterInscricoesFiltradas_() {
       .toLowerCase();
 
 
+    /* BUSCA */
+
     if (
       q &&
       !t.includes(q)
@@ -988,6 +990,8 @@ function obterInscricoesFiltradas_() {
       return false;
     }
 
+
+    /* CATEGORIA */
 
     if (
       cat !== "todas" &&
@@ -997,17 +1001,27 @@ function obterInscricoesFiltradas_() {
     }
 
 
+    /* PAGAMENTO */
+
     const p =
       String(
         x.pagamento || ""
-      ).toLowerCase();
+      )
+        .trim()
+        .toLowerCase();
 
+
+    /* STATUS DA INSCRIÇÃO */
 
     const st =
       String(
         x.statusInscricao || ""
-      ).toLowerCase();
+      )
+        .trim()
+        .toLowerCase();
 
+
+    /* FILTRO DE STATUS */
 
     return (
 
@@ -1040,9 +1054,11 @@ function obterInscricoesFiltradas_() {
           st === "cancelado"
         )
       )
+
     );
 
   });
+
 }
 
 function render() {
