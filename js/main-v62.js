@@ -1056,7 +1056,6 @@ function render() {
 
  const rows =
   obterInscricoesFiltradas_();
-      .toLowerCase();
 
   const f =
     document
