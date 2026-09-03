@@ -75,9 +75,7 @@ function configurarSistema() {
   criarAbaLotes_(ss);
   criarAbaCategorias_(ss);
   criarAbaEventos_(ss);
-
-  criarAdminTeste_(ss);
-  criarInscricaoTeste_(ss);
+  criarAbaDespesas_(ss);
 
   SpreadsheetApp.flush();
 
@@ -2573,7 +2571,15 @@ function doGet(e) {
   );
 
         
+case "despesas":
 
+  return resposta_(
+    true,
+    listarDespesas_(
+      params.token,
+      params.evento
+    )
+  );
 
    case 'inscricoes':
 
@@ -2693,7 +2699,16 @@ case 'adminCategorias':
       params.token
     )
   );
+case "anexosDespesa":
 
+  return resposta_(
+    true,
+    listarAnexosDespesa_(
+      params.token,
+      params.numero,
+      params.evento
+    )
+  );
   case 'criarLote':
 
   return resposta_(
@@ -2896,6 +2911,34 @@ function doPost(e) {
           )
         );
 
+        case "criarDespesa":
+
+  return resposta_(
+    true,
+    criarDespesa_(
+      body.token,
+      body
+    )
+  );
+case "editarDespesa":
+
+  return resposta_(
+    true,
+    editarDespesa_(
+      body.token,
+      body
+    )
+  );
+
+  case "excluirDespesa":
+
+  return resposta_(
+    true,
+    excluirDespesa_(
+      body.token,
+      body
+    )
+  );
 
       case 'logout':
 
@@ -2983,7 +3026,14 @@ function doPost(e) {
       body
     )
   );
+case "uploadAnexoDespesa":
 
+  return resposta_(
+    true,
+    uploadAnexoDespesa_(
+      body
+    )
+  );
 
       case 'cadastrarInscricao':
 

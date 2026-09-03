@@ -429,6 +429,9 @@ document
       if (paginaAtiva?.id === "pagamentos") {
   await carregarPagamentos();
 }
+if (paginaAtiva?.id === "despesas") {
+  await carregarDespesas();
+}
       if (paginaAtiva?.id === "configuracoes") {
   await carregarConfiguracoes_();
 }
@@ -546,7 +549,12 @@ const titles = {
     ["GESTÃO", "Inscrições"],
 
   pagamentos:
-    ["FINANCEIRO", "Pagamentos"],
+    ["FINANCEIRO", "Financeiro"],
+	
+	despesas: [
+  "FINANCEIRO",
+  "Despesas"
+],
 
   conteudo:
     ["SITE", "Conteúdo"],
@@ -609,6 +617,10 @@ if (page === "inscricoes") {
 
 if (page === "pagamentos") {
   carregarPagamentos();
+}
+
+if (page === "despesas") {
+  carregarDespesas();
 }
 
 if (page === "conteudo") {
@@ -1120,7 +1132,1459 @@ function render() {
             detalhes(b.dataset.id)
     );
 }
+/* =====================================================
+   INSCRIÇÕES FILTRADAS PARA EXPORTAÇÃO
+   ===================================================== */
 
+function obterInscricoesFiltradas_() {
+
+  const q =
+    (
+      document
+        .getElementById("search")
+        ?.value || ""
+    )
+      .toLowerCase();
+
+  const f =
+    document
+      .getElementById("filter")
+      ?.value ||
+    "todos";
+
+  const cat =
+    document
+      .getElementById("categoryFilter")
+      ?.value ||
+    "todas";
+
+
+  return inscricoes.filter(x => {
+
+    const texto = [
+      x.numeroInscricao,
+      x.nome,
+      x.cpf,
+      x.email,
+      x.telefone,
+      x.categoria
+    ]
+      .join(" ")
+      .toLowerCase();
+
+
+    if (
+      q &&
+      !texto.includes(q)
+    ) {
+      return false;
+    }
+
+
+    if (
+      cat !== "todas" &&
+      String(
+        x.categoria || ""
+      ) !== cat
+    ) {
+      return false;
+    }
+
+
+    const pagamento =
+      String(
+        x.pagamento || ""
+      )
+        .toLowerCase();
+
+
+    const status =
+      String(
+        x.statusInscricao || ""
+      )
+        .toLowerCase();
+
+
+    return (
+
+      f === "todos" ||
+
+      (
+        f === "pagamento-pendente" &&
+        pagamento === "pendente"
+      ) ||
+
+      (
+        f === "pago" &&
+        pagamento === "pago"
+      ) ||
+
+      (
+        f === "inscricao-pendente" &&
+        status === "pendente"
+      ) ||
+
+      (
+        f === "confirmado" &&
+        status === "confirmado"
+      ) ||
+
+      (
+        f === "cancelado" &&
+        (
+          pagamento === "cancelado" ||
+          status === "cancelado"
+        )
+      )
+
+    );
+
+  });
+
+}
+
+
+/* =====================================================
+   EXPORTAR INSCRIÇÕES - CSV
+   ===================================================== */
+
+function exportarInscricoes_() {
+
+  const registros =
+    obterInscricoesFiltradas_();
+
+
+  if (!registros.length) {
+
+    notificar(
+      "warning",
+      "NADA PARA EXPORTAR",
+      "Nenhuma inscrição corresponde aos filtros atuais."
+    );
+
+    return;
+  }
+
+
+  const selecionados =
+    [
+      ...document.querySelectorAll(
+        "#exportFields input[type='checkbox']:checked"
+      )
+    ];
+
+
+  if (!selecionados.length) {
+
+    notificar(
+      "warning",
+      "SELECIONE OS CAMPOS",
+      "Escolha pelo menos uma informação para exportar."
+    );
+
+    return;
+  }
+
+
+  const campos = {
+
+    numeroInscricao: {
+      titulo: "Número da inscrição"
+    },
+
+    nome: {
+      titulo: "Nome"
+    },
+
+    cpf: {
+      titulo: "CPF"
+    },
+
+    email: {
+      titulo: "E-mail"
+    },
+
+    telefone: {
+      titulo: "Telefone"
+    },
+
+    categoria: {
+      titulo: "Categoria"
+    },
+
+    valor: {
+      titulo: "Valor"
+    },
+
+    pagamento: {
+      titulo: "Pagamento"
+    },
+
+    statusInscricao: {
+      titulo: "Status da inscrição"
+    },
+
+    dataInscricao: {
+      titulo: "Data da inscrição"
+    }
+
+  };
+
+
+  const chaves =
+    selecionados.map(
+      checkbox => checkbox.value
+    );
+
+
+  const cabecalho =
+    chaves.map(
+      chave =>
+        campos[chave]?.titulo ||
+        chave
+    );
+
+
+  const linhas =
+    registros.map(registro =>
+
+      chaves.map(chave => {
+
+        let valor =
+          registro[chave] ?? "";
+
+
+        if (chave === "valor") {
+
+          valor =
+            Number(valor || 0)
+              .toFixed(2)
+              .replace(".", ",");
+
+        }
+
+
+        return valor;
+
+      })
+
+    );
+
+
+  const escaparCsv = valor => {
+
+    const texto =
+      String(valor ?? "")
+        .replaceAll('"', '""');
+
+    return `"${texto}"`;
+
+  };
+
+
+  const csv =
+    [
+      cabecalho,
+      ...linhas
+    ]
+      .map(
+        linha =>
+          linha
+            .map(escaparCsv)
+            .join(";")
+      )
+      .join("\r\n");
+
+
+  const blob =
+    new Blob(
+      [
+        "\uFEFF" +
+        csv
+      ],
+      {
+        type:
+          "text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const link =
+    document.createElement("a");
+
+
+  const evento =
+    EVENTO_ATUAL === "TRAIL2026"
+      ? "TRAIL"
+      : "MTB";
+
+
+  const hoje =
+    new Date()
+      .toLocaleDateString("pt-BR")
+      .replaceAll("/", "-");
+
+
+  link.href = url;
+
+  link.download =
+    `INSCRICOES_${evento}_2026_${hoje}.csv`;
+
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+
+
+  fecharModalExportacao_();
+
+
+  notificar(
+    "success",
+    "EXPORTAÇÃO CONCLUÍDA",
+    `${registros.length} inscrição(ões) exportada(s).`
+  );
+
+}
+
+/* =====================================================
+   MODAL - NOVA DESPESA
+   ===================================================== */
+
+const expenseModal =
+  document.getElementById(
+    "expenseModal"
+  );
+
+
+function abrirModalDespesa_() {
+
+  if (!expenseModal) {
+    return;
+  }
+
+  expenseModal.hidden = false;
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+function fecharModalDespesa_() {
+
+  if (!expenseModal) {
+    return;
+  }
+
+  expenseModal.hidden = true;
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+}
+
+
+document
+  .getElementById("newExpenseBtn")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      DESPESA_EDITANDO = null;
+
+      document
+        .getElementById("expenseName")
+        .value = "";
+
+      document
+        .getElementById("expenseValue")
+        .value = "";
+
+      document
+        .getElementById("expenseSupplier")
+        .value = "";
+
+      document
+        .getElementById("expenseResponsible")
+        .value = "";
+
+      document
+        .getElementById("expenseContact")
+        .value = "";
+
+      document
+        .getElementById("expenseObservation")
+        .value = "";
+
+
+      const anexos =
+        document.getElementById(
+          "expenseAttachments"
+        );
+
+      if (anexos) {
+        anexos.value = "";
+      }
+
+
+      const titulo =
+        document.getElementById(
+          "expenseModalTitle"
+        );
+
+      if (titulo) {
+        titulo.textContent =
+          "Nova despesa";
+      }
+
+
+      const botao =
+        document.getElementById(
+          "saveExpense"
+        );
+
+      if (botao) {
+        botao.textContent =
+          "CADASTRAR DESPESA";
+      }
+
+
+      abrirModalDespesa_();
+
+    }
+  );
+
+
+document
+  .getElementById("closeExpenseModal")
+  ?.addEventListener(
+    "click",
+    fecharModalDespesa_
+  );
+
+
+document
+  .getElementById("cancelExpense")
+  ?.addEventListener(
+    "click",
+    fecharModalDespesa_
+  );
+
+
+expenseModal
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (
+        e.target === expenseModal
+      ) {
+        fecharModalDespesa_();
+      }
+
+    }
+  );
+  /* =====================================================
+   CADASTRAR DESPESA
+   ===================================================== */
+
+document
+  .getElementById("saveExpense")
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      const session =
+        getSession();
+
+      if (!session?.token) {
+
+        notificar(
+          "warning",
+          "SESSÃO EXPIRADA",
+          "Faça login novamente."
+        );
+
+        return;
+      }
+
+
+      const nome =
+        document
+          .getElementById("expenseName")
+          ?.value
+          .trim() || "";
+
+
+      const valor =
+        Number(
+          document
+            .getElementById("expenseValue")
+            ?.value || 0
+        );
+
+
+      const fornecedorEmpresa =
+        document
+          .getElementById("expenseSupplier")
+          ?.value
+          .trim() || "";
+
+
+      const responsavel =
+        document
+          .getElementById("expenseResponsible")
+          ?.value
+          .trim() || "";
+
+
+      const contatoFornecedor =
+        document
+          .getElementById("expenseContact")
+          ?.value
+          .trim() || "";
+
+
+      const observacao =
+        document
+          .getElementById("expenseObservation")
+          ?.value
+          .trim() || "";
+
+
+      if (!nome) {
+
+        notificar(
+          "warning",
+          "INFORME O NOME",
+          "Informe o nome da despesa."
+        );
+
+        return;
+      }
+
+
+      if (
+        !Number.isFinite(valor) ||
+        valor <= 0
+      ) {
+
+        notificar(
+          "warning",
+          "VALOR INVÁLIDO",
+          "Informe um valor válido."
+        );
+
+        return;
+      }
+
+
+      const botao =
+        document.getElementById(
+          "saveExpense"
+        );
+
+
+      try {
+
+        if (botao) {
+
+          botao.disabled = true;
+
+          botao.textContent =
+            "CADASTRANDO...";
+
+        }
+
+
+        const editando =
+  DESPESA_EDITANDO !== null;
+
+
+const resultado =
+  await apiPost(
+    editando
+      ? "editarDespesa"
+      : "criarDespesa",
+    {
+      token: session.token,
+      evento: EVENTO_ATUAL,
+
+      numero:
+        editando
+          ? DESPESA_EDITANDO
+          : undefined,
+
+      nome,
+      valor,
+      fornecedorEmpresa,
+      responsavel,
+      contatoFornecedor,
+      observacao
+    }
+  );
+
+
+/* =====================================================
+   ENVIA ANEXOS
+   ===================================================== */
+
+const inputAnexos =
+  document.getElementById(
+    "expenseAttachments"
+  );
+
+
+const arquivos =
+  inputAnexos
+    ? [...inputAnexos.files]
+    : [];
+
+
+const numeroDespesa =
+  editando
+    ? DESPESA_EDITANDO
+    : resultado.numero;
+
+
+for (const file of arquivos) {
+
+  const base64 =
+    await bytesToBase64(
+      file
+    );
+
+
+  await apiPost(
+    "uploadAnexoDespesa",
+    {
+      token:
+        session.token,
+
+      evento:
+        EVENTO_ATUAL,
+
+      numero:
+        numeroDespesa,
+
+      nome:
+        file.name,
+
+      mimeType:
+        file.type ||
+        "application/octet-stream",
+
+      arquivoBase64:
+        base64
+    }
+  );
+
+}
+
+
+        fecharModalDespesa_();
+		
+	
+		/* ATUALIZA A LISTA */
+
+await carregarDespesas();
+		
+     notificar(
+  "success",
+  editando
+    ? "DESPESA ATUALIZADA"
+    : "DESPESA CADASTRADA",
+  editando
+    ? "As alterações foram salvas com sucesso."
+    : "A despesa foi cadastrada com sucesso."
+);
+
+DESPESA_EDITANDO = null;
+
+
+      } catch (erro) {
+
+        console.error(
+          "Erro ao cadastrar despesa:",
+          erro
+        );
+
+
+        notificar(
+          "error",
+          "ERRO AO CADASTRAR",
+          erro?.message ||
+          "Não foi possível cadastrar a despesa."
+        );
+
+
+      } finally {
+
+        if (botao) {
+
+          botao.disabled = false;
+
+          botao.textContent =
+            "CADASTRAR DESPESA";
+
+        }
+
+      }
+
+    }
+  );
+  
+  
+  /* =====================================================
+   DESPESAS
+   ===================================================== */
+
+let despesas = [];
+let DESPESA_EDITANDO = null;
+let DESPESA_EXCLUIR = null;
+let DESPESA_PAGAR = null;
+
+async function carregarDespesas() {
+
+  const session =
+    getSession();
+
+  if (!session?.token) {
+    return;
+  }
+
+
+  const tbody =
+    document.getElementById(
+      "expensesTableBody"
+    );
+
+
+  if (tbody) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6"
+            style="padding:40px;text-align:center;color:#888;">
+          Carregando despesas...
+        </td>
+      </tr>
+    `;
+
+  }
+
+
+  try {
+
+    const resposta =
+      await apiGet(
+        "despesas",
+        {
+          token: session.token,
+          evento: EVENTO_ATUAL
+        }
+      );
+
+
+    despesas =
+      resposta.despesas || [];
+
+
+    renderizarDespesas_();
+
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao carregar despesas:",
+      erro
+    );
+
+
+    if (tbody) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6"
+              style="padding:40px;text-align:center;color:#c66;">
+            Não foi possível carregar as despesas.
+          </td>
+        </tr>
+      `;
+
+    }
+
+  }
+
+}
+
+function renderizarDespesas_() {
+
+  const tbody =
+    document.getElementById(
+      "expensesTableBody"
+    );
+
+  if (!tbody) {
+    return;
+  }
+
+  if (!despesas.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6"
+            style="padding:40px;text-align:center;color:#888;">
+          Nenhuma despesa cadastrada para este evento.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tbody.innerHTML =
+    despesas
+      .map(despesa => {
+
+        const numero =
+          String(
+            despesa.numero || ""
+          )
+            .padStart(3, "0");
+
+        const valor =
+          Number(
+            despesa.valor || 0
+          )
+            .toLocaleString(
+              "pt-BR",
+              {
+                style: "currency",
+                currency: "BRL"
+              }
+            );
+
+        const status =
+          String(
+            despesa.status ||
+            "Pendente"
+          );
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                #${numero}
+              </strong>
+            </td>
+
+            <td>
+              ${esc(
+                despesa.nome || "-"
+              )}
+            </td>
+
+            <td>
+              ${esc(
+                despesa.fornecedorEmpresa ||
+                "-"
+              )}
+            </td>
+
+            <td>
+              <strong>
+                ${valor}
+              </strong>
+            </td>
+
+            <td>
+              <span class="
+                ${status.toLowerCase() === "pago"
+                  ? "badge success"
+                  : "badge warning"}
+              ">
+                ${esc(status)}
+              </span>
+            </td>
+
+            <td>
+
+              <div style="
+                display:flex;
+                gap:6px;
+                flex-wrap:wrap;
+              ">
+
+                <button
+                  type="button"
+                  class="secondary small"
+                  data-expense-details="${despesa.numero}"
+                >
+                  DETALHES
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary small"
+                  data-expense-edit="${despesa.numero}"
+                >
+                  EDITAR
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary small"
+                  data-expense-delete="${despesa.numero}"
+                >
+                  EXCLUIR
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+}
+
+  
+ /* =====================================================
+   EXCLUSÃO DE DESPESA
+   ===================================================== */
+
+function abrirModalExcluirDespesa_(despesa) {
+
+  DESPESA_EXCLUIR = despesa;
+
+  const modal =
+    document.getElementById(
+      "deleteExpenseModal"
+    );
+
+  const mensagem =
+    document.getElementById(
+      "deleteExpenseMessage"
+    );
+
+  if (mensagem) {
+
+    mensagem.textContent =
+      `Deseja realmente excluir a despesa #${String(
+        despesa.numero
+      ).padStart(
+        3,
+        "0"
+      )} - ${despesa.nome}?`;
+
+  }
+
+  if (modal) {
+
+    modal.hidden = false;
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+  }
+
+}
+
+
+function fecharModalExcluirDespesa_() {
+
+  const modal =
+    document.getElementById(
+      "deleteExpenseModal"
+    );
+
+  if (modal) {
+
+    modal.hidden = true;
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
+  }
+
+  DESPESA_EXCLUIR = null;
+
+}
+
+
+/* ABRIR MODAL AO CLICAR EM EXCLUIR */
+
+document
+  .getElementById("expensesTableBody")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-expense-delete]"
+        );
+
+      if (!botao) {
+        return;
+      }
+
+      const numero =
+        Number(
+          botao.dataset.expenseDelete
+        );
+
+      const despesa =
+        despesas.find(
+          item =>
+            Number(item.numero) ===
+            numero
+        );
+
+      if (!despesa) {
+
+        notificar(
+          "warning",
+          "DESPESA NÃO ENCONTRADA",
+          "Não foi possível localizar a despesa."
+        );
+
+        return;
+      }
+
+      abrirModalExcluirDespesa_(
+        despesa
+      );
+
+    }
+  );
+
+
+/* CONFIRMAR EXCLUSÃO */
+
+document
+  .getElementById("confirmDeleteExpense")
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      if (!DESPESA_EXCLUIR) {
+        return;
+      }
+
+      const session =
+        getSession();
+
+      if (!session?.token) {
+
+        notificar(
+          "warning",
+          "SESSÃO EXPIRADA",
+          "Faça login novamente."
+        );
+
+        return;
+      }
+
+      const botao =
+        document.getElementById(
+          "confirmDeleteExpense"
+        );
+
+      try {
+
+        if (botao) {
+
+          botao.disabled = true;
+
+          botao.textContent =
+            "EXCLUINDO...";
+
+        }
+
+        const numero =
+          DESPESA_EXCLUIR.numero;
+
+        await apiPost(
+          "excluirDespesa",
+          {
+            token:
+              session.token,
+
+            evento:
+              EVENTO_ATUAL,
+
+            numero
+          }
+        );
+
+        fecharModalExcluirDespesa_();
+
+        await carregarDespesas();
+
+        notificar(
+          "success",
+          "DESPESA EXCLUÍDA",
+          "A despesa foi excluída com sucesso."
+        );
+
+      } catch (erro) {
+
+        console.error(
+          "Erro ao excluir despesa:",
+          erro
+        );
+
+        notificar(
+          "error",
+          "ERRO AO EXCLUIR",
+          erro?.message ||
+          "Não foi possível excluir a despesa."
+        );
+
+      } finally {
+
+        if (botao) {
+
+          botao.disabled = false;
+
+          botao.textContent =
+            "EXCLUIR DESPESA";
+
+        }
+
+      }
+
+    }
+  );
+
+
+/* CANCELAR */
+
+document
+  .getElementById("cancelDeleteExpense")
+  ?.addEventListener(
+    "click",
+    fecharModalExcluirDespesa_
+  );
+
+
+/* X DO MODAL */
+
+document
+  .getElementById("closeDeleteExpenseModal")
+  ?.addEventListener(
+    "click",
+    fecharModalExcluirDespesa_
+  );
+
+
+/* CLICAR FORA */
+
+document
+  .getElementById("deleteExpenseModal")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (
+        e.target.id ===
+        "deleteExpenseModal"
+      ) {
+
+        fecharModalExcluirDespesa_();
+
+      }
+
+    }
+  );
+
+/* =====================================================
+   ABRIR DESPESA PARA EDIÇÃO
+   ===================================================== */
+
+function editarDespesaModal_(numero) {
+
+  const despesa =
+    despesas.find(
+      item =>
+        Number(item.numero) ===
+        Number(numero)
+    );
+
+  if (!despesa) {
+
+    notificar(
+      "warning",
+      "DESPESA NÃO ENCONTRADA",
+      "Não foi possível localizar a despesa."
+    );
+
+    return;
+  }
+
+
+  DESPESA_EDITANDO =
+    Number(despesa.numero);
+
+
+  /* PREENCHE OS CAMPOS */
+
+  document
+    .getElementById("expenseName")
+    .value =
+      despesa.nome || "";
+
+
+  document
+    .getElementById("expenseValue")
+    .value =
+      Number(
+        despesa.valor || 0
+      );
+
+
+  document
+    .getElementById("expenseSupplier")
+    .value =
+      despesa.fornecedorEmpresa || "";
+
+
+  document
+    .getElementById("expenseResponsible")
+    .value =
+      despesa.responsavel || "";
+
+
+  document
+    .getElementById("expenseContact")
+    .value =
+      despesa.contatoFornecedor || "";
+
+
+  document
+    .getElementById("expenseObservation")
+    .value =
+      despesa.observacao || "";
+
+
+  /* ALTERA O TÍTULO */
+
+  const titulo =
+    document.getElementById(
+      "expenseModalTitle"
+    );
+
+  if (titulo) {
+
+    titulo.textContent =
+      `Editar despesa #${String(
+        despesa.numero
+      ).padStart(3, "0")}`;
+
+  }
+
+
+  /* ALTERA O BOTÃO */
+
+  const botao =
+    document.getElementById(
+      "saveExpense"
+    );
+
+  if (botao) {
+
+    botao.textContent =
+      "SALVAR ALTERAÇÕES";
+
+  }
+
+
+  abrirModalDespesa_();
+
+}
+
+document
+  .getElementById("expensesTableBody")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-expense-edit]"
+        );
+
+      if (!botao) {
+        return;
+      }
+
+      editarDespesaModal_(
+        botao.dataset.expenseEdit
+      );
+
+    }
+  );
+/* =====================================================
+   MODAL DE EXPORTAÇÃO
+   ===================================================== */
+
+const exportModal =
+  document.getElementById("exportModal");
+
+
+function abrirModalExportacao_() {
+
+  if (!exportModal) {
+    return;
+  }
+
+
+  const registros =
+    obterInscricoesFiltradas_();
+
+
+  const total =
+    document.getElementById(
+      "exportTotal"
+    );
+
+
+  if (total) {
+
+    total.textContent =
+      registros.length;
+
+  }
+
+
+  exportModal.hidden = false;
+
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+function fecharModalExportacao_() {
+
+  if (!exportModal) {
+    return;
+  }
+
+  exportModal.hidden = true;
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+}
+
+
+document
+  .getElementById("exportRegistrationsBtn")
+  ?.addEventListener(
+    "click",
+    abrirModalExportacao_
+  );
+
+
+document
+  .getElementById("closeExportModal")
+  ?.addEventListener(
+    "click",
+    fecharModalExportacao_
+  );
+
+
+document
+  .getElementById("cancelExport")
+  ?.addEventListener(
+    "click",
+    fecharModalExportacao_
+  );
+
+
+exportModal
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (e.target === exportModal) {
+        fecharModalExportacao_();
+      }
+
+    }
+  );
+  
+  
+  /* =====================================================
+   CONTROLES DO MODAL DE EXPORTAÇÃO
+   ===================================================== */
+
+document
+  .getElementById("selectAllExportFields")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      document
+        .querySelectorAll(
+          "#exportFields input[type='checkbox']"
+        )
+        .forEach(
+          checkbox =>
+            checkbox.checked = true
+        );
+
+    }
+  );
+
+
+document
+  .getElementById("clearExportFields")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      document
+        .querySelectorAll(
+          "#exportFields input[type='checkbox']"
+        )
+        .forEach(
+          checkbox =>
+            checkbox.checked = false
+        );
+
+    }
+  );
+
+
+document
+  .getElementById("confirmExport")
+  ?.addEventListener(
+    "click",
+    exportarInscricoes_
+  );
 
 /* =====================================================
    UTILITÁRIOS FRONT-END
@@ -1929,6 +3393,7 @@ document
 
     }
   );
+  
 
   async function carregarConteudoSite_() {
 
@@ -2221,6 +3686,38 @@ console.log(
 
     return;
   }
+
+document
+  .getElementById("cancelDeleteExpense")
+  ?.addEventListener(
+    "click",
+    fecharModalExcluirDespesa_
+  );
+
+
+document
+  .getElementById("closeDeleteExpenseModal")
+  ?.addEventListener(
+    "click",
+    fecharModalExcluirDespesa_
+  );
+
+
+document
+  .getElementById("deleteExpenseModal")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (
+        e.target.id ===
+        "deleteExpenseModal"
+      ) {
+        fecharModalExcluirDespesa_();
+      }
+
+    }
+  );
 
 
   /* =================================================
@@ -4093,6 +5590,377 @@ async function abrirAlteracaoStatusDetalhes() {
 
 window.abrirAlteracaoStatusDetalhes = abrirAlteracaoStatusDetalhes;
 
+/* =====================================================
+   DETALHES DA DESPESA
+   ===================================================== */
+
+async function abrirDetalhesDespesa_(numero) {
+
+  const despesa =
+    despesas.find(
+      item =>
+        Number(item.numero) ===
+        Number(numero)
+    );
+
+  if (!despesa) {
+
+    notificar(
+      "warning",
+      "DESPESA NÃO ENCONTRADA",
+      "Não foi possível localizar a despesa."
+    );
+
+    return;
+  }
+
+
+  const moedaDespesa =
+    Number(
+      despesa.valor || 0
+    )
+      .toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+
+
+  const numeroFormatado =
+    String(
+      despesa.numero || ""
+    )
+      .padStart(3, "0");
+
+
+  document
+    .getElementById("detailExpenseNumber")
+    .textContent =
+      `#${numeroFormatado}`;
+
+
+  document
+    .getElementById("detailExpenseName")
+    .textContent =
+      despesa.nome || "-";
+
+
+  document
+    .getElementById("detailExpenseValue")
+    .textContent =
+      moedaDespesa;
+
+
+  document
+    .getElementById("detailExpenseSupplier")
+    .textContent =
+      despesa.fornecedorEmpresa || "-";
+
+
+  document
+    .getElementById("detailExpenseResponsible")
+    .textContent =
+      despesa.responsavel || "-";
+
+
+  document
+    .getElementById("detailExpenseContact")
+    .textContent =
+      despesa.contatoFornecedor || "-";
+
+
+  document
+    .getElementById("detailExpenseObservation")
+    .textContent =
+      despesa.observacao || "-";
+
+
+  const status =
+    document.getElementById(
+      "detailExpenseStatus"
+    );
+
+  if (status) {
+
+    status.textContent =
+      despesa.status || "Pendente";
+
+  }
+  
+    /* =====================================================
+     CARREGAR ANEXOS DA DESPESA
+     ===================================================== */
+	 
+	   const modal =
+    document.getElementById(
+      "expenseDetailsModal"
+    );
+
+  if (modal) {
+
+    modal.hidden = false;
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+  }
+
+  const areaAnexos =
+    document.getElementById(
+      "detailExpenseAttachments"
+    );
+
+
+  if (areaAnexos) {
+
+    areaAnexos.innerHTML = `
+      <span style="color:#888;">
+        Carregando anexos...
+      </span>
+    `;
+
+
+    try {
+
+      const session =
+        getSession();
+
+
+      const respostaAnexos =
+        await apiGet(
+          "anexosDespesa",
+          {
+            token:
+              session.token,
+
+            numero:
+              despesa.numero,
+
+            evento:
+              EVENTO_ATUAL
+          }
+        );
+
+
+      const anexos =
+        respostaAnexos.anexos || [];
+
+
+      if (!anexos.length) {
+
+        areaAnexos.innerHTML = `
+          <span style="color:#888;">
+            Nenhum anexo cadastrado.
+          </span>
+        `;
+
+      } else {
+
+        areaAnexos.innerHTML =
+          anexos
+            .map(anexo => {
+
+              const tamanho =
+                Number(
+                  anexo.tamanho || 0
+                );
+
+
+              const tamanhoFormatado =
+                tamanho >= 1024 * 1024
+                  ? (
+                      tamanho /
+                      1024 /
+                      1024
+                    ).toFixed(2) +
+                    " MB"
+                  : (
+                      tamanho /
+                      1024
+                    ).toFixed(1) +
+                    " KB";
+
+
+            return `
+  <div class="expense-attachment-item">
+
+    <div class="expense-attachment-info">
+
+      <strong>
+        ${esc(
+          anexo.nome ||
+          "Arquivo"
+        )}
+      </strong>
+
+      <small>
+        ${esc(
+          tamanhoFormatado
+        )}
+      </small>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="secondary small"
+      data-expense-file="${esc(
+        anexo.fileId
+      )}"
+      data-expense-number="${esc(
+        despesa.numero
+      )}"
+    >
+      BAIXAR
+    </button>
+
+  </div>
+`;
+
+            })
+            .join("");
+
+      }
+
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao carregar anexos da despesa:",
+        erro
+      );
+
+
+      areaAnexos.innerHTML = `
+        <span style="color:#c66;">
+          Não foi possível carregar os anexos.
+        </span>
+      `;
+
+    }
+
+  }
+
+const modalDetalhes =
+  document.getElementById(
+    "expenseDetailsModal"
+  );
+
+if (modalDetalhes) {
+  modalDetalhes.hidden = false;
+
+  document.body.classList.add(
+    "modal-open"
+  );
+}
+
+}
+
+/* =====================================================
+   VISUALIZAR ANEXO DA DESPESA
+   ===================================================== */
+
+document
+  .getElementById(
+    "detailExpenseAttachments"
+  )
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-expense-file]"
+        );
+
+
+      if (!botao) {
+        return;
+      }
+
+
+      const session =
+        getSession();
+
+
+      if (!session?.token) {
+
+        notificar(
+          "warning",
+          "SESSÃO EXPIRADA",
+          "Faça login novamente."
+        );
+
+        return;
+      }
+
+
+      const params =
+        new URLSearchParams({
+          action:
+            "arquivoDespesa",
+
+          token:
+            session.token,
+
+          numero:
+            botao.dataset.expenseNumber,
+
+          evento:
+            EVENTO_ATUAL,
+
+          fileId:
+            botao.dataset.expenseFile
+        });
+
+
+      const iframe =
+  document.createElement(
+    "iframe"
+  );
+
+iframe.style.display =
+  "none";
+
+iframe.src =
+  `${API_URL}?${params}`;
+
+document.body.appendChild(
+  iframe
+);
+
+setTimeout(
+  () => {
+    iframe.remove();
+  },
+  10000
+);
+
+    }
+  );
+function fecharDetalhesDespesa_() {
+
+  const modal =
+    document.getElementById(
+      "expenseDetailsModal"
+    );
+
+  if (modal) {
+
+    modal.hidden = true;
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
+  }
+
+}
+
 function abrirEdicao() {
 
   if (!inscricaoAtual) return;
@@ -4607,33 +6475,433 @@ async function alterarPagamentoDireto(id) {
 }
 
 async function carregarPagamentos() {
-  const s = getSession();
-  if (!s?.token) {
+
+  const session =
+    getSession();
+
+  if (!session?.token) {
     showLogin();
     return;
   }
 
-  const body = document.getElementById("paymentRows");
-  if (body) {
-    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px">Carregando pagamentos...</td></tr>';
-  }
+
+  /* =====================================================
+     FORMATADOR
+     ===================================================== */
+
+  const moeda = valor =>
+    Number(valor || 0)
+      .toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+
 
   try {
-    const d = await apiGet("inscricoes", {
-  token: s.token,
-  evento: EVENTO_ATUAL
-});
-    inscricoes = d.inscricoes || [];
-    atualizarCardsPagamentos(inscricoes);
-    renderPagamentos();
-  } catch (e) {
-    if (/sessão/i.test(e.message || "")) {
+
+    /* =====================================================
+       BUSCA INSCRIÇÕES + DESPESAS
+       ===================================================== */
+
+    const [
+      respostaInscricoes,
+      respostaDespesas
+    ] =
+      await Promise.all([
+
+        apiGet(
+          "inscricoes",
+          {
+            token: session.token,
+            evento: EVENTO_ATUAL
+          }
+        ),
+
+        apiGet(
+          "despesas",
+          {
+            token: session.token,
+            evento: EVENTO_ATUAL
+          }
+        )
+
+      ]);
+
+
+    inscricoes =
+      respostaInscricoes.inscricoes ||
+      [];
+
+    despesas =
+      respostaDespesas.despesas ||
+      [];
+
+
+    /* =====================================================
+       RECEITAS
+       ===================================================== */
+
+    const inscricoesPagas =
+      inscricoes.filter(item => {
+
+        const pagamento =
+          String(
+            item.pagamento || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return pagamento === "pago";
+
+      });
+
+
+    const inscricoesPendentes =
+      inscricoes.filter(item => {
+
+        const pagamento =
+          String(
+            item.pagamento || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return pagamento === "pendente";
+
+      });
+
+
+    const receitaBruta =
+      inscricoesPagas.reduce(
+        (total, item) =>
+          total +
+          Number(
+            item.valor || 0
+          ),
+        0
+      );
+
+
+    const aReceber =
+      inscricoesPendentes.reduce(
+        (total, item) =>
+          total +
+          Number(
+            item.valor || 0
+          ),
+        0
+      );
+
+
+    /* =====================================================
+       DESPESAS
+       ===================================================== */
+
+    const despesasPagas =
+      despesas.filter(item => {
+
+        const status =
+          String(
+            item.status || ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return status === "pago";
+
+      });
+
+
+    const despesasPendentes =
+      despesas.filter(item => {
+
+        const status =
+          String(
+            item.status ||
+            "Pendente"
+          )
+            .trim()
+            .toLowerCase();
+
+        return status === "pendente";
+
+      });
+
+
+    const totalDespesasPagas =
+      despesasPagas.reduce(
+        (total, item) =>
+          total +
+          Number(
+            item.valor || 0
+          ),
+        0
+      );
+
+
+    const totalDespesasPendentes =
+      despesasPendentes.reduce(
+        (total, item) =>
+          total +
+          Number(
+            item.valor || 0
+          ),
+        0
+      );
+
+
+    /* =====================================================
+       CÁLCULOS
+       ===================================================== */
+
+    const saldoLiquido =
+      receitaBruta -
+      totalDespesasPagas;
+
+
+    const totalReceitasPrevistas =
+      receitaBruta +
+      aReceber;
+
+
+    const totalDespesasPrevistas =
+      totalDespesasPagas +
+      totalDespesasPendentes;
+
+
+    const resultadoProjetado =
+      totalReceitasPrevistas -
+      totalDespesasPrevistas;
+
+
+    /* =====================================================
+       ATUALIZA ELEMENTO
+       ===================================================== */
+
+    const atualizar =
+      (id, valor) => {
+
+        const elemento =
+          document.getElementById(id);
+
+        if (elemento) {
+          elemento.textContent =
+            moeda(valor);
+        }
+
+      };
+
+
+    /* =====================================================
+       CARDS
+       ===================================================== */
+
+    atualizar(
+      "financeGrossRevenue",
+      receitaBruta
+    );
+
+    atualizar(
+      "financeNetBalance",
+      saldoLiquido
+    );
+
+    atualizar(
+      "financeReceivable",
+      aReceber
+    );
+
+    atualizar(
+      "financePaidExpenses",
+      totalDespesasPagas
+    );
+
+    atualizar(
+      "financePendingExpenses",
+      totalDespesasPendentes
+    );
+
+    atualizar(
+      "financeProjectedResult",
+      resultadoProjetado
+    );
+
+
+    /* =====================================================
+       RESUMO
+       ===================================================== */
+
+    atualizar(
+      "financeResumeReceived",
+      receitaBruta
+    );
+
+    atualizar(
+      "financeResumeReceivable",
+      aReceber
+    );
+
+    atualizar(
+      "financeResumeRevenueTotal",
+      totalReceitasPrevistas
+    );
+
+    atualizar(
+      "financeResumePaidExpenses",
+      totalDespesasPagas
+    );
+
+    atualizar(
+      "financeResumePendingExpenses",
+      totalDespesasPendentes
+    );
+
+    atualizar(
+      "financeResumeExpenseTotal",
+      totalDespesasPrevistas
+    );
+
+
+    /* =====================================================
+       TOTAL CONTAS A PAGAR
+       ===================================================== */
+
+    atualizar(
+      "financePayablesTotal",
+      totalDespesasPendentes
+    );
+
+
+    /* =====================================================
+       TABELA - DESPESAS PENDENTES
+       ===================================================== */
+
+    const tbody =
+      document.getElementById(
+        "financePayablesBody"
+      );
+
+
+    if (tbody) {
+
+      if (
+        !despesasPendentes.length
+      ) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="finance-empty">
+                Nenhuma despesa pendente.
+              </div>
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        tbody.innerHTML =
+          despesasPendentes
+            .map(despesa => {
+
+              const numero =
+                String(
+                  despesa.numero || ""
+                )
+                  .padStart(
+                    3,
+                    "0"
+                  );
+
+              return `
+                <tr>
+
+                  <td>
+                    <strong>
+                      #${numero}
+                    </strong>
+                  </td>
+
+                  <td>
+                    ${esc(
+                      despesa.nome ||
+                      "-"
+                    )}
+                  </td>
+
+                  <td>
+                    ${esc(
+                      despesa.fornecedorEmpresa ||
+                      "-"
+                    )}
+                  </td>
+
+                  <td>
+                    <strong>
+                      ${moeda(
+                        despesa.valor
+                      )}
+                    </strong>
+                  </td>
+
+                  <td>
+                    <span class="badge warning">
+                      Pendente
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      type="button"
+                      class="finance-pay-button"
+                      data-finance-pay="${despesa.numero}"
+                    >
+                      PAGAR
+                    </button>
+                  </td>
+
+                </tr>
+              `;
+
+            })
+            .join("");
+
+      }
+
+    }
+
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao carregar financeiro:",
+      erro
+    );
+
+    if (
+      /sessão/i.test(
+        erro.message || ""
+      )
+    ) {
+
       clearSession();
       showLogin();
       return;
+
     }
-    notificar("error", "ERRO AO CARREGAR", e.message || "Não foi possível carregar os pagamentos.");
+
+    notificar(
+      "error",
+      "ERRO NO FINANCEIRO",
+      erro.message ||
+      "Não foi possível carregar os dados financeiros."
+    );
+
   }
+
 }
 
 document.getElementById("paymentSearch")?.addEventListener("input", renderPagamentos);
@@ -4930,3 +7198,292 @@ document.addEventListener("keydown", e => {
     if (passwordModal && !passwordModal.hidden) fecharModalSenha();
   }
 });
+
+
+/* =====================================================
+   CLIQUE NO BOTÃO DETALHES
+   ===================================================== */
+
+document
+  .getElementById("expensesTableBody")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-expense-details]"
+        );
+
+      if (!botao) {
+        return;
+      }
+
+      abrirDetalhesDespesa_(
+        botao.dataset.expenseDetails
+      );
+
+    }
+  );
+
+
+/* =====================================================
+   FECHAR MODAL DE DETALHES
+   ===================================================== */
+
+document
+  .getElementById("closeExpenseDetailsModal")
+  ?.addEventListener(
+    "click",
+    fecharDetalhesDespesa_
+  );
+
+
+document
+  .getElementById("closeExpenseDetailsButton")
+  ?.addEventListener(
+    "click",
+    fecharDetalhesDespesa_
+  );
+
+
+document
+  .getElementById("expenseDetailsModal")
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (
+        e.target.id ===
+        "expenseDetailsModal"
+      ) {
+
+        fecharDetalhesDespesa_();
+
+      }
+
+    }
+  );
+  
+  /* =====================================================
+   MODAL - PAGAR DESPESA
+   ===================================================== */
+
+function abrirPagamentoDespesa_(numero) {
+
+  const despesa =
+    despesas.find(
+      item =>
+        String(item.numero) ===
+        String(numero)
+    );
+
+  if (!despesa) {
+    return;
+  }
+
+
+  DESPESA_PAGAR =
+    despesa.numero;
+
+
+  const moeda =
+    Number(
+      despesa.valor || 0
+    )
+      .toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+
+
+  document
+    .getElementById(
+      "payExpenseNumber"
+    )
+    .textContent =
+      "#" +
+      String(
+        despesa.numero
+      )
+        .padStart(
+          3,
+          "0"
+        );
+
+
+  document
+    .getElementById(
+      "payExpenseValue"
+    )
+    .textContent =
+      moeda;
+
+
+  document
+    .getElementById(
+      "payExpenseName"
+    )
+    .textContent =
+      despesa.nome || "-";
+
+
+  document
+    .getElementById(
+      "payExpenseSupplier"
+    )
+    .textContent =
+      despesa.fornecedorEmpresa ||
+      "-";
+
+
+  const data =
+    document.getElementById(
+      "payExpenseDate"
+    );
+
+  if (data) {
+
+    const hoje =
+      new Date();
+
+    const ano =
+      hoje.getFullYear();
+
+    const mes =
+      String(
+        hoje.getMonth() + 1
+      )
+        .padStart(
+          2,
+          "0"
+        );
+
+    const dia =
+      String(
+        hoje.getDate()
+      )
+        .padStart(
+          2,
+          "0"
+        );
+
+    data.value =
+      `${ano}-${mes}-${dia}`;
+
+  }
+
+
+  const forma =
+    document.getElementById(
+      "payExpenseMethod"
+    );
+
+  if (forma) {
+    forma.value = "";
+  }
+
+
+  const observacao =
+    document.getElementById(
+      "payExpenseObservation"
+    );
+
+  if (observacao) {
+    observacao.value = "";
+  }
+  
+  const comprovante =
+  document.getElementById(
+    "payExpenseReceipt"
+  );
+
+if (comprovante) {
+  comprovante.value = "";
+}
+
+
+  const modal =
+    document.getElementById(
+      "payExpenseModal"
+    );
+
+  if (modal) {
+
+    modal.hidden = false;
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+  }
+
+}
+
+
+function fecharPagamentoDespesa_() {
+
+  const modal =
+    document.getElementById(
+      "payExpenseModal"
+    );
+
+  if (modal) {
+    modal.hidden = true;
+  }
+
+  DESPESA_PAGAR = null;
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+}
+
+
+document
+  .getElementById(
+    "financePayablesBody"
+  )
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-finance-pay]"
+        );
+
+      if (!botao) {
+        return;
+      }
+
+      abrirPagamentoDespesa_(
+        botao.dataset.financePay
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "closePayExpenseModal"
+  )
+  ?.addEventListener(
+    "click",
+    fecharPagamentoDespesa_
+  );
+
+
+document
+  .getElementById(
+    "cancelPayExpense"
+  )
+  ?.addEventListener(
+    "click",
+    fecharPagamentoDespesa_
+  );

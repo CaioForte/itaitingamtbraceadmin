@@ -6,7 +6,7 @@
 <title>Itaitinga MTB Race — Admin</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
-<link rel="stylesheet" href="css/styles.css?v=621">
+<link rel="stylesheet" href="css/styles.css?v=622">
 </head>
 <body>
 <main id="login" class="login">
@@ -31,7 +31,8 @@
   <nav>
     <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
     <button class="nav" data-page="inscricoes">♙ <span>Inscrições</span></button>
-    <button class="nav" data-page="pagamentos">R$ <span>Pagamentos</span></button>
+    <button class="nav" data-page="pagamentos">R$ <span>Financeiro</span></button>
+	<button class="nav" data-page="despesas">R$ <span>Despesas</span></button>
     <button class="nav" data-page="conteudo">✎ <span>Conteúdo</span></button>
     <button class="nav" data-page="configuracoes">⚙ <span>Configurações</span></button>
     <button class="nav" data-page="usuarios">♙ <span>Usuários</span></button>
@@ -41,7 +42,69 @@
 <section class="main">
 <header>    <div>     <span id="eyebrow">VISÃO GERAL</span>     <h1 id="title">Dashboard</h1>   </div>    <div     style="       display:flex;       align-items:center;       gap:18px;       flex-wrap:wrap;       justify-content:flex-end;     "   >      <label       for="eventoAtual"       style="         display:flex;         align-items:center;         gap:10px;         font-size:12px;         font-weight:700;         color:#bbb;       "     >       EVENTO        <select         id="eventoAtual"         style="           background:#111;           color:#fff;           border:1px solid #333;           border-radius:8px;           padding:10px 14px;           font-weight:700;           cursor:pointer;           min-width:220px;         "       >         <option value="MTB2026">           Itaitinga MTB Race         </option>          <option value="TRAIL2026">           Itaitinga Trail Run         </option>       </select>     </label>       <div class="online">       <i></i>       Sistema online       <button>↻</button>     </div>    </div>  </header>
 <div class="content">
+<section class="page" id="despesas">
 
+  <div class="page-header">
+
+    <div>
+      <span>FINANCEIRO</span>
+      <h2>Despesas</h2>
+      <p>
+        Cadastre e acompanhe as despesas do evento selecionado.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="primary small"
+      id="newExpenseBtn"
+    >
+      + NOVA DESPESA
+    </button>
+
+  </div>
+
+<div class="panel">
+
+  <div class="table-wrap">
+
+    <table class="table">
+
+      <thead>
+        <tr>
+          <th>Nº</th>
+          <th>DESPESA</th>
+          <th>FORNECEDOR</th>
+          <th>VALOR</th>
+          <th>STATUS</th>
+          <th>AÇÕES</th>
+        </tr>
+      </thead>
+
+      <tbody id="expensesTableBody">
+
+        <tr>
+          <td
+            colspan="6"
+            style="
+              padding:40px;
+              text-align:center;
+              color:#888;
+            "
+          >
+            Carregando despesas...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+</section>
 <section class="page active" id="dashboard">
   <div class="hero"><div><span>ITAITINGA MTB RACE</span><h2>Controle das inscrições</h2><p>Acompanhe inscritos, pagamentos e confirmações.</p></div><strong>2026</strong></div>
   <div class="stats">
@@ -57,11 +120,754 @@
     <article class="panel"><div class="ph"><div><span>ACESSO RÁPIDO</span><h3>Atalhos</h3></div></div><div class="quick"><button data-go="inscricoes">♙ Ver inscrições</button><button data-go="pagamentos">R$ Conferir pagamentos</button><button data-go="inscricoes" data-filter="pagamento-pendente">! Ver pendentes</button></div></article>
   </div>
 </section>
+<!-- =====================================================
+     MODAL - NOVA DESPESA
+     ===================================================== -->
+
+<div id="expenseModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="expenseModalTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>DESPESAS</span>
+        <h2 id="expenseModalTitle">
+          Nova despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExpenseModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="registration-body">
+
+      <div class="form-grid">
+
+        <div>
+          <label>Nome da despesa *</label>
+          <input
+            type="text"
+            id="expenseName"
+            placeholder="Ex.: Medalhas"
+          >
+        </div>
+
+        <div>
+          <label>Valor *</label>
+          <input
+            type="number"
+            id="expenseValue"
+            placeholder="0,00"
+            min="0"
+            step="0.01"
+          >
+        </div>
+
+        <div>
+          <label>Fornecedor / Empresa</label>
+          <input
+            type="text"
+            id="expenseSupplier"
+            placeholder="Nome da empresa"
+          >
+        </div>
+
+        <div>
+          <label>Responsável</label>
+          <input
+            type="text"
+            id="expenseResponsible"
+            placeholder="Nome da pessoa responsável"
+          >
+        </div>
+
+        <div>
+          <label>Contato do fornecedor</label>
+          <input
+            type="text"
+            id="expenseContact"
+            placeholder="Telefone / WhatsApp"
+          >
+        </div>
+
+      </div>
+
+      <div style="margin-top:18px;">
+        <label>Observação</label>
+
+        <textarea
+          id="expenseObservation"
+          rows="4"
+          placeholder="Informações adicionais sobre a despesa"
+        ></textarea>
+      </div>
+
+      <div style="margin-top:20px;">
+
+        <label>Anexos</label>
+
+        <input
+          type="file"
+          id="expenseAttachments"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+        >
+
+        <small style="
+          display:block;
+          margin-top:6px;
+          color:#888;
+        ">
+          PDF, JPG, PNG ou WEBP
+        </small>
+
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="saveExpense"
+      >
+        CADASTRAR DESPESA
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- =====================================================
+     MODAL - DETALHES DA DESPESA
+     ===================================================== -->
+
+<div id="expenseDetailsModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="expenseDetailsTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>DESPESAS</span>
+
+        <h2 id="expenseDetailsTitle">
+          Detalhes da despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExpenseDetailsModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="expense-details-grid">
+
+        <div class="expense-detail-item">
+          <small>NÚMERO</small>
+          <strong id="detailExpenseNumber">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>STATUS</small>
+          <strong id="detailExpenseStatus">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>DESPESA</small>
+          <strong id="detailExpenseName">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>VALOR</small>
+          <strong id="detailExpenseValue">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>FORNECEDOR / EMPRESA</small>
+          <strong id="detailExpenseSupplier">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>RESPONSÁVEL</small>
+          <strong id="detailExpenseResponsible">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>CONTATO</small>
+          <strong id="detailExpenseContact">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>OBSERVAÇÃO</small>
+
+          <span id="detailExpenseObservation">
+            -
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- ANEXOS -->
+
+      <div class="expense-details-attachments">
+
+        <small>ANEXOS</small>
+
+        <div id="detailExpenseAttachments">
+          Nenhum anexo cadastrado.
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="closeExpenseDetailsButton"
+      >
+        FECHAR
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL - PAGAR DESPESA
+     ===================================================== -->
+
+<div id="payExpenseModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payExpenseTitle"
+    style="max-width:620px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>FINANCEIRO</span>
+
+        <h2 id="payExpenseTitle">
+          Pagar despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closePayExpenseModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <!-- DADOS DA DESPESA -->
+
+      <div class="expense-details-grid">
+
+        <div class="expense-detail-item">
+          <small>NÚMERO</small>
+          <strong id="payExpenseNumber">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>VALOR</small>
+          <strong id="payExpenseValue">R$ 0,00</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>DESPESA</small>
+          <strong id="payExpenseName">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>FORNECEDOR</small>
+          <strong id="payExpenseSupplier">-</strong>
+        </div>
+
+      </div>
+
+
+      <!-- DADOS DO PAGAMENTO -->
+
+      <div class="expense-payment-form">
+
+        <div class="expense-payment-row">
+
+          <div class="expense-payment-field">
+
+            <label for="payExpenseDate">
+              Data do pagamento *
+            </label>
+
+            <input
+              type="date"
+              id="payExpenseDate"
+            >
+
+          </div>
+
+
+          <div class="expense-payment-field">
+
+            <label for="payExpenseMethod">
+              Forma de pagamento *
+            </label>
+
+            <select id="payExpenseMethod">
+
+              <option value="">
+                Selecione
+              </option>
+
+              <option value="PIX">
+                PIX
+              </option>
+
+              <option value="Dinheiro">
+                Dinheiro
+              </option>
+
+              <option value="Transferência">
+                Transferência
+              </option>
+
+              <option value="Cartão">
+                Cartão
+              </option>
+
+              <option value="Boleto">
+                Boleto
+              </option>
+
+              <option value="Outro">
+                Outro
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- OBSERVAÇÃO -->
+
+        <div class="expense-payment-field">
+
+          <label for="payExpenseObservation">
+            Observação do pagamento
+          </label>
+
+          <textarea
+            id="payExpenseObservation"
+            rows="3"
+            placeholder="Ex.: Pago via PIX para o fornecedor"
+          ></textarea>
+
+        </div>
+
+
+        <!-- COMPROVANTE -->
+
+        <div class="expense-payment-field">
+
+          <label for="payExpenseReceipt">
+            Comprovante de pagamento
+          </label>
+
+          <input
+            type="file"
+            id="payExpenseReceipt"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
+          >
+
+          <small class="expense-payment-help">
+            PDF, JPG, PNG ou WEBP
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- AÇÕES -->
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelPayExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmPayExpense"
+      >
+        CONFIRMAR PAGAMENTO
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- =====================================================
+     MODAL - CONFIRMAR EXCLUSÃO DE DESPESA
+     ===================================================== -->
+
+<div id="deleteExpenseModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteExpenseTitle"
+    style="max-width:520px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>ATENÇÃO</span>
+
+        <h2 id="deleteExpenseTitle">
+          Excluir despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteExpenseModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="registration-body">
+
+      <p
+        id="deleteExpenseMessage"
+        style="
+          margin:0;
+          color:#444;
+          font-size:15px;
+          line-height:1.6;
+        "
+      >
+        Deseja realmente excluir esta despesa?
+      </p>
+
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmDeleteExpense"
+      >
+        EXCLUIR DESPESA
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- =====================================================
+     MODAL - EXPORTAR INSCRIÇÕES
+     ===================================================== -->
+
+<div id="exportModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="exportModalTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>EXPORTAÇÃO</span>
+        <h2 id="exportModalTitle">
+          Exportar inscrições
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExportModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div style="
+        margin-bottom:18px;
+        padding:14px 16px;
+        background:#111;
+        border:1px solid #292929;
+        border-radius:10px;
+      ">
+
+        <small style="
+          display:block;
+          color:#999;
+          font-size:11px;
+          font-weight:800;
+          margin-bottom:5px;
+        ">
+          REGISTROS ENCONTRADOS
+        </small>
+
+        <strong
+          id="exportTotal"
+          style="
+            color:#a8ff00;
+            font-size:22px;
+          "
+        >
+          0
+        </strong>
+
+        <span style="
+          color:#aaa;
+          font-size:13px;
+          margin-left:5px;
+        ">
+          inscrições conforme os filtros atuais
+        </span>
+
+      </div>
+
+
+      <div class="settings-section-head">
+
+        <div>
+          <b>Informações para exportar</b>
+
+          <small>
+            Selecione quais colunas deseja incluir no arquivo.
+          </small>
+        </div>
+
+      </div>
+
+
+      <div
+        id="exportFields"
+        style="
+          display:grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(190px, 1fr));
+          gap:10px;
+          margin-top:16px;
+        "
+      >
+
+        <label>
+          <input type="checkbox" value="numeroInscricao" checked>
+          Número da inscrição
+        </label>
+
+        <label>
+          <input type="checkbox" value="nome" checked>
+          Nome
+        </label>
+
+        <label>
+          <input type="checkbox" value="cpf" checked>
+          CPF
+        </label>
+
+        <label>
+          <input type="checkbox" value="email">
+          E-mail
+        </label>
+
+        <label>
+          <input type="checkbox" value="telefone">
+          Telefone
+        </label>
+
+        <label>
+          <input type="checkbox" value="categoria" checked>
+          Categoria
+        </label>
+
+        <label>
+          <input type="checkbox" value="valor">
+          Valor
+        </label>
+
+        <label>
+          <input type="checkbox" value="pagamento">
+          Pagamento
+        </label>
+
+        <label>
+          <input type="checkbox" value="statusInscricao">
+          Status da inscrição
+        </label>
+
+        <label>
+          <input type="checkbox" value="dataInscricao">
+          Data da inscrição
+        </label>
+
+      </div>
+
+
+      <div style="
+        display:flex;
+        gap:18px;
+        margin-top:20px;
+        padding-top:15px;
+        border-top:1px solid #262626;
+        flex-wrap:wrap;
+      ">
+
+        <button
+          type="button"
+          class="secondary small"
+          id="selectAllExportFields"
+        >
+          SELECIONAR TODOS
+        </button>
+
+        <button
+          type="button"
+          class="secondary small"
+          id="clearExportFields"
+        >
+          LIMPAR SELEÇÃO
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelExport"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmExport"
+      >
+        ↓ EXPORTAR ARQUIVO
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
 <section class="page" id="inscricoes">
   <div class="section-head">
     <div><span>GESTÃO</span><h2>Inscrições</h2><p>Consulte e acompanhe os atletas cadastrados.</p></div>
-    <button class="primary small" type="button" id="newRegistrationBtn">+ NOVA INSCRIÇÃO</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <button
+    class="secondary small"
+    type="button"
+    id="exportRegistrationsBtn"
+  >
+    ↓ EXPORTAR
+  </button>
+
+  <button
+    class="primary small"
+    type="button"
+    id="newRegistrationBtn"
+  >
+    + NOVA INSCRIÇÃO
+  </button>
+</div>
   </div>
   <div class="toolbar">
     <input id="search" placeholder="⌕  Buscar por nome, CPF ou nº inscrição">
@@ -86,6 +892,8 @@
     <tbody id="rows"></tbody></table>
   </article>
 </section>
+
+
 
 
 <div id="registrationModal" class="modal-backdrop" hidden>
@@ -259,42 +1067,340 @@
     </div>
   </div>
 </div>
+
 <section class="page" id="pagamentos">
-  <div class="payment-cards">
-    <div><small>Pendentes</small><b id="paymentPendingCount">0</b><span id="paymentPendingValue">R$ 0,00</span></div>
-    <div><small>Confirmados</small><b id="paymentPaidCount">0</b><span id="paymentPaidValue">R$ 0,00</span></div>
+
+  <!-- =====================================================
+       CARDS - RESUMO FINANCEIRO
+       ===================================================== -->
+
+  <div class="finance-summary-grid">
+
+    <article class="finance-card">
+      <small>RECEITA BRUTA</small>
+
+      <strong id="financeGrossRevenue">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Valores já recebidos em inscrições
+      </span>
+    </article>
+
+
+    <article class="finance-card finance-card-highlight">
+      <small>SALDO LÍQUIDO</small>
+
+      <strong id="financeNetBalance">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Recebido - despesas pagas
+      </span>
+    </article>
+
+
+    <article class="finance-card">
+      <small>A RECEBER</small>
+
+      <strong id="financeReceivable">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Inscrições ainda pendentes
+      </span>
+    </article>
+
+
+    <article class="finance-card">
+
+      <div class="finance-card-head">
+
+        <small>
+          DESPESAS PAGAS
+        </small>
+
+        <button
+          type="button"
+          class="finance-details-button"
+          data-finance-expenses="paid"
+        >
+          VER DETALHES
+        </button>
+
+      </div>
+
+      <strong id="financePaidExpenses">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Total já desembolsado
+      </span>
+
+    </article>
+
+
+    <article class="finance-card">
+
+      <div class="finance-card-head">
+
+        <small>
+          DESPESAS PENDENTES
+        </small>
+
+        <button
+          type="button"
+          class="finance-details-button"
+          data-finance-expenses="pending"
+        >
+          VER DETALHES
+        </button>
+
+      </div>
+
+      <strong id="financePendingExpenses">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Compromissos ainda a pagar
+      </span>
+
+    </article>
+
+
+    <article class="finance-card">
+      <small>RESULTADO PROJETADO</small>
+
+      <strong id="financeProjectedResult">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Receitas previstas - despesas previstas
+      </span>
+    </article>
+
   </div>
 
-  <div class="toolbar payment-toolbar">
-    <input id="paymentSearch" placeholder="⌕  Buscar por nome, CPF ou nº inscrição">
-    <select id="paymentFilter">
-      <option value="todos">Todos os pagamentos</option>
-      <option value="pendente">Pendentes</option>
-      <option value="pago">Pagos</option>
-      <option value="cancelado">Cancelados</option>
-    </select>
+
+  <!-- =====================================================
+       RESUMO / MOVIMENTAÇÕES
+       ===================================================== -->
+
+  <div class="finance-content-grid">
+
+
+    <!-- RESUMO -->
+
+    <article class="finance-panel">
+
+      <div class="finance-panel-header">
+
+        <div>
+          <small>FLUXO FINANCEIRO</small>
+          <h2>Resumo do evento</h2>
+        </div>
+
+      </div>
+
+
+      <div class="finance-resume">
+
+
+        <!-- RECEITAS -->
+
+        <div class="finance-resume-column">
+
+          <div class="finance-resume-title">
+            RECEITAS
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Recebido</span>
+
+            <strong id="financeResumeReceived">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row">
+            <span>A receber</span>
+
+            <strong id="financeResumeReceivable">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row total">
+            <span>Total previsto</span>
+
+            <strong id="financeResumeRevenueTotal">
+              R$ 0,00
+            </strong>
+          </div>
+
+        </div>
+
+
+        <!-- DESPESAS -->
+
+        <div class="finance-resume-column">
+
+          <div class="finance-resume-title">
+            DESPESAS
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Pagas</span>
+
+            <strong id="financeResumePaidExpenses">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Pendentes</span>
+
+            <strong id="financeResumePendingExpenses">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row total">
+            <span>Total previsto</span>
+
+            <strong id="financeResumeExpenseTotal">
+              R$ 0,00
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+    <!-- ÚLTIMAS MOVIMENTAÇÕES -->
+
+    <article class="finance-panel">
+
+      <div class="finance-panel-header">
+
+        <div>
+          <small>MOVIMENTAÇÕES</small>
+          <h2>Últimos lançamentos</h2>
+        </div>
+
+      </div>
+
+      <div
+        id="financeMovements"
+        class="finance-movements"
+      >
+
+        <div class="finance-empty">
+          Nenhuma movimentação encontrada.
+        </div>
+
+      </div>
+
+    </article>
+
   </div>
 
-  <article class="panel table">
-    <table>
-      <thead>
-        <tr>
-          <th>Nº</th>
-          <th>Atleta</th>
-          <th>Categoria</th>
-          <th>Valor</th>
-          <th>Pagamento</th>
-          <th>Forma</th>
-          <th>Data pagamento</th>
-          <th>Comprovante</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="paymentRows"></tbody>
-    </table>
+
+  <!-- =====================================================
+       CONTAS A PAGAR
+       ===================================================== -->
+
+  <article class="finance-panel finance-payables-panel">
+
+    <div class="finance-panel-header">
+
+      <div>
+        <small>CONTAS A PAGAR</small>
+        <h2>Despesas pendentes</h2>
+      </div>
+
+      <div class="finance-payables-total">
+        <small>TOTAL</small>
+
+        <strong id="financePayablesTotal">
+          R$ 0,00
+        </strong>
+      </div>
+
+    </div>
+
+
+    <!-- BUSCA -->
+
+    <div class="finance-toolbar">
+
+      <div class="finance-search">
+
+        <span>⌕</span>
+
+        <input
+          type="text"
+          id="financeExpenseSearch"
+          placeholder="Buscar despesa ou fornecedor"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- TABELA -->
+
+    <div class="finance-table-wrap">
+
+      <table class="finance-table">
+
+        <thead>
+
+          <tr>
+            <th>Nº</th>
+            <th>DESPESA</th>
+            <th>FORNECEDOR</th>
+            <th>VALOR</th>
+            <th>STATUS</th>
+            <th>AÇÃO</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody id="financePayablesBody">
+
+          <tr>
+
+            <td colspan="6">
+
+              <div class="finance-empty">
+                Nenhuma despesa pendente.
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
   </article>
-</section>
 
+</section>
 
 <section class="page" id="usuarios">
   <div class="section-head">
