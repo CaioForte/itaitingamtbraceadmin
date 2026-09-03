@@ -5689,6 +5689,174 @@ async function abrirDetalhesDespesa_(numero) {
 
   }
   
+  /* =====================================================
+   DADOS DO PAGAMENTO
+   ===================================================== */
+
+const statusPagamento =
+  document.getElementById(
+    "detailExpensePaymentStatus"
+  );
+
+if (statusPagamento) {
+
+  statusPagamento.textContent =
+    despesa.status || "Pendente";
+
+}
+
+const dataPagamento =
+  document.getElementById(
+    "detailExpensePaymentDate"
+  );
+
+if (dataPagamento) {
+
+  let dataFormatada = "-";
+
+  const valorData =
+    String(
+      despesa.dataPagamento || ""
+    );
+
+  const match =
+    valorData.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+  if (match) {
+
+    dataFormatada =
+      `${match[3]}/${match[2]}/${match[1]}`;
+
+  } else if (valorData) {
+
+    dataFormatada =
+      valorData;
+
+  }
+
+  dataPagamento.textContent =
+    dataFormatada;
+
+}
+
+
+const formaPagamento =
+  document.getElementById(
+    "detailExpensePaymentMethod"
+  );
+
+if (formaPagamento) {
+
+  formaPagamento.textContent =
+    despesa.formaPagamento || "-";
+
+}
+
+
+const observacaoPagamento =
+  document.getElementById(
+    "detailExpensePaymentObservation"
+  );
+
+if (observacaoPagamento) {
+
+  observacaoPagamento.textContent =
+    despesa.observacaoPagamento || "-";
+
+}
+
+
+const areaComprovante =
+  document.getElementById(
+    "detailExpensePaymentReceipt"
+  );
+document
+  .getElementById(
+    "detailExpensePaymentReceipt"
+  )
+  ?.addEventListener(
+    "click",
+    e => {
+
+      const botao =
+        e.target.closest(
+          "[data-expense-file]"
+        );
+
+      if (!botao) {
+        return;
+      }
+
+
+      const session =
+        getSession();
+
+      if (!session?.token) {
+
+        notificar(
+          "warning",
+          "SESSÃO EXPIRADA",
+          "Faça login novamente."
+        );
+
+        return;
+      }
+
+
+      const params =
+        new URLSearchParams({
+          action:
+            "arquivoDespesa",
+
+          token:
+            session.token,
+
+          numero:
+            botao.dataset.expenseNumber,
+
+          evento:
+            EVENTO_ATUAL,
+
+          fileId:
+            botao.dataset.expenseFile
+        });
+
+
+      const iframe =
+        document.createElement(
+          "iframe"
+        );
+
+      iframe.style.display =
+        "none";
+
+      iframe.src =
+        `${API_URL}?${params}`;
+
+      document.body.appendChild(
+        iframe
+      );
+
+
+      setTimeout(
+        () => {
+          iframe.remove();
+        },
+        10000
+      );
+
+    }
+  );
+  
+if (areaComprovante) {
+
+  areaComprovante.innerHTML =
+    `<span style="color:#888;">-</span>`;
+
+}
+  
     /* =====================================================
      CARREGAR ANEXOS DA DESPESA
      ===================================================== */
@@ -5747,21 +5915,46 @@ async function abrirDetalhesDespesa_(numero) {
 
       const anexos =
         respostaAnexos.anexos || [];
+		
+		const comprovantesPagamento =
+  anexos.filter(
+    anexo =>
+      String(
+        anexo.nome || ""
+      )
+        .toUpperCase()
+        .startsWith(
+          "COMPROVANTE-PAGAMENTO-DESPESA-"
+        )
+  );
 
 
-      if (!anexos.length) {
+const anexosDespesa =
+  anexos.filter(
+    anexo =>
+      !String(
+        anexo.nome || ""
+      )
+        .toUpperCase()
+        .startsWith(
+          "COMPROVANTE-PAGAMENTO-DESPESA-"
+        )
+  );
 
-        areaAnexos.innerHTML = `
-          <span style="color:#888;">
-            Nenhum anexo cadastrado.
-          </span>
-        `;
 
-      } else {
+if (!anexosDespesa.length) {
 
-        areaAnexos.innerHTML =
-          anexos
-            .map(anexo => {
+  areaAnexos.innerHTML = `
+    <span style="color:#888;">
+      Nenhum anexo cadastrado.
+    </span>
+  `;
+
+} else {
+
+  areaAnexos.innerHTML =
+    anexosDespesa
+      .map(anexo => {
 
               const tamanho =
                 Number(
@@ -5825,7 +6018,43 @@ async function abrirDetalhesDespesa_(numero) {
             .join("");
 
       }
+/* =====================================================
+   COMPROVANTE DE PAGAMENTO
+   ===================================================== */
 
+if (areaComprovante) {
+
+  if (!comprovantesPagamento.length) {
+
+    areaComprovante.innerHTML = `
+      <span style="color:#888;">
+        Nenhum comprovante.
+      </span>
+    `;
+
+  } else {
+
+    const comprovante =
+      comprovantesPagamento[0];
+
+    areaComprovante.innerHTML = `
+      <button
+        type="button"
+        class="secondary small"
+        data-expense-file="${esc(
+          comprovante.fileId
+        )}"
+        data-expense-number="${esc(
+          despesa.numero
+        )}"
+      >
+        BAIXAR
+      </button>
+    `;
+
+  }
+
+}
 
     } catch (erro) {
 
@@ -6532,12 +6761,27 @@ async function carregarPagamentos() {
 
 
     inscricoes =
-      respostaInscricoes.inscricoes ||
-      [];
+  respostaInscricoes.inscricoes ||
+  [];
 
-    despesas =
-      respostaDespesas.despesas ||
-      [];
+despesas =
+  respostaDespesas.despesas ||
+  [];
+
+
+/* =====================================================
+   ÚLTIMOS LANÇAMENTOS
+   ===================================================== */
+
+renderizarUltimosLancamentos_(
+  inscricoes,
+  despesas
+);
+
+
+/* =====================================================
+   RECEITAS
+   ===================================================== */
 
 
     /* =====================================================
@@ -6901,6 +7145,651 @@ async function carregarPagamentos() {
     );
 
   }
+
+}
+
+/* =====================================================
+   MODAL - DESPESAS PAGAS
+   ===================================================== */
+
+function abrirDespesasPagas_() {
+
+  const modal =
+    document.getElementById(
+      "paidExpensesModal"
+    );
+
+  const lista =
+    document.getElementById(
+      "paidExpensesList"
+    );
+
+  const totalEl =
+    document.getElementById(
+      "paidExpensesModalTotal"
+    );
+
+  if (!modal || !lista || !totalEl) {
+    return;
+  }
+
+
+  const pagas =
+    despesas.filter(
+      despesa =>
+        String(
+          despesa.status || ""
+        )
+          .trim()
+          .toLowerCase() ===
+        "pago"
+    );
+
+
+  const total =
+    pagas.reduce(
+      (soma, despesa) =>
+        soma +
+        Number(
+          despesa.valor || 0
+        ),
+      0
+    );
+
+
+  totalEl.textContent =
+    moeda(total);
+
+
+  if (!pagas.length) {
+
+    lista.innerHTML = `
+      <div
+        style="
+          padding:35px 20px;
+          text-align:center;
+          color:#888;
+        "
+      >
+        Nenhuma despesa paga para este evento.
+      </div>
+    `;
+
+  } else {
+
+    lista.innerHTML =
+      pagas
+        .map(despesa => {
+
+          const numero =
+            String(
+              despesa.numero || ""
+            )
+              .padStart(
+                3,
+                "0"
+              );
+
+
+          const valor =
+            moeda(
+              despesa.valor
+            );
+
+
+          let dataFormatada =
+            "-";
+
+          const valorData =
+            String(
+              despesa.dataPagamento || ""
+            );
+
+          const match =
+            valorData.match(
+              /^(\d{4})-(\d{2})-(\d{2})/
+            );
+
+          if (match) {
+
+            dataFormatada =
+              `${match[3]}/${match[2]}/${match[1]}`;
+
+          }
+
+
+          return `
+            <div
+              style="
+                padding:16px 18px;
+                border:1px solid #e1e5e2;
+                border-radius:12px;
+                background:#fafbfa;
+                display:flex;
+                justify-content:space-between;
+                gap:16px;
+                align-items:center;
+                flex-wrap:wrap;
+              "
+            >
+
+              <div style="min-width:0;">
+
+                <strong
+                  style="
+                    display:block;
+                    margin-bottom:5px;
+                    font-size:14px;
+                  "
+                >
+                  #${numero}
+                  ·
+                  ${esc(
+                    despesa.nome || "-"
+                  )}
+                </strong>
+
+                <span
+                  style="
+                    display:block;
+                    font-size:12px;
+                    color:#7c8781;
+                  "
+                >
+                  ${esc(
+                    despesa.fornecedorEmpresa ||
+                    "-"
+                  )}
+                </span>
+
+                <span
+                  style="
+                    display:block;
+                    margin-top:4px;
+                    font-size:11px;
+                    color:#8a929d;
+                  "
+                >
+                  ${esc(
+                    despesa.formaPagamento ||
+                    "-"
+                  )}
+                  ·
+                  ${esc(
+                    dataFormatada
+                  )}
+                </span>
+
+              </div>
+
+
+              <strong
+                style="
+                  font-size:16px;
+                  white-space:nowrap;
+                  color:#348c2f;
+                "
+              >
+                ${valor}
+              </strong>
+
+            </div>
+          `;
+
+        })
+        .join("");
+
+  }
+
+
+  modal.hidden = false;
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+function fecharDespesasPagas_() {
+
+  const modal =
+    document.getElementById(
+      "paidExpensesModal"
+    );
+
+  if (modal) {
+    modal.hidden = true;
+  }
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+}
+
+document
+  .querySelector(
+    '[data-finance-expenses="paid"]'
+  )
+  ?.addEventListener(
+    "click",
+    abrirDespesasPagas_
+  );
+
+
+document
+  .getElementById(
+    "closePaidExpensesModal"
+  )
+  ?.addEventListener(
+    "click",
+    fecharDespesasPagas_
+  );
+
+
+document
+  .getElementById(
+    "closePaidExpensesButton"
+  )
+  ?.addEventListener(
+    "click",
+    fecharDespesasPagas_
+  );
+
+
+document
+  .getElementById(
+    "paidExpensesModal"
+  )
+  ?.addEventListener(
+    "click",
+    e => {
+
+      if (
+        e.target.id ===
+        "paidExpensesModal"
+      ) {
+
+        fecharDespesasPagas_();
+
+      }
+
+    }
+  );
+
+
+/* =====================================================
+   FINANCEIRO - ÚLTIMOS LANÇAMENTOS
+   ===================================================== */
+
+function renderizarUltimosLancamentos_(
+  inscricoes,
+  despesas
+) {
+
+  const area =
+    document.getElementById(
+      "financeMovements"
+    );
+
+  if (!area) return;
+
+
+  const movimentos = [];
+
+
+  /* ===================================================
+     ENTRADAS - INSCRIÇÕES PAGAS
+     =================================================== */
+
+  (inscricoes || []).forEach(
+    inscricao => {
+
+      const pagamento =
+        String(
+          inscricao.pagamento || ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (pagamento !== "pago") {
+        return;
+      }
+
+
+      const valor =
+        Number(
+          inscricao.valor || 0
+        );
+
+      // Cortesia / inscrição zerada
+      if (valor <= 0) {
+        return;
+      }
+
+
+      movimentos.push({
+
+        tipo: "entrada",
+
+        numero:
+          inscricao.numeroInscricao ||
+          inscricao.numero ||
+          "",
+
+        descricao:
+          inscricao.nome ||
+          "Inscrição",
+
+        forma:
+          inscricao.formaPagamento ||
+          "Pagamento",
+
+        valor: valor,
+
+        data:
+          inscricao.dataPagamento ||
+          ""
+
+      });
+
+    }
+  );
+
+
+  /* ===================================================
+     SAÍDAS - DESPESAS PAGAS
+     =================================================== */
+
+  (despesas || []).forEach(
+    despesa => {
+
+      const status =
+        String(
+          despesa.status || ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (status !== "pago") {
+        return;
+      }
+
+
+      movimentos.push({
+
+        tipo: "saida",
+
+        numero:
+          despesa.numero ||
+          "",
+
+        descricao:
+          despesa.nome ||
+          "Despesa",
+
+        forma:
+          despesa.formaPagamento ||
+          "Pagamento",
+
+        valor:
+          Number(
+            despesa.valor || 0
+          ),
+
+        data:
+          despesa.dataPagamento ||
+          ""
+
+      });
+
+    }
+  );
+
+
+  /* ===================================================
+     ORDENAÇÃO - MAIS RECENTE PRIMEIRO
+     =================================================== */
+
+  movimentos.sort(
+    (a, b) => {
+
+      const dataA =
+        new Date(
+          a.data || 0
+        ).getTime();
+
+      const dataB =
+        new Date(
+          b.data || 0
+        ).getTime();
+
+      return dataB - dataA;
+
+    }
+  );
+
+
+  const ultimos =
+    movimentos.slice(
+      0,
+      6
+    );
+
+
+  /* ===================================================
+     SEM MOVIMENTAÇÃO
+     =================================================== */
+
+  if (!ultimos.length) {
+
+    area.innerHTML = `
+      <div
+        style="
+          padding:30px 15px;
+          text-align:center;
+          color:#8a929d;
+          font-size:13px;
+        "
+      >
+        Nenhum lançamento financeiro registrado.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  /* ===================================================
+     RENDERIZAÇÃO
+     =================================================== */
+
+  area.innerHTML =
+    ultimos
+      .map(
+        movimento => {
+
+          const entrada =
+            movimento.tipo ===
+            "entrada";
+
+
+          const sinal =
+            entrada
+              ? "+"
+              : "-";
+
+
+          const seta =
+            entrada
+              ? "↑"
+              : "↓";
+
+
+          let dataFormatada =
+            "-";
+
+          const valorData =
+            String(
+              movimento.data || ""
+            );
+
+
+          const match =
+            valorData.match(
+              /^(\d{4})-(\d{2})-(\d{2})/
+            );
+
+
+          if (match) {
+
+            dataFormatada =
+              `${match[3]}/${match[2]}/${match[1]}`;
+
+          }
+
+
+          const identificacao =
+            entrada &&
+            movimento.numero
+              ? `Inscrição #${esc(
+                  movimento.numero
+                )} · `
+              : "";
+
+
+          return `
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:16px;
+                padding:14px 4px;
+                border-bottom:1px solid #edf0ee;
+              "
+            >
+
+              <div
+                style="
+                  display:flex;
+                  align-items:center;
+                  gap:12px;
+                  min-width:0;
+                "
+              >
+
+                <div
+                  style="
+                    width:34px;
+                    height:34px;
+                    border-radius:50%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    flex:0 0 auto;
+                    font-size:17px;
+                    font-weight:900;
+                    background:${
+                      entrada
+                        ? "#edf8ed"
+                        : "#fff1f1"
+                    };
+                    color:${
+                      entrada
+                        ? "#348c2f"
+                        : "#c74b4b"
+                    };
+                  "
+                >
+                  ${seta}
+                </div>
+
+
+                <div
+                  style="
+                    min-width:0;
+                  "
+                >
+
+                  <strong
+                    style="
+                      display:block;
+                      font-size:13px;
+                      white-space:nowrap;
+                      overflow:hidden;
+                      text-overflow:ellipsis;
+                    "
+                  >
+                    ${identificacao}${esc(
+                      movimento.descricao
+                    )}
+                  </strong>
+
+
+                  <span
+                    style="
+                      display:block;
+                      margin-top:3px;
+                      font-size:11px;
+                      color:#8a929d;
+                    "
+                  >
+                    ${esc(
+                      movimento.forma
+                    )}
+                    ·
+                    ${dataFormatada}
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <strong
+                style="
+                  flex:0 0 auto;
+                  white-space:nowrap;
+                  font-size:14px;
+                  color:${
+                    entrada
+                      ? "#348c2f"
+                      : "#c74b4b"
+                  };
+                "
+              >
+                ${sinal}
+                ${moeda(
+                  movimento.valor
+                )}
+              </strong>
+
+            </div>
+          `;
+
+        }
+      )
+      .join("") +
+
+    `
+      <div
+        style="
+          padding-top:12px;
+          text-align:center;
+          font-size:10px;
+          font-weight:800;
+          color:#9aa29e;
+          text-transform:uppercase;
+          letter-spacing:.4px;
+        "
+      >
+        Mostrando os ${ultimos.length}
+        lançamentos mais recentes
+      </div>
+    `;
 
 }
 
@@ -7486,4 +8375,253 @@ document
   ?.addEventListener(
     "click",
     fecharPagamentoDespesa_
+  );
+  
+  /* =====================================================
+   CONFIRMIRMAR PAGAMENTO DA DESPESA
+   ===================================================== */
+
+document
+  .getElementById(
+    "confirmPayExpense"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      if (!DESPESA_PAGAR) {
+        return;
+      }
+
+      const session =
+        getSession();
+
+      if (!session?.token) {
+
+        notificar(
+          "warning",
+          "SESSÃO EXPIRADA",
+          "Faça login novamente."
+        );
+
+        return;
+      }
+
+
+      const dataPagamento =
+        document
+          .getElementById(
+            "payExpenseDate"
+          )
+          ?.value || "";
+
+
+      const formaPagamento =
+        document
+          .getElementById(
+            "payExpenseMethod"
+          )
+          ?.value || "";
+
+
+      const observacaoPagamento =
+        document
+          .getElementById(
+            "payExpenseObservation"
+          )
+          ?.value
+          .trim() || "";
+
+
+      /* VALIDAÇÕES */
+
+      if (!dataPagamento) {
+
+        notificar(
+          "warning",
+          "INFORME A DATA",
+          "Informe a data do pagamento."
+        );
+
+        return;
+      }
+
+
+      if (!formaPagamento) {
+
+        notificar(
+          "warning",
+          "INFORME A FORMA",
+          "Selecione a forma de pagamento."
+        );
+
+        return;
+      }
+
+
+      const botao =
+        document.getElementById(
+          "confirmPayExpense"
+        );
+
+
+      try {
+
+        if (botao) {
+
+          botao.disabled = true;
+
+          botao.textContent =
+            "PROCESSANDO...";
+
+        }
+
+
+       /* =====================================================
+   REGISTRA O PAGAMENTO
+   ===================================================== */
+
+const numeroDespesa =
+  DESPESA_PAGAR;
+
+
+await apiPost(
+  "pagarDespesa",
+  {
+    token:
+      session.token,
+
+    evento:
+      EVENTO_ATUAL,
+
+    numero:
+      numeroDespesa,
+
+    dataPagamento:
+      dataPagamento,
+
+    formaPagamento:
+      formaPagamento,
+
+    observacaoPagamento:
+      observacaoPagamento
+  }
+);
+
+
+/* =====================================================
+   ENVIA COMPROVANTE
+   ===================================================== */
+
+const inputComprovante =
+  document.getElementById(
+    "payExpenseReceipt"
+  );
+
+
+const comprovante =
+  inputComprovante?.files?.[0];
+
+
+if (comprovante) {
+
+  const base64 =
+    await bytesToBase64(
+      comprovante
+    );
+
+
+  const extensao =
+    comprovante.name
+      .includes(".")
+        ? "." +
+          comprovante.name
+            .split(".")
+            .pop()
+        : "";
+
+
+  await apiPost(
+    "uploadAnexoDespesa",
+    {
+      token:
+        session.token,
+
+      evento:
+        EVENTO_ATUAL,
+
+      numero:
+        numeroDespesa,
+
+      nome:
+        `COMPROVANTE-PAGAMENTO-DESPESA-${String(
+          numeroDespesa
+        ).padStart(
+          3,
+          "0"
+        )}${extensao}`,
+
+      mimeType:
+        comprovante.type ||
+        "application/octet-stream",
+
+      arquivoBase64:
+        base64
+    }
+  );
+
+}
+
+
+/* =====================================================
+   FECHA O MODAL
+   ===================================================== */
+
+fecharPagamentoDespesa_();
+
+
+       /* =====================================================
+   ATUALIZA TODA A TELA FINANCEIRA
+   ===================================================== */
+
+await carregarPagamentos();
+
+
+        notificar(
+          "success",
+          "PAGAMENTO REGISTRADO",
+          "A despesa foi marcada como paga."
+        );
+
+
+      } catch (erro) {
+
+        console.error(
+          "Erro ao pagar despesa:",
+          erro
+        );
+
+
+        notificar(
+          "error",
+          "ERRO NO PAGAMENTO",
+          erro?.message ||
+          "Não foi possível registrar o pagamento."
+        );
+
+
+      } finally {
+
+        if (botao) {
+
+          botao.disabled = false;
+
+          botao.textContent =
+            "CONFIRMAR PAGAMENTO";
+
+        }
+
+      }
+
+    }
   );

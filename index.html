@@ -32,7 +32,7 @@
     <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
     <button class="nav" data-page="inscricoes">♙ <span>Inscrições</span></button>
     <button class="nav" data-page="pagamentos">R$ <span>Financeiro</span></button>
-	<button class="nav" data-page="despesas">R$ <span>Despesas</span></button>
+	<button class="nav" data-page="despesas">↘ <span>Despesas</span></button>
     <button class="nav" data-page="conteudo">✎ <span>Conteúdo</span></button>
     <button class="nav" data-page="configuracoes">⚙ <span>Configurações</span></button>
     <button class="nav" data-page="usuarios">♙ <span>Usuários</span></button>
@@ -261,6 +261,109 @@
   </div>
 
 </div>
+
+<div id="paidExpensesModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="paidExpensesTitle"
+    style="max-width:760px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>FINANCEIRO</span>
+
+        <h2 id="paidExpensesTitle">
+          Despesas pagas
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        id="closePaidExpensesModal"
+        class="modal-close"
+        aria-label="Fechar"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div
+        id="paidExpensesList"
+        style="
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        "
+      >
+        <div style="padding:30px;text-align:center;color:#888;">
+          Carregando...
+        </div>
+      </div>
+
+    </div>
+
+
+    <div
+      style="
+        padding:18px 24px;
+        border-top:1px solid #e1e5e2;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:16px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <div>
+        <small
+          style="
+            display:block;
+            font-size:10px;
+            font-weight:900;
+            color:#7c8781;
+            text-transform:uppercase;
+            margin-bottom:4px;
+          "
+        >
+          TOTAL PAGO
+        </small>
+
+        <strong
+          id="paidExpensesModalTotal"
+          style="
+            font-size:20px;
+            color:#348c2f;
+          "
+        >
+          R$ 0,00
+        </strong>
+      </div>
+
+      <button
+        type="button"
+        id="closePaidExpensesButton"
+        class="primary"
+      >
+        FECHAR
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <!-- =====================================================
      MODAL - DETALHES DA DESPESA
      ===================================================== -->
@@ -343,7 +446,184 @@
         </div>
 
       </div>
+<!-- =====================================================
+     DADOS DO PAGAMENTO
+     ===================================================== -->
 
+<div
+  id="expensePaymentDetails"
+  style="
+    margin-top:18px;
+    padding:20px;
+    border:1px solid #dde3df;
+    border-radius:16px;
+    background:#fff;
+  "
+>
+  <div
+    style="
+      margin-bottom:16px;
+      font-size:12px;
+      font-weight:900;
+      color:#348c2f;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    "
+  >
+    DADOS DO PAGAMENTO
+  </div>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    "
+  >
+
+    <!-- STATUS -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        STATUS
+      </div>
+
+      <strong id="detailExpensePaymentStatus">
+        -
+      </strong>
+    </div>
+
+
+    <!-- DATA -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        DATA DO PAGAMENTO
+      </div>
+
+      <strong id="detailExpensePaymentDate">
+        -
+      </strong>
+    </div>
+
+
+    <!-- FORMA DE PAGAMENTO -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        FORMA DE PAGAMENTO
+      </div>
+
+      <strong id="detailExpensePaymentMethod">
+        -
+      </strong>
+    </div>
+
+
+    <!-- COMPROVANTE -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        COMPROVANTE
+      </div>
+
+      <div id="detailExpensePaymentReceipt">
+        -
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- OBSERVAÇÃO DO PAGAMENTO -->
+
+  <div
+    style="
+      margin-top:14px;
+      padding:16px;
+      border:1px solid #e1e5e2;
+      border-radius:12px;
+      background:#fafbfa;
+    "
+  >
+    <div
+      style="
+        font-size:10px;
+        font-weight:900;
+        color:#7c8781;
+        text-transform:uppercase;
+        margin-bottom:7px;
+      "
+    >
+      OBSERVAÇÃO DO PAGAMENTO
+    </div>
+
+    <div id="detailExpensePaymentObservation">
+      -
+    </div>
+  </div>
+
+</div>
 
       <!-- ANEXOS -->
 
@@ -1151,14 +1431,6 @@
         <small>
           DESPESAS PENDENTES
         </small>
-
-        <button
-          type="button"
-          class="finance-details-button"
-          data-finance-expenses="pending"
-        >
-          VER DETALHES
-        </button>
 
       </div>
 

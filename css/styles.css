@@ -3199,3 +3199,43 @@ h1{
     }
 
 }
+
+/* =====================================================
+   DESPESAS - RESPONSIVIDADE DA TABELA
+   ===================================================== */
+
+#despesas .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+#despesas .table {
+    width: 100%;
+    min-width: 760px;
+}
+
+#despesas .table th,
+#despesas .table td {
+    white-space: nowrap;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    #despesas .panel {
+        overflow: hidden;
+    }
+
+    #despesas .table-wrap {
+        overflow-x: auto;
+    }
+
+    #despesas .table {
+        min-width: 720px;
+    }
+
+}
