@@ -1,890 +1,2324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Itaitinga Trail Run | 2026</title>
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Itaitinga MTB Race — Admin</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
-  <meta name="description" content="Itaitinga Trail Run 2026. Corra, supere e conquiste em uma experiência de trail run em Itaitinga, Ceará."/>
-  <meta name="theme-color" content="#050505"/>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link href="css/styles.css" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css?v=622">
 </head>
 <body>
-
-<header class="site-header" id="topo">
-  <div class="container header-inner">
-    <a aria-label="Itaitinga TRAIL RUN - início" class="brand" href="#inicio">
-      <img alt="Itaitinga TRAIL RUN" src="assets/logo-itaitinga-trail-run.png"/>
-    </a>
-
-    <button aria-expanded="false" aria-label="Abrir menu" class="menu-toggle" id="menuToggle">
-      <span></span><span></span><span></span>
-    </button>
-
-    <nav class="main-nav" id="mainNav">
-      <a href="#sobre">SOBRE</a>
-       <a href="foto-atleta/index.html" target="_blank" rel="noopener">FOTO DO ATLETA</a>
-      <a class="nav-consult" href="#consulta-inscricao">CONSULTAR INSCRIÇÃO</a>
-      <a class="nav-cta js-open-registration" href="#inscricoes">INSCREVA-SE</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-
-  <!-- HERO -->
-  <section class="hero" id="inicio">
-    <div class="hero-overlay"></div>
-    <div class="container hero-content">
-      <div class="hero-copy reveal">
-        <span class="eyebrow">2026 • TRAIL RUN</span>
-        <h1>
-          SUPERE SEUS LIMITES.
-          <strong>VIVA ESSA AVENTURA!</strong>
-        </h1>
-
-        <div class="event-badge">ITAITINGA • CEARÁ</div>
-
-        <p class="hero-text">
-          Uma experiência de TRAIL para quem gosta de desafio,
-          trilha e superação.
-        </p>
-
-
-        <div class="race-countdown" id="raceCountdown" aria-label="Contagem regressiva para a prova">
-          <div class="race-countdown-heading">
-            <span>FALTAM</span>
-            <strong>PARA A LARGADA</strong>
-          </div>
-
-          <div class="race-countdown-grid">
-            <div class="race-countdown-item">
-              <strong id="countdownDays">00</strong>
-              <span>DIAS</span>
-            </div>
-            <div class="race-countdown-item">
-              <strong id="countdownHours">00</strong>
-              <span>HORAS</span>
-            </div>
-            <div class="race-countdown-item">
-              <strong id="countdownMinutes">00</strong>
-              <span>MIN</span>
-            </div>
-            <div class="race-countdown-item">
-              <strong id="countdownSeconds">00</strong>
-              <span>SEG</span>
-            </div>
-          </div>
-
-          <div class="race-countdown-live" id="raceCountdownLive" hidden>
-            A PROVA COMEÇOU!
-          </div>
-        </div>
-
-        <div class="hero-actions">
-          <a class="btn btn-primary js-open-registration" href="#inscricoes">FAZER INSCRIÇÃO <span>→</span></a>
-          <a class="btn btn-outline js-open-consultation" href="#consulta-inscricao">CONSULTAR INSCRIÇÃO <span>→</span></a>
-        </div>
-      </div>
-    </div>
+<main id="login" class="login">
+  <section class="login-card">
+    <div class="brand"><div class="mark">MTB</div><div><small>ITAITINGA</small><b>MTB RACE</b></div></div>
+    <div class="heading"><span>ÁREA RESTRITA</span><h1>Painel Administrativo</h1><p>Gerencie inscrições, pagamentos e confirmações do evento.</p></div>
+    <form id="loginForm">
+      <label>E-mail</label>
+      <input id="email" type="email" placeholder="Digite seu e-mail" autocomplete="username">
+      <label>Senha</label>
+      <div class="pass"><input id="password" type="password" placeholder="Digite sua senha" autocomplete="current-password"><button type="button" id="showPass">Mostrar</button></div>
+      <div id="error" class="error" hidden></div>
+      <button class="primary" type="submit">ENTRAR NO PAINEL<b>→</b></button>
+    </form>
+    <footer>Itaitinga MTB Race • Painel Administrativo</footer>
   </section>
-<!-- INFORMAÇÕES PRINCIPAIS DO EVENTO -->
-<section class="event-details">
-
-  <div class="container">
-
-    <div class="event-details-grid">
-
-      <!-- DATA -->
-      <div class="event-detail-card">
-        <span class="event-detail-icon">◆</span>
-
-        <div>
-          <small>DATA DA PROVA</small>
-          <strong>15 NOV 2026</strong>
-          <p>Domingo</p>
-        </div>
-      </div>
-
-
-      <!-- INSCRIÇÕES -->
-      <div class="event-detail-card event-detail-featured">
-        <span class="event-detail-icon">✦</span>
-
-        <div>
-          <small>INÍCIO DAS INSCRIÇÕES</small>
-          <strong>07 SET 2026</strong>
-          <p>Garanta sua vaga</p>
-        </div>
-      </div>
-
-
-      <!-- HORÁRIO -->
-      <div class="event-detail-card">
-        <span class="event-detail-icon">◷</span>
-
-        <div>
-          <small>LARGADA</small>
-          <strong>07:00</strong>
-          <p>Horário previsto</p>
-        </div>
-      </div>
-
-
-      <!-- LOCAL -->
-      <div class="event-detail-card">
-        <span class="event-detail-icon">⌖</span>
-
-        <div>
-          <small>LOCAL</small>
-          <strong>ITAITINGA - CE</strong>
-          <p>Loteamento Cidade Nova</p>
-        </div>
-      </div>
-
-
-      <!-- PERCURSOS -->
-      <div class="event-detail-card">
-        <span class="event-detail-icon">▲</span>
-
-        <div>
-          <small>PERCURSOS</small>
-          <strong>3 KM • 5 KM</strong>
-          <p>Trail Run</p>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-<!-- LOCALIZAÇÃO DO EVENTO -->
-<section class="event-location">
-
-  <div class="container event-location-grid">
-
-    <div class="event-location-copy">
-
-      <span class="section-label">
-        LOCALIZAÇÃO
-      </span>
-
-      <h2>
-        ONDE SERÁ A <em>PROVA</em>
-      </h2>
-
-      <p>
-        Confira no mapa o ponto do evento e utilize
-        o Google Maps para traçar sua rota até o local.
-      </p>
-
-      <a
-        class="btn btn-primary event-location-button"
-        href="https://www.google.com/maps/search/?api=1&query=Loteamento+Cidade+Nova+Itaitinga+CE"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        ABRIR NO GOOGLE MAPS
-        <span>→</span>
-      </a>
-
-    </div>
-
-
-    <div class="event-location-map">
-
-      <iframe
-        title="Localização Itaitinga Trail Run"
-        src="https://www.google.com/maps?q=Loteamento%20Cidade%20Nova%20Itaitinga%20CE&output=embed"
-        loading="lazy"
-        allowfullscreen
-        aria-label="Mapa da localização do Itaitinga Trail Run"
-        referrerpolicy="no-referrer-when-downgrade"
-      ></iframe>
-
-    </div>
-
-  </div>
-
-</section>
-
-  <!-- SOBRE -->
-<section class="section section-dark trail-about" id="sobre">
-
-  <div class="container">
-
-    <div class="trail-about-heading reveal">
-
-      <div>
-        <span class="section-label">
-          SOBRE A PROVA
-        </span>
-
-        <h2>
-          ESCOLHA SEU <em>DESAFIO</em>
-        </h2>
-      </div>
-
-      <p>
-        O Itaitinga Trail Run chega para reunir corredores
-        em uma experiência de trilha, superação e contato
-        com a natureza.
-      </p>
-
-    </div>
-
-
-    <div class="trail-challenges">
-
-      <!-- 3 KM -->
-      <article class="trail-challenge-card reveal">
-
-        <div class="trail-challenge-number">
-          01
-        </div>
-
-        <div class="trail-challenge-distance">
-          <strong>3</strong>
-          <span>KM</span>
-        </div>
-
-        <div class="trail-challenge-content">
-
-          <small>DESAFIO</small>
-
-          <h3>
-            TRAIL RUN 3 KM
-          </h3>
-
-          <p>
-            Uma experiência para quem quer sentir a energia
-            da trilha, superar seus limites e cruzar a linha
-            de chegada.
-          </p>
-
-          <div class="trail-challenge-tags">
-            <span>TRILHA</span>
-            <span>NATUREZA</span>
-            <span>SUPERAÇÃO</span>
-          </div>
-
-        </div>
-
-      </article>
-
-
-      <!-- 5 KM -->
-      <article class="trail-challenge-card trail-challenge-main reveal">
-
-        <div class="trail-challenge-number">
-          02
-        </div>
-
-        <div class="trail-challenge-distance">
-          <strong>5</strong>
-          <span>KM</span>
-        </div>
-
-        <div class="trail-challenge-content">
-
-          <small>DESAFIO</small>
-
-          <h3>
-            TRAIL RUN 5 KM
-          </h3>
-
-          <p>
-            Para quem busca ir além. Um percurso para encarar
-            a trilha, testar seus limites e viver cada quilômetro
-            dessa aventura.
-          </p>
-
-          <div class="trail-challenge-tags">
-            <span>TRILHA</span>
-            <span>DESAFIO</span>
-            <span>ADRENALINA</span>
-          </div>
-
-        </div>
-
-      </article>
-
-    </div>
-
-
-    <div class="trail-about-footer reveal">
-
-      <span>
-        CORRA
-      </span>
-
-      <i>•</i>
-
-      <span>
-        SUPERE
-      </span>
-
-      <i>•</i>
-
-      <span>
-        CONQUISTE
-      </span>
-
-    </div>
-
-  </div>
-
-</section>
-
-  <!-- FOTO DO ATLETA -->
-  <section class="athlete-photo-cta">
-    <div class="container">
-      <div class="athlete-photo-cta-card reveal">
-        <div class="athlete-photo-cta-copy">
-          <span class="section-label">ÁREA DO ATLETA</span>
-          <h2>CRIE SUA <em>FOTO DO ATLETA</em></h2>
-          <p>
-            Personalize sua foto com a moldura oficial do Itaitinga Trail Run
-            e compartilhe que você vai encarar esse desafio.
-          </p>
-        </div>
-
-        <a class="btn btn-primary"
-           href="foto-atleta/"
-           target="_blank"
-           rel="noopener">
-          CRIAR MINHA FOTO <span>→</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONSULTA DE INSCRIÇÃO -->
-  <section class="consultation-section" id="consulta-inscricao">
-    <div class="container consultation-layout">
-      <div class="consultation-intro reveal">
-        <span class="section-label">ÁREA DO ATLETA</span>
-        <h2>CONSULTE SUA <em>INSCRIÇÃO</em></h2>
-        <p>Consulte o status da sua inscrição usando o CPF informado no cadastro.</p>
-
-        <div class="consultation-note">
-          <strong>🔒 SEUS DADOS</strong>
-          <span>
-            A consulta pública exibe apenas as informações necessárias
-            para identificar sua inscrição.
-          </span>
-        </div>
-      </div>
-
-      <div class="consultation-card reveal">
-        <form class="consultation-form" id="form-consulta">
-          <label for="consulta-cpf">CPF</label>
-          <div class="consultation-input-row">
-            <input autocomplete="off" id="consulta-cpf" maxlength="14" name="cpf" placeholder="000.000.000-00" required type="text"/>
-            <button class="btn btn-primary" type="submit">CONSULTAR</button>
-          </div>
-          <p class="consultation-hint">Informe o mesmo CPF utilizado na inscrição.</p>
-        </form>
-
-        <div class="consulta-state" hidden id="consulta-loading">CONSULTANDO INSCRIÇÃO...</div>
-        <div class="consulta-state consulta-error" hidden id="consulta-erro"></div>
-
-        <div class="registration-result" hidden id="consulta-resultado">
-          <div class="result-top">
-            <span>ITAITINGA TRAIL RUN</span>
-            <strong id="resultado-numero">#000</strong>
-          </div>
-
-          <div class="result-athlete">
-            <small>ATLETA</small>
-            <strong id="resultado-nome">—</strong>
-          </div>
-
-          <div class="result-category">
-            <small>CATEGORIA</small>
-            <strong id="resultado-categoria">—</strong>
-          </div>
-
-          <div class="result-status" id="resultado-status">
-            <span id="resultado-status-text">—</span>
-          </div>
-
-          <p class="result-message" id="resultado-mensagem"></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- REGULAMENTO -->
-  <section class="rules-section" id="regulamento">
-    <div class="container rules-layout">
-      <div class="rules-copy reveal">
-        <span class="section-label">REGULAMENTO DA PROVA</span>
-        <h2>REGRAS DO <em>DESAFIO</em></h2>
-        <p>
-          Consulte as regras já definidas para o Itaitinga Trail Run 2026.
-          Esta é uma versão preliminar e poderá receber atualizações antes
-          da publicação do regulamento oficial.
-        </p>
-      </div>
-
-      <div class="rules-card reveal">
-        <div class="rules-card-top">
-          <span class="rules-version">VERSÃO PRELIMINAR • v0.1</span>
-          <span class="rules-status">EM ATUALIZAÇÃO</span>
-        </div>
-        <strong>ITAITINGA TRAIL RUN 2026</strong>
-        <p>
-          Participação com idade livre. Categorias competitivas, premiação,
-          kit, hidratação, limite de vagas e demais detalhes operacionais
-          serão divulgados pela organização.
-        </p>
-        <button class="btn btn-primary" type="button" data-open-rules>
-          LER REGULAMENTO <span>→</span>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- INSCRIÇÃO -->
-  <section class="registration-section" id="inscricoes">
-    <div class="container registration-layout">
-      <div class="registration-intro reveal">
-        <span class="section-label">INSCRIÇÕES</span>
-        <h2>GARANTA SUA <em>VAGA</em></h2>
-        <p>
-          Preencha seus dados, escolha a categoria disponível e siga para o pagamento da sua inscrição.
-        </p>
-
-        <div class="registration-notes">
-          <div><strong>01</strong><span>Preencha seus dados corretamente.</span></div>
-          <div><strong>02</strong><span>Escolha sua categoria.</span></div>
-          <div><strong>03</strong><span>Finalize e siga direto para o pagamento.</span></div>
-        </div>
-      </div>
-
-      <form class="registration-form reveal" id="form-inscricao">
-        <div class="form-header">
-          <span>ITAITINGA TRAIL RUN</span>
-          <strong>FICHA DO ATLETA</strong>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-group full">
-            <label for="nome">Nome completo *</label>
-            <input id="nome" name="nome" autocomplete="name" placeholder="Digite seu nome completo" required type="text"/>
-          </div>
-
-          <div class="form-group">
-            <label for="cpf">CPF *</label>
-            <input id="cpf" maxlength="14" name="cpf" autocomplete="off" inputmode="numeric" placeholder="000.000.000-00" required type="text"/>
-          </div>
-
-          <div class="form-group">
-            <label for="dataNascimento">Data de nascimento *</label>
-            <input id="dataNascimento" name="dataNascimento" autocomplete="bday" required type="date"/>
-          </div>
-
-          <div class="form-group">
-            <label for="estado">Estado *</label>
-            <select id="estado" name="estado" required>
-              <option value="">Selecione o estado</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="cidade">Cidade *</label>
-            <select disabled id="cidade" name="cidade" required>
-              <option value="">Selecione primeiro o estado</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="pcd">É PCD? *</label>
-            <select id="pcd" name="pcd" required>
-              <option value="">Selecione</option>
-              <option value="Não">Não</option>
-              <option value="Sim">Sim</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="equipe">Nome da equipe</label>
-            <input id="equipe" name="equipe" placeholder="Digite o nome da equipe" type="text"/>
-          </div>
-
-          <div class="form-group">
-            <label for="email">E-mail *</label>
-            <input id="email" name="email" autocomplete="email" placeholder="seuemail@email.com" required type="email"/>
-          </div>
-
-          <div class="form-group">
-            <label for="telefone">WhatsApp *</label>
-            <input id="telefone" name="telefone" autocomplete="tel" inputmode="tel" placeholder="(85) 9 9999-9999" required type="tel"/>
-          </div>
-
-          <div class="form-group">
-            <label for="lote">Lote</label>
-            <input id="lote" name="lote" readonly type="text" value="CARREGANDO..."/>
-          </div>
-
-          <div class="form-group">
-            <label for="categoria">Categoria *</label>
-            <select disabled id="categoria" name="categoria" required>
-              <option value="">CARREGANDO CATEGORIAS...</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="valor">Valor</label>
-            <input id="valor" name="valor" readonly type="text" value="R$ 0,00"/>
-          </div>
-
-          <div class="form-check full">
-            <input id="termos" name="termos" required type="checkbox"/>
-            <label for="termos">
-              Declaro que as informações preenchidas são verdadeiras e
-              concordo com o <button class="rules-inline-link" type="button" data-open-rules>regulamento da prova</button>. *
-            </label>
-          </div>
-        </div>
-
-        <button class="btn btn-primary btn-submit" type="submit">
-          ENVIAR INSCRIÇÃO <span>→</span>
-        </button>
-
-        <p class="form-disclaimer">
-          * Campos obrigatórios. O valor da inscrição é definido pelo lote vigente da organização.
-        </p>
-
-        <div class="form-success" hidden id="formSuccess"></div>
-      </form>
-    </div>
-  </section>
-
 </main>
-<!-- RODAPÉ -->
-<footer class="site-footer">
 
-  <div class="container footer-main">
+<main id="app" hidden>
+<aside class="sidebar">
+  <div class="sidebrand"><div class="mark">MTB</div><div><small>ITAITINGA</small><b>MTB RACE</b></div></div>
+  <nav>
+    <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+    <button class="nav" data-page="inscricoes">♙ <span>Inscrições</span></button>
+    <button class="nav" data-page="pagamentos">R$ <span>Financeiro</span></button>
+	<button class="nav" data-page="despesas">↘ <span>Despesas</span></button>
+    <button class="nav" data-page="conteudo">✎ <span>Conteúdo</span></button>
+    <button class="nav" data-page="configuracoes">⚙ <span>Configurações</span></button>
+    <button class="nav" data-page="usuarios">♙ <span>Usuários</span></button>
+  </nav>
+  <div class="user"><div class="avatar">A</div><div><b>Administrador</b><small id="userEmail"></small></div><button id="logout">Sair</button></div>
+</aside>
+<section class="main">
+<header>    <div>     <span id="eyebrow">VISÃO GERAL</span>     <h1 id="title">Dashboard</h1>   </div>    <div     style="       display:flex;       align-items:center;       gap:18px;       flex-wrap:wrap;       justify-content:flex-end;     "   >      <label       for="eventoAtual"       style="         display:flex;         align-items:center;         gap:10px;         font-size:12px;         font-weight:700;         color:#bbb;       "     >       EVENTO        <select         id="eventoAtual"         style="           background:#111;           color:#fff;           border:1px solid #333;           border-radius:8px;           padding:10px 14px;           font-weight:700;           cursor:pointer;           min-width:220px;         "       >         <option value="MTB2026">           Itaitinga MTB Race         </option>          <option value="TRAIL2026">           Itaitinga Trail Run         </option>       </select>     </label>       <div class="online">       <i></i>       Sistema online       <button>↻</button>     </div>    </div>  </header>
+<div class="content">
+<section class="page" id="despesas">
 
-    <div class="footer-brand">
+  <div class="page-header">
 
-      <img
-        src="assets/logo-itaitinga-trail-run.png"
-        alt="Itaitinga Trail Run"
-      >
-
+    <div>
+      <span>FINANCEIRO</span>
+      <h2>Despesas</h2>
       <p>
-        Corra. Supere. Conquiste.
-        Uma experiência Trail Run em Itaitinga - Ceará.
+        Cadastre e acompanhe as despesas do evento selecionado.
       </p>
-
     </div>
-
-
-    <div class="footer-event">
-
-      <small>PRÓXIMO DESAFIO</small>
-
-      <strong>
-        15 NOV 2026
-      </strong>
-
-      <span>
-        ITAITINGA • CEARÁ
-      </span>
-
-    </div>
-
-
-    <div class="footer-actions">
-
-      <a
-        href="#inscricoes"
-        class="btn btn-primary js-open-registration"
-      >
-        FAZER INSCRIÇÃO
-        <span>→</span>
-      </a>
-
-      <a
-        href="#consulta-inscricao"
-        class="footer-consult-link js-open-consultation"
-      >
-        CONSULTAR INSCRIÇÃO →
-      </a>
-
-    </div>
-
-  </div>
-
-
-  <div class="footer-slogan">
-
-    <div class="container">
-
-      <span>CORRA</span>
-      <i>•</i>
-
-      <span>SUPERE</span>
-      <i>•</i>
-
-      <span>CONQUISTE</span>
-
-    </div>
-
-  </div>
-
-
-  <div class="footer-bottom">
-
-    <div class="container">
-
-      <span>
-        © 2026 Itaitinga Trail Run
-      </span>
-
-      <span>
-        Todos os direitos reservados.
-      </span>
-
-    </div>
-
-  </div>
-
-</footer>
-
-<!-- MODAL - REGULAMENTO PRELIMINAR -->
-<div class="rules-modal" id="modalRegulamento" hidden>
-  <div class="rules-modal-overlay" data-close-rules></div>
-
-  <div class="rules-modal-card" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
-    <div class="rules-modal-header">
-      <div>
-        <span>VERSÃO PRELIMINAR • v0.1</span>
-        <h2 id="rulesModalTitle">REGULAMENTO — ITAITINGA TRAIL RUN 2026</h2>
-      </div>
-      <button class="rules-modal-close" type="button" aria-label="Fechar regulamento" data-close-rules>×</button>
-    </div>
-
-    <div class="rules-modal-body">
-      <div class="rules-alert">
-        <strong>DOCUMENTO PRELIMINAR</strong>
-        <p>
-          Este regulamento reúne as informações e regras já definidas para o
-          Itaitinga Trail Run 2026. Alguns detalhes organizacionais ainda estão
-          em definição e poderão ser atualizados antes da publicação da versão oficial.
-        </p>
-      </div>
-
-      <article class="rules-content">
-        <h3>1. DO EVENTO</h3>
-        <p>O Itaitinga Trail Run 2026 é um evento esportivo de corrida em trilha, destinado a incentivar a prática esportiva, a superação pessoal, a integração entre os participantes e o contato com a natureza.</p>
-        <p>A prova será realizada em Itaitinga, Ceará, no dia <strong>15 de novembro de 2026</strong>, com largada prevista para as <strong>07h00</strong>, e contará com percursos aproximados de <strong>3 km e 5 km</strong>.</p>
-        <p>Os percursos poderão apresentar terrenos irregulares, trilhas, aclives, declives, obstáculos naturais e demais características próprias de uma prova de Trail Run.</p>
-
-        <h3>2. DA PROGRAMAÇÃO</h3>
-        <p>A largada está prevista para 07h00. Horários de abertura da arena, briefing, premiação, encerramento e demais atividades serão divulgados posteriormente pela organização.</p>
-        <p>A programação poderá ser alterada quando necessário por questões operacionais ou de segurança.</p>
-
-        <h3>3. DAS INSCRIÇÕES</h3>
-        <p>As inscrições terão início previsto para <strong>07 de setembro de 2026</strong> e serão realizadas através do canal oficial disponibilizado pela organização.</p>
-        <p>As inscrições poderão ser divididas em lotes, com valores, períodos e quantidade de vagas definidos e divulgados pela organização. A inscrição será considerada efetivada após a confirmação do pagamento, exceto nos casos autorizados pela organização.</p>
-        <p>O participante é responsável pela veracidade das informações fornecidas no cadastro.</p>
-
-        <h3>4. DAS VAGAS</h3>
-        <p>O limite de participantes será definido pela organização. As inscrições poderão ser encerradas antecipadamente caso o limite estabelecido seja atingido.</p>
-
-        <h3>5. DA PARTICIPAÇÃO</h3>
-        <p>A participação terá <strong>idade livre</strong>, observadas as regras específicas aplicáveis aos menores de 18 anos. A forma de autorização e acompanhamento de menores será detalhada na versão oficial do regulamento.</p>
-        <p>O participante declara estar em condições adequadas para realizar a prova e deverá avaliar suas próprias condições físicas antes de participar.</p>
-
-        <h3>6. DAS CATEGORIAS</h3>
-        <p>A faixa etária será <strong>livre</strong>. As categorias competitivas, critérios de classificação e eventuais divisões serão divulgados posteriormente pela organização.</p>
-
-        <h3>7. DO KIT DO ATLETA</h3>
-        <p>O conteúdo do kit, bem como data, horário, local e regras para retirada, será divulgado posteriormente pelos canais oficiais do evento.</p>
-
-        <h3>8. DA IDENTIFICAÇÃO DO ATLETA</h3>
-        <p>O participante deverá utilizar corretamente a identificação oficial fornecida pela organização. A identificação não poderá ser adulterada, reproduzida ou utilizada por outro participante.</p>
-
-        <h3>9. DOS PERCURSOS</h3>
-        <p>O evento contará com percursos aproximados de 3 km e 5 km. A quilometragem poderá apresentar pequena variação em razão das características naturais do terreno e da definição final do trajeto.</p>
-        <p>O participante deverá seguir a sinalização e permanecer no percurso oficial. Cortar caminho ou abandonar propositalmente o trajeto demarcado poderá resultar em desclassificação.</p>
-
-        <h3>10. DA SEGURANÇA</h3>
-        <p>Por se tratar de prova em ambiente de trilha, poderão existir pedras, raízes, areia, lama, vegetação, buracos, desníveis, subidas, descidas e outros obstáculos naturais. Os participantes deverão respeitar as orientações da organização, fiscais e equipe de apoio.</p>
-
-        <h3>11. DA HIDRATAÇÃO</h3>
-        <p>Os pontos de hidratação e sua distribuição serão definidos conforme o planejamento final dos percursos e divulgados pela organização.</p>
-
-        <h3>12. DA CONDUTA</h3>
-        <p>Os participantes deverão respeitar os demais atletas, organização, voluntários, moradores, propriedades e o meio ambiente. É proibido abandonar lixo no percurso.</p>
-        <p>Fraude, agressão, atitude antidesportiva, alteração de identificação, corte intencional do percurso ou desrespeito grave às orientações da organização poderão resultar em desclassificação.</p>
-
-        <h3>13. DO ABANDONO DA PROVA</h3>
-        <p>O participante que decidir abandonar a prova deverá, sempre que possível, comunicar sua desistência à organização ou ao ponto de apoio mais próximo.</p>
-
-        <h3>14. DA CLASSIFICAÇÃO E DOS RESULTADOS</h3>
-        <p>O sistema de cronometragem, os critérios finais de classificação e o procedimento para eventuais contestações serão divulgados na versão oficial.</p>
-
-        <h3>15. DA PREMIAÇÃO</h3>
-        <p>As regras de premiação, colocações contempladas, troféus, medalhas e demais reconhecimentos ainda estão em definição e serão divulgadas antes da realização do evento.</p>
-
-        <h3>16. DO CANCELAMENTO E DA TRANSFERÊNCIA</h3>
-        <p>As regras para cancelamento, transferência de titularidade e eventual reembolso serão definidas e publicadas pela organização, observada a legislação aplicável.</p>
-
-        <h3>17. DE ALTERAÇÕES DO EVENTO</h3>
-        <p>A organização poderá alterar percurso, horários, programação ou outras características quando necessário para preservar a segurança dos participantes ou diante de circunstâncias alheias ao seu controle.</p>
-
-        <h3>18. DO USO DE IMAGEM</h3>
-        <p>Durante o evento poderão ser realizados registros fotográficos e audiovisuais. A utilização desses registros pela organização observará a legislação aplicável.</p>
-
-        <h3>19. DA RESPONSABILIDADE DO PARTICIPANTE</h3>
-        <p>Ao realizar sua inscrição, o participante declara ter conhecimento das características de uma prova de Trail Run e compromete-se a respeitar o regulamento vigente e as orientações da organização.</p>
-        <p>As disposições deste regulamento não excluem as responsabilidades legais atribuídas à organização do evento.</p>
-
-        <h3>20. DAS DISPOSIÇÕES FINAIS</h3>
-        <p>Esta é uma <strong>versão preliminar</strong>. Informações ainda não definidas serão incorporadas por meio de atualização deste documento.</p>
-        <p>Os casos não previstos serão analisados pela organização, respeitando a legislação aplicável e os princípios de segurança, razoabilidade e igualdade entre os participantes.</p>
-      </article>
-    </div>
-
-    <div class="rules-modal-footer">
-      <span>Última versão: setembro de 2026</span>
-      <button class="btn btn-primary" type="button" data-close-rules>ENTENDI</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(() => {
-  const modal = document.getElementById("modalRegulamento");
-  if (!modal) return;
-
-  const openRules = () => {
-    modal.hidden = false;
-    document.body.classList.add("rules-modal-open");
-    const closeButton = modal.querySelector(".rules-modal-close");
-    if (closeButton) closeButton.focus();
-  };
-
-  const closeRules = () => {
-    modal.hidden = true;
-    document.body.classList.remove("rules-modal-open");
-  };
-
-  document.querySelectorAll("[data-open-rules]").forEach((button) => {
-    button.addEventListener("click", openRules);
-  });
-
-  modal.querySelectorAll("[data-close-rules]").forEach((button) => {
-    button.addEventListener("click", closeRules);
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !modal.hidden) closeRules();
-  });
-})();
-</script>
-
-<!-- MODAL - INSCRIÇÃO REALIZADA -->
-<div id="modalInscricaoSucesso" class="success-modal" hidden>
-
-  <div class="success-modal-overlay"></div>
-
-  <div class="success-modal-card">
-
-    <div class="success-modal-icon">
-      ✓
-    </div>
-
-    <h2>INSCRIÇÃO REALIZADA!</h2>
-
-    <p>
-      Sua inscrição foi cadastrada com sucesso.
-    </p>
-
-    <p class="success-modal-payment-text">
-      Clique no botão abaixo para prosseguir
-      com o pagamento da sua inscrição.
-    </p>
 
     <button
       type="button"
-      id="btnIrPagamento"
-      class="btn btn-primary"
+      class="primary small"
+      id="newExpenseBtn"
     >
-      IR PARA PAGAMENTO
-      <span>→</span>
+      + NOVA DESPESA
     </button>
 
   </div>
 
+<div class="panel">
+
+  <div class="table-wrap">
+
+    <table class="table">
+
+      <thead>
+        <tr>
+          <th>Nº</th>
+          <th>DESPESA</th>
+          <th>FORNECEDOR</th>
+          <th>VALOR</th>
+          <th>STATUS</th>
+          <th>AÇÕES</th>
+        </tr>
+      </thead>
+
+      <tbody id="expensesTableBody">
+
+        <tr>
+          <td
+            colspan="6"
+            style="
+              padding:40px;
+              text-align:center;
+              color:#888;
+            "
+          >
+            Carregando despesas...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
 </div>
-<script src="js/main.js"></script>
 
-<script>
-(() => {
-  const raceDate = new Date("2026-11-15T07:00:00-03:00");
+</section>
+<section class="page active" id="dashboard">
+  <div class="hero"><div><span>ITAITINGA MTB RACE</span><h2>Controle das inscrições</h2><p>Acompanhe inscritos, pagamentos e confirmações.</p></div><strong>2026</strong></div>
+  <div class="stats">
+    <button class="stat" data-filter="todos"><em>♙</em><small>Total de inscritos</small><b>0</b><label>Ver todos →</label></button>
+    <button class="stat" data-filter="pagamento-pendente"><em>R$</em><small>Pagamentos pendentes</small><b>0</b><label>Ver pendentes →</label></button>
+    <button class="stat" data-filter="pago"><em>✓</em><small>Pagamentos confirmados</small><b>0</b><label>Ver confirmados →</label></button>
+    <button class="stat" data-filter="inscricao-pendente"><em>!</em><small>Inscrições pendentes</small><b>0</b><label>Ver pendentes →</label></button>
+    <button class="stat" data-filter="confirmado"><em>✓</em><small>Inscrições confirmadas</small><b>0</b><label>Ver confirmados →</label></button>
+    <button class="stat" data-filter="cancelado"><em>×</em><small>Canceladas</small><b>0</b><label>Ver canceladas →</label></button>
+  </div>
+  <div class="lower">
+    <article class="panel"><div class="ph"><div><span>FINANCEIRO</span><h3>Resumo das inscrições</h3></div><mark>Valores por categoria</mark></div><div class="money"><div><small>Arrecadado</small><b>R$ 0,00</b></div><div><small>A receber</small><b>R$ 0,00</b></div><div><small>Total potencial</small><b>R$ 0,00</b></div></div></article>
+    <article class="panel"><div class="ph"><div><span>ACESSO RÁPIDO</span><h3>Atalhos</h3></div></div><div class="quick"><button data-go="inscricoes">♙ Ver inscrições</button><button data-go="pagamentos">R$ Conferir pagamentos</button><button data-go="inscricoes" data-filter="pagamento-pendente">! Ver pendentes</button></div></article>
+  </div>
+</section>
+<!-- =====================================================
+     MODAL - NOVA DESPESA
+     ===================================================== -->
 
-  const countdown = document.getElementById("raceCountdown");
-  const liveMessage = document.getElementById("raceCountdownLive");
-  const daysEl = document.getElementById("countdownDays");
-  const hoursEl = document.getElementById("countdownHours");
-  const minutesEl = document.getElementById("countdownMinutes");
-  const secondsEl = document.getElementById("countdownSeconds");
+<div id="expenseModal" class="modal-backdrop" hidden>
 
-  if (!countdown || !liveMessage || !daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="expenseModalTitle"
+  >
 
-  const pad = (value) => String(value).padStart(2, "0");
+    <div class="modal-head">
 
-  const updateCountdown = () => {
-    const now = new Date();
-    const distance = raceDate.getTime() - now.getTime();
+      <div>
+        <span>DESPESAS</span>
+        <h2 id="expenseModalTitle">
+          Nova despesa
+        </h2>
+      </div>
 
-    if (distance <= 0) {
-      countdown.classList.add("race-started");
-      liveMessage.hidden = false;
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExpenseModal"
+      >
+        ×
+      </button>
 
-      const grid = countdown.querySelector(".race-countdown-grid");
-      const heading = countdown.querySelector(".race-countdown-heading");
+    </div>
 
-      if (grid) grid.hidden = true;
-      if (heading) heading.hidden = true;
+    <div class="registration-body">
 
-      return false;
-    }
+      <div class="form-grid">
 
-    const totalSeconds = Math.floor(distance / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+        <div>
+          <label>Nome da despesa *</label>
+          <input
+            type="text"
+            id="expenseName"
+            placeholder="Ex.: Medalhas"
+          >
+        </div>
 
-    daysEl.textContent = pad(days);
-    hoursEl.textContent = pad(hours);
-    minutesEl.textContent = pad(minutes);
-    secondsEl.textContent = pad(seconds);
+        <div>
+          <label>Valor *</label>
+          <input
+            type="number"
+            id="expenseValue"
+            placeholder="0,00"
+            min="0"
+            step="0.01"
+          >
+        </div>
 
-    return true;
-  };
+        <div>
+          <label>Fornecedor / Empresa</label>
+          <input
+            type="text"
+            id="expenseSupplier"
+            placeholder="Nome da empresa"
+          >
+        </div>
 
-  if (updateCountdown()) {
-    const timer = setInterval(() => {
-      if (!updateCountdown()) clearInterval(timer);
-    }, 1000);
-  }
-})();
-</script>
+        <div>
+          <label>Responsável</label>
+          <input
+            type="text"
+            id="expenseResponsible"
+            placeholder="Nome da pessoa responsável"
+          >
+        </div>
 
+        <div>
+          <label>Contato do fornecedor</label>
+          <input
+            type="text"
+            id="expenseContact"
+            placeholder="Telefone / WhatsApp"
+          >
+        </div>
+
+      </div>
+
+      <div style="margin-top:18px;">
+        <label>Observação</label>
+
+        <textarea
+          id="expenseObservation"
+          rows="4"
+          placeholder="Informações adicionais sobre a despesa"
+        ></textarea>
+      </div>
+
+      <div style="margin-top:20px;">
+
+        <label>Anexos</label>
+
+        <input
+          type="file"
+          id="expenseAttachments"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+        >
+
+        <small style="
+          display:block;
+          margin-top:6px;
+          color:#888;
+        ">
+          PDF, JPG, PNG ou WEBP
+        </small>
+
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="saveExpense"
+      >
+        CADASTRAR DESPESA
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="paidExpensesModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="paidExpensesTitle"
+    style="max-width:760px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>FINANCEIRO</span>
+
+        <h2 id="paidExpensesTitle">
+          Despesas pagas
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        id="closePaidExpensesModal"
+        class="modal-close"
+        aria-label="Fechar"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div
+        id="paidExpensesList"
+        style="
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        "
+      >
+        <div style="padding:30px;text-align:center;color:#888;">
+          Carregando...
+        </div>
+      </div>
+
+    </div>
+
+
+    <div
+      style="
+        padding:18px 24px;
+        border-top:1px solid #e1e5e2;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:16px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <div>
+        <small
+          style="
+            display:block;
+            font-size:10px;
+            font-weight:900;
+            color:#7c8781;
+            text-transform:uppercase;
+            margin-bottom:4px;
+          "
+        >
+          TOTAL PAGO
+        </small>
+
+        <strong
+          id="paidExpensesModalTotal"
+          style="
+            font-size:20px;
+            color:#348c2f;
+          "
+        >
+          R$ 0,00
+        </strong>
+      </div>
+
+      <button
+        type="button"
+        id="closePaidExpensesButton"
+        class="primary"
+      >
+        FECHAR
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     MODAL - DETALHES DA DESPESA
+     ===================================================== -->
+
+<div id="expenseDetailsModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="expenseDetailsTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>DESPESAS</span>
+
+        <h2 id="expenseDetailsTitle">
+          Detalhes da despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExpenseDetailsModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="expense-details-grid">
+
+        <div class="expense-detail-item">
+          <small>NÚMERO</small>
+          <strong id="detailExpenseNumber">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>STATUS</small>
+          <strong id="detailExpenseStatus">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>DESPESA</small>
+          <strong id="detailExpenseName">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>VALOR</small>
+          <strong id="detailExpenseValue">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>FORNECEDOR / EMPRESA</small>
+          <strong id="detailExpenseSupplier">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>RESPONSÁVEL</small>
+          <strong id="detailExpenseResponsible">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>CONTATO</small>
+          <strong id="detailExpenseContact">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>OBSERVAÇÃO</small>
+
+          <span id="detailExpenseObservation">
+            -
+          </span>
+        </div>
+
+      </div>
+<!-- =====================================================
+     DADOS DO PAGAMENTO
+     ===================================================== -->
+
+<div
+  id="expensePaymentDetails"
+  style="
+    margin-top:18px;
+    padding:20px;
+    border:1px solid #dde3df;
+    border-radius:16px;
+    background:#fff;
+  "
+>
+  <div
+    style="
+      margin-bottom:16px;
+      font-size:12px;
+      font-weight:900;
+      color:#348c2f;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    "
+  >
+    DADOS DO PAGAMENTO
+  </div>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    "
+  >
+
+    <!-- STATUS -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        STATUS
+      </div>
+
+      <strong id="detailExpensePaymentStatus">
+        -
+      </strong>
+    </div>
+
+
+    <!-- DATA -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        DATA DO PAGAMENTO
+      </div>
+
+      <strong id="detailExpensePaymentDate">
+        -
+      </strong>
+    </div>
+
+
+    <!-- FORMA DE PAGAMENTO -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        FORMA DE PAGAMENTO
+      </div>
+
+      <strong id="detailExpensePaymentMethod">
+        -
+      </strong>
+    </div>
+
+
+    <!-- COMPROVANTE -->
+
+    <div
+      style="
+        padding:16px;
+        border:1px solid #e1e5e2;
+        border-radius:12px;
+        background:#fafbfa;
+      "
+    >
+      <div
+        style="
+          font-size:10px;
+          font-weight:900;
+          color:#7c8781;
+          text-transform:uppercase;
+          margin-bottom:7px;
+        "
+      >
+        COMPROVANTE
+      </div>
+
+      <div id="detailExpensePaymentReceipt">
+        -
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- OBSERVAÇÃO DO PAGAMENTO -->
+
+  <div
+    style="
+      margin-top:14px;
+      padding:16px;
+      border:1px solid #e1e5e2;
+      border-radius:12px;
+      background:#fafbfa;
+    "
+  >
+    <div
+      style="
+        font-size:10px;
+        font-weight:900;
+        color:#7c8781;
+        text-transform:uppercase;
+        margin-bottom:7px;
+      "
+    >
+      OBSERVAÇÃO DO PAGAMENTO
+    </div>
+
+    <div id="detailExpensePaymentObservation">
+      -
+    </div>
+  </div>
+
+</div>
+
+      <!-- ANEXOS -->
+
+      <div class="expense-details-attachments">
+
+        <small>ANEXOS</small>
+
+        <div id="detailExpenseAttachments">
+          Nenhum anexo cadastrado.
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="closeExpenseDetailsButton"
+      >
+        FECHAR
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL - PAGAR DESPESA
+     ===================================================== -->
+
+<div id="payExpenseModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payExpenseTitle"
+    style="max-width:620px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>FINANCEIRO</span>
+
+        <h2 id="payExpenseTitle">
+          Pagar despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closePayExpenseModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <!-- DADOS DA DESPESA -->
+
+      <div class="expense-details-grid">
+
+        <div class="expense-detail-item">
+          <small>NÚMERO</small>
+          <strong id="payExpenseNumber">-</strong>
+        </div>
+
+        <div class="expense-detail-item">
+          <small>VALOR</small>
+          <strong id="payExpenseValue">R$ 0,00</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>DESPESA</small>
+          <strong id="payExpenseName">-</strong>
+        </div>
+
+        <div class="expense-detail-item expense-detail-wide">
+          <small>FORNECEDOR</small>
+          <strong id="payExpenseSupplier">-</strong>
+        </div>
+
+      </div>
+
+
+      <!-- DADOS DO PAGAMENTO -->
+
+      <div class="expense-payment-form">
+
+        <div class="expense-payment-row">
+
+          <div class="expense-payment-field">
+
+            <label for="payExpenseDate">
+              Data do pagamento *
+            </label>
+
+            <input
+              type="date"
+              id="payExpenseDate"
+            >
+
+          </div>
+
+
+          <div class="expense-payment-field">
+
+            <label for="payExpenseMethod">
+              Forma de pagamento *
+            </label>
+
+            <select id="payExpenseMethod">
+
+              <option value="">
+                Selecione
+              </option>
+
+              <option value="PIX">
+                PIX
+              </option>
+
+              <option value="Dinheiro">
+                Dinheiro
+              </option>
+
+              <option value="Transferência">
+                Transferência
+              </option>
+
+              <option value="Cartão">
+                Cartão
+              </option>
+
+              <option value="Boleto">
+                Boleto
+              </option>
+
+              <option value="Outro">
+                Outro
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- OBSERVAÇÃO -->
+
+        <div class="expense-payment-field">
+
+          <label for="payExpenseObservation">
+            Observação do pagamento
+          </label>
+
+          <textarea
+            id="payExpenseObservation"
+            rows="3"
+            placeholder="Ex.: Pago via PIX para o fornecedor"
+          ></textarea>
+
+        </div>
+
+
+        <!-- COMPROVANTE -->
+
+        <div class="expense-payment-field">
+
+          <label for="payExpenseReceipt">
+            Comprovante de pagamento
+          </label>
+
+          <input
+            type="file"
+            id="payExpenseReceipt"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
+          >
+
+          <small class="expense-payment-help">
+            PDF, JPG, PNG ou WEBP
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- AÇÕES -->
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelPayExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmPayExpense"
+      >
+        CONFIRMAR PAGAMENTO
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- =====================================================
+     MODAL - CONFIRMAR EXCLUSÃO DE DESPESA
+     ===================================================== -->
+
+<div id="deleteExpenseModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteExpenseTitle"
+    style="max-width:520px;"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>ATENÇÃO</span>
+
+        <h2 id="deleteExpenseTitle">
+          Excluir despesa
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteExpenseModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="registration-body">
+
+      <p
+        id="deleteExpenseMessage"
+        style="
+          margin:0;
+          color:#444;
+          font-size:15px;
+          line-height:1.6;
+        "
+      >
+        Deseja realmente excluir esta despesa?
+      </p>
+
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteExpense"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmDeleteExpense"
+      >
+        EXCLUIR DESPESA
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- =====================================================
+     MODAL - EXPORTAR INSCRIÇÕES
+     ===================================================== -->
+
+<div id="exportModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="exportModalTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>EXPORTAÇÃO</span>
+        <h2 id="exportModalTitle">
+          Exportar inscrições
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeExportModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div style="
+        margin-bottom:18px;
+        padding:14px 16px;
+        background:#111;
+        border:1px solid #292929;
+        border-radius:10px;
+      ">
+
+        <small style="
+          display:block;
+          color:#999;
+          font-size:11px;
+          font-weight:800;
+          margin-bottom:5px;
+        ">
+          REGISTROS ENCONTRADOS
+        </small>
+
+        <strong
+          id="exportTotal"
+          style="
+            color:#a8ff00;
+            font-size:22px;
+          "
+        >
+          0
+        </strong>
+
+        <span style="
+          color:#aaa;
+          font-size:13px;
+          margin-left:5px;
+        ">
+          inscrições conforme os filtros atuais
+        </span>
+
+      </div>
+
+
+      <div class="settings-section-head">
+
+        <div>
+          <b>Informações para exportar</b>
+
+          <small>
+            Selecione quais colunas deseja incluir no arquivo.
+          </small>
+        </div>
+
+      </div>
+
+
+      <div
+        id="exportFields"
+        style="
+          display:grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(190px, 1fr));
+          gap:10px;
+          margin-top:16px;
+        "
+      >
+
+        <label>
+          <input type="checkbox" value="numeroInscricao" checked>
+          Número da inscrição
+        </label>
+
+        <label>
+          <input type="checkbox" value="nome" checked>
+          Nome
+        </label>
+
+        <label>
+          <input type="checkbox" value="cpf" checked>
+          CPF
+        </label>
+
+        <label>
+          <input type="checkbox" value="email">
+          E-mail
+        </label>
+
+        <label>
+          <input type="checkbox" value="telefone">
+          Telefone
+        </label>
+
+        <label>
+          <input type="checkbox" value="categoria" checked>
+          Categoria
+        </label>
+
+        <label>
+          <input type="checkbox" value="valor">
+          Valor
+        </label>
+
+        <label>
+          <input type="checkbox" value="pagamento">
+          Pagamento
+        </label>
+
+        <label>
+          <input type="checkbox" value="statusInscricao">
+          Status da inscrição
+        </label>
+
+        <label>
+          <input type="checkbox" value="dataInscricao">
+          Data da inscrição
+        </label>
+
+      </div>
+
+
+      <div style="
+        display:flex;
+        gap:18px;
+        margin-top:20px;
+        padding-top:15px;
+        border-top:1px solid #262626;
+        flex-wrap:wrap;
+      ">
+
+        <button
+          type="button"
+          class="secondary small"
+          id="selectAllExportFields"
+        >
+          SELECIONAR TODOS
+        </button>
+
+        <button
+          type="button"
+          class="secondary small"
+          id="clearExportFields"
+        >
+          LIMPAR SELEÇÃO
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelExport"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="confirmExport"
+      >
+        ↓ EXPORTAR ARQUIVO
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<section class="page" id="inscricoes">
+  <div class="section-head">
+    <div><span>GESTÃO</span><h2>Inscrições</h2><p>Consulte e acompanhe os atletas cadastrados.</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <button
+    class="secondary small"
+    type="button"
+    id="exportRegistrationsBtn"
+  >
+    ↓ EXPORTAR
+  </button>
+
+  <button
+    class="primary small"
+    type="button"
+    id="newRegistrationBtn"
+  >
+    + NOVA INSCRIÇÃO
+  </button>
+</div>
+  </div>
+  <div class="toolbar">
+    <input id="search" placeholder="⌕  Buscar por nome, CPF ou nº inscrição">
+    <select id="filter">
+      <option value="todos">Todos os status</option>
+      <option value="pagamento-pendente">Pagamento pendente</option>
+      <option value="pago">Pagamento pago</option>
+      <option value="inscricao-pendente">Inscrição pendente</option>
+      <option value="confirmado">Inscrição confirmada</option>
+      <option value="cancelado">Canceladas</option>
+    </select>
+    <select id="categoryFilter">
+      <option value="todas">Todas as categorias</option>
+      <option value="Elite Masculino">Elite Masculino</option>
+      <option value="Elite Feminino">Elite Feminino</option>
+      <option value="Sport Masculino">Sport Masculino</option>
+      <option value="Sport Feminino">Sport Feminino</option>
+    </select>
+  </div>
+  <article class="panel table">
+    <table><thead><tr><th>Nº</th><th>Atleta</th><th>CPF</th><th>Categoria</th><th>Valor</th><th>Pagamento</th><th>Inscrição</th><th>Data inscrição</th><th></th></tr></thead>
+    <tbody id="rows"></tbody></table>
+  </article>
+</section>
+
+
+
+
+<div id="registrationModal" class="modal-backdrop" hidden>
+  <div class="detail-modal registration-modal" role="dialog" aria-modal="true" aria-labelledby="registrationTitle">
+    <div class="modal-head">
+      <div>
+        <span>NOVA INSCRIÇÃO</span>
+        <h2 id="registrationTitle">Cadastrar atleta</h2>
+      </div>
+      <button type="button" class="modal-close" id="closeRegistration">×</button>
+    </div>
+
+    <form id="registrationForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide">
+            <small>ATLETA *</small>
+            <input id="newNome" type="text" maxlength="120" placeholder="Nome completo" autocomplete="name" required>
+          </label>
+
+          <label class="registration-field">
+            <small>CPF *</small>
+            <input id="newCpf" type="text" maxlength="14" placeholder="000.000.000-00" inputmode="numeric" required>
+          </label>
+
+          <label class="registration-field">
+            <small>CATEGORIA *</small>
+            <select id="newCategoria" required>
+              <option value="">Selecione a categoria</option>
+
+            </select>
+          </label>
+
+          <label class="registration-field">
+            <small>E-MAIL *</small>
+            <input id="newEmail" type="email" maxlength="150" placeholder="atleta@email.com" autocomplete="email" required>
+          </label>
+
+          <label class="registration-field">
+            <small>WHATSAPP</small>
+            <input id="newTelefone" type="text" maxlength="20" placeholder="(85) 99999-9999" inputmode="tel" autocomplete="tel">
+          </label>
+
+          <label class="registration-field">
+            <small>VALOR</small>
+            <input id="newValor" type="number" min="0" step="0.01" value="80" readonly>
+          </label>
+
+          <label style="
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:14px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+">
+  <input
+    id="newCortesia"
+    type="checkbox"
+    style="
+      width:18px;
+      height:18px;
+      cursor:pointer;
+    "
+  >
+  CORTESIA
+</label>
+
+          <label class="registration-field wide">
+            <small>OBSERVAÇÃO</small>
+            <textarea id="newObservacao" rows="3" maxlength="500" placeholder="Observações da inscrição"></textarea>
+          </label>
+        </div>
+
+        <div id="registrationError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-secondary" id="cancelRegistration">CANCELAR</button>
+        <button type="submit" class="modal-primary" id="saveRegistration">CADASTRAR INSCRIÇÃO</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="detailModal" class="modal-backdrop" hidden>
+  <div class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-head">
+      <div><span>INSCRIÇÃO</span><h2 id="detailTitle">#000</h2></div>
+      <button type="button" class="modal-close" id="closeDetail">×</button>
+    </div>
+    <div id="detailLoading" class="modal-loading">Carregando dados...</div>
+    <div id="detailContent" hidden>
+      <div class="detail-grid">
+        <div class="detail-field wide"><small>ATLETA</small><b id="dNome">—</b></div>
+        <div class="detail-field"><small>CPF</small><b id="dCpf">—</b></div>
+        <div class="detail-field"><small>CATEGORIA</small><b id="dCategoria">—</b></div>
+        <div class="detail-field"><small>DATA DE NASCIMENTO</small><b id="dNascimento">—</b></div>
+        <div class="detail-field"><small>CIDADE</small><b id="dCidade">—</b></div>
+        <div class="detail-field"><small>E-MAIL</small><b id="dEmail">—</b></div>
+        <div class="detail-field"><small>WHATSAPP</small><b id="dTelefone">—</b></div>
+        <div class="detail-field wide"><small>CONTATO DE EMERGÊNCIA</small><b id="dEmergencia">—</b></div>
+      </div>
+      <div class="detail-status">
+        <div><small>PAGAMENTO</small><div id="dPagamento" class="pill pending">Pendente</div></div>
+        <div><small>INSCRIÇÃO</small><div id="dStatus" class="pill pending">Pendente</div></div>
+      </div>
+      <div class="detail-grid payment-detail-grid">
+        <div class="detail-field"><small>VALOR</small><b id="dValor">—</b></div>
+        <div class="detail-field"><small>DATA DA INSCRIÇÃO</small><b id="dDataInscricao">—</b></div>
+        <div class="detail-field"><small>ORDER NSU</small><b id="dOrderNsu">—</b></div>
+        <div class="detail-field"><small>FORMA DE PAGAMENTO</small><b id="dFormaPagamento">—</b></div>
+        <div class="detail-field"><small>TRANSACTION NSU</small><b id="dTransactionNsu">—</b></div>
+        <div class="detail-field"><small>DATA DO PAGAMENTO</small><b id="dDataPagamento">—</b></div>
+        <div class="detail-field wide"><small>CHECKOUT INFINITEPAY</small><b id="dCheckoutUrl">—</b></div>
+        <div class="detail-field wide"><small>COMPROVANTE DO PAGAMENTO</small><b id="dComprovante">—</b></div>
+        <div class="detail-field wide"><small>OBSERVAÇÃO</small><b id="dObservacao">—</b></div>
+      </div>
+      <div class="documents">
+        <div class="documents-head">
+          <div><span>DOCUMENTOS</span><h3>Comprovantes</h3></div>
+          <label class="upload-btn" for="fileUpload">+ ENVIAR ARQUIVO</label>
+          <input id="fileUpload" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" hidden>
+        </div>
+        <div id="fileList" class="file-list"><div class="empty-files">Nenhum arquivo vinculado.</div></div>
+        <small class="file-note">PDF, JPG, PNG ou WEBP • recomendado até 5 MB.</small>
+      </div>
+      <div id="editPanel" class="edit-panel" hidden>
+        <div class="edit-head">
+          <span>EDIÇÃO</span>
+          <h3>Editar inscrição</h3>
+        </div>
+        <div class="edit-grid">
+          <label class="wide">ATLETA
+            <input id="editNome" type="text" autocomplete="off">
+          </label>
+          <label>CPF
+            <input id="editCpf" type="text" autocomplete="off">
+          </label>
+          <label>CATEGORIA
+            <select id="editCategoria">
+
+            </select>
+          </label>
+          <label>E-MAIL
+            <input id="editEmail" type="email" autocomplete="off">
+          </label>
+          <label>WHATSAPP
+            <input id="editTelefone" type="text" autocomplete="off">
+          </label>
+          <label>VALOR
+            <input id="editValor" type="number" min="0" step="0.01" readonly>
+          </label>
+          <label class="wide">OBSERVAÇÃO
+            <textarea id="editObservacao" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="edit-actions">
+          <button type="button" class="modal-secondary" id="cancelEditAction">CANCELAR</button>
+          <button type="button" class="modal-primary" id="saveEditAction">SALVAR ALTERAÇÕES</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-secondary" id="editAction">EDITAR</button>
+        <button type="button" class="modal-primary" id="validateAction">VALIDAR INSCRIÇÃO</button>
+        <button type="button" class="modal-secondary" id="paymentAction" onclick="window.abrirAlteracaoPagamento && window.abrirAlteracaoPagamento(); return false;">ALTERAR PAGAMENTO</button>
+        <button type="button" class="modal-primary" id="statusAction">ALTERAR STATUS</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="page" id="pagamentos">
+
+  <!-- =====================================================
+       CARDS - RESUMO FINANCEIRO
+       ===================================================== -->
+
+  <div class="finance-summary-grid">
+
+    <article class="finance-card">
+      <small>RECEITA BRUTA</small>
+
+      <strong id="financeGrossRevenue">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Valores já recebidos em inscrições
+      </span>
+    </article>
+
+
+    <article class="finance-card finance-card-highlight">
+      <small>SALDO LÍQUIDO</small>
+
+      <strong id="financeNetBalance">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Recebido - despesas pagas
+      </span>
+    </article>
+
+
+    <article class="finance-card">
+      <small>A RECEBER</small>
+
+      <strong id="financeReceivable">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Inscrições ainda pendentes
+      </span>
+    </article>
+
+
+    <article class="finance-card">
+
+      <div class="finance-card-head">
+
+        <small>
+          DESPESAS PAGAS
+        </small>
+
+        <button
+          type="button"
+          class="finance-details-button"
+          data-finance-expenses="paid"
+        >
+          VER DETALHES
+        </button>
+
+      </div>
+
+      <strong id="financePaidExpenses">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Total já desembolsado
+      </span>
+
+    </article>
+
+
+    <article class="finance-card">
+
+      <div class="finance-card-head">
+
+        <small>
+          DESPESAS PENDENTES
+        </small>
+
+      </div>
+
+      <strong id="financePendingExpenses">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Compromissos ainda a pagar
+      </span>
+
+    </article>
+
+
+    <article class="finance-card">
+      <small>RESULTADO PROJETADO</small>
+
+      <strong id="financeProjectedResult">
+        R$ 0,00
+      </strong>
+
+      <span>
+        Receitas previstas - despesas previstas
+      </span>
+    </article>
+
+  </div>
+
+
+  <!-- =====================================================
+       RESUMO / MOVIMENTAÇÕES
+       ===================================================== -->
+
+  <div class="finance-content-grid">
+
+
+    <!-- RESUMO -->
+
+    <article class="finance-panel">
+
+      <div class="finance-panel-header">
+
+        <div>
+          <small>FLUXO FINANCEIRO</small>
+          <h2>Resumo do evento</h2>
+        </div>
+
+      </div>
+
+
+      <div class="finance-resume">
+
+
+        <!-- RECEITAS -->
+
+        <div class="finance-resume-column">
+
+          <div class="finance-resume-title">
+            RECEITAS
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Recebido</span>
+
+            <strong id="financeResumeReceived">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row">
+            <span>A receber</span>
+
+            <strong id="financeResumeReceivable">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row total">
+            <span>Total previsto</span>
+
+            <strong id="financeResumeRevenueTotal">
+              R$ 0,00
+            </strong>
+          </div>
+
+        </div>
+
+
+        <!-- DESPESAS -->
+
+        <div class="finance-resume-column">
+
+          <div class="finance-resume-title">
+            DESPESAS
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Pagas</span>
+
+            <strong id="financeResumePaidExpenses">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row">
+            <span>Pendentes</span>
+
+            <strong id="financeResumePendingExpenses">
+              R$ 0,00
+            </strong>
+          </div>
+
+          <div class="finance-resume-row total">
+            <span>Total previsto</span>
+
+            <strong id="financeResumeExpenseTotal">
+              R$ 0,00
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+    <!-- ÚLTIMAS MOVIMENTAÇÕES -->
+
+    <article class="finance-panel">
+
+      <div class="finance-panel-header">
+
+        <div>
+          <small>MOVIMENTAÇÕES</small>
+          <h2>Últimos lançamentos</h2>
+        </div>
+
+      </div>
+
+      <div
+        id="financeMovements"
+        class="finance-movements"
+      >
+
+        <div class="finance-empty">
+          Nenhuma movimentação encontrada.
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+
+  <!-- =====================================================
+       CONTAS A PAGAR
+       ===================================================== -->
+
+  <article class="finance-panel finance-payables-panel">
+
+    <div class="finance-panel-header">
+
+      <div>
+        <small>CONTAS A PAGAR</small>
+        <h2>Despesas pendentes</h2>
+      </div>
+
+      <div class="finance-payables-total">
+        <small>TOTAL</small>
+
+        <strong id="financePayablesTotal">
+          R$ 0,00
+        </strong>
+      </div>
+
+    </div>
+
+
+    <!-- BUSCA -->
+
+    <div class="finance-toolbar">
+
+      <div class="finance-search">
+
+        <span>⌕</span>
+
+        <input
+          type="text"
+          id="financeExpenseSearch"
+          placeholder="Buscar despesa ou fornecedor"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- TABELA -->
+
+    <div class="finance-table-wrap">
+
+      <table class="finance-table">
+
+        <thead>
+
+          <tr>
+            <th>Nº</th>
+            <th>DESPESA</th>
+            <th>FORNECEDOR</th>
+            <th>VALOR</th>
+            <th>STATUS</th>
+            <th>AÇÃO</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody id="financePayablesBody">
+
+          <tr>
+
+            <td colspan="6">
+
+              <div class="finance-empty">
+                Nenhuma despesa pendente.
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </article>
+
+</section>
+
+<section class="page" id="usuarios">
+  <div class="section-head">
+    <div>
+      <span>ADMINISTRAÇÃO</span>
+      <h2>Usuários</h2>
+      <p>Cadastre administradores e altere as senhas de acesso ao painel.</p>
+    </div>
+    <button class="primary small" type="button" id="newUserBtn">+ NOVO USUÁRIO</button>
+  </div>
+
+  <article class="panel table">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Status</th>
+          <th>Criado em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="usersRows"></tbody>
+    </table>
+  </article>
+</section>
+
+<div id="userModal" class="modal-backdrop" hidden>
+  <div class="detail-modal user-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <span id="userModalEyebrow">NOVO USUÁRIO</span>
+        <h2 id="userModalTitle">Cadastrar administrador</h2>
+      </div>
+      <button type="button" class="modal-close" id="closeUserModal">×</button>
+    </div>
+
+    <form id="userForm">
+      <div class="user-body">
+        <label class="registration-field">
+          <small>NOME *</small>
+          <input id="userNome" type="text" maxlength="120" required placeholder="Nome do administrador">
+        </label>
+
+        <label class="registration-field">
+          <small>E-MAIL *</small>
+          <input id="userEmailInput" type="email" maxlength="180" required placeholder="usuario@email.com">
+        </label>
+
+        <label class="registration-field">
+          <small>SENHA *</small>
+          <input id="userSenha" type="password" minlength="6" maxlength="100" required placeholder="Mínimo de 6 caracteres">
+        </label>
+
+        <label class="registration-field">
+          <small>CONFIRMAR SENHA *</small>
+          <input id="userSenhaConfirm" type="password" minlength="6" maxlength="100" required placeholder="Digite novamente">
+        </label>
+
+        <div id="userError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions user-actions">
+        <button type="button" class="secondary" id="cancelUser">CANCELAR</button>
+        <button type="submit" class="primary modal-primary" id="saveUser">CRIAR USUÁRIO</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="passwordModal" class="modal-backdrop" hidden>
+  <div class="detail-modal user-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <span>SEGURANÇA</span>
+        <h2>Alterar senha</h2>
+      </div>
+      <button type="button" class="modal-close" id="closePasswordModal">×</button>
+    </div>
+
+    <form id="passwordForm">
+      <div class="user-body">
+        <div class="password-user-info">
+          <small>USUÁRIO</small>
+          <strong id="passwordUserName">—</strong>
+          <span id="passwordUserEmail">—</span>
+        </div>
+
+        <label class="registration-field">
+          <small>NOVA SENHA *</small>
+          <input id="newUserPassword" type="password" minlength="6" maxlength="100" required placeholder="Mínimo de 6 caracteres">
+        </label>
+
+        <label class="registration-field">
+          <small>CONFIRMAR NOVA SENHA *</small>
+          <input id="newUserPasswordConfirm" type="password" minlength="6" maxlength="100" required placeholder="Digite novamente">
+        </label>
+
+        <div id="passwordError" class="registration-error" hidden></div>
+      </div>
+
+      <div class="modal-actions user-actions">
+        <button type="button" class="secondary" id="cancelPassword">CANCELAR</button>
+        <button type="submit" class="primary modal-primary" id="savePassword">ALTERAR SENHA</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =====================================================
+     CONTEÚDO DO SITE
+     ===================================================== -->
+
+<section class="page" id="conteudo">
+
+  <div class="section-head">
+    <div>
+      <span>SITE</span>
+      <h2>Conteúdo</h2>
+      <p>Gerencie as informações exibidas no site público do evento.</p>
+    </div>
+  </div>
+
+
+  <!-- =====================================================
+       INFORMAÇÕES DO EVENTO
+       ===================================================== -->
+
+  <article class="panel settings management-settings">
+
+    <div class="settings-section-head">
+
+      <div>
+        <b>Informações do evento</b>
+        <small>
+          Informações principais exibidas no site público do evento.
+        </small>
+      </div>
+
+    </div>
+
+
+    <div class="registration-grid">
+
+      <!-- NOME DO EVENTO -->
+
+      <label class="registration-field wide">
+
+        <small>NOME DO EVENTO</small>
+
+        <input
+          id="siteNomeEvento"
+          type="text"
+          maxlength="100"
+          value="Itaitinga MTB Race"
+          placeholder="Nome do evento"
+        >
+
+      </label>
+
+
+      <!-- MODALIDADE -->
+
+      <label class="registration-field">
+
+        <small>MODALIDADE</small>
+
+        <input
+          id="siteModalidade"
+          type="text"
+          maxlength="30"
+          value="XCP"
+          placeholder="Ex.: XCP"
+        >
+
+      </label>
+
+
+      <!-- DATA -->
+
+      <label class="registration-field">
+
+        <small>DATA DO EVENTO</small>
+
+        <input
+          id="siteDataEvento"
+          type="date"
+        >
+
+      </label>
+
+
+      <!-- HORÁRIO -->
+
+      <label class="registration-field">
+
+        <small>HORÁRIO DA LARGADA</small>
+
+        <input
+          id="siteHorario"
+          type="time"
+          value="08:00"
+        >
+
+      </label>
+
+
+      <!-- CIDADE -->
+
+      <label class="registration-field">
+
+        <small>CIDADE</small>
+
+        <input
+          id="siteCidade"
+          type="text"
+          maxlength="80"
+          value="Itaitinga"
+          placeholder="Cidade"
+        >
+
+      </label>
+
+
+      <!-- ESTADO -->
+
+      <label class="registration-field">
+
+        <small>ESTADO</small>
+
+        <input
+          id="siteEstado"
+          type="text"
+          maxlength="2"
+          value="CE"
+          placeholder="CE"
+        >
+
+      </label>
+
+
+      <!-- DISTÂNCIA -->
+
+      <label class="registration-field">
+
+        <small>DISTÂNCIA</small>
+
+        <div class="money-input">
+
+          <input
+            id="siteDistancia"
+            type="number"
+            min="0"
+            step="0.1"
+            value="50"
+          >
+
+          <span>KM</span>
+
+        </div>
+
+      </label>
+
+
+      <!-- ALTIMETRIA -->
+
+      <label class="registration-field">
+
+        <small>ALTIMETRIA</small>
+
+        <div class="money-input">
+
+          <input
+            id="siteAltimetria"
+            type="number"
+            min="0"
+            step="1"
+            value="1100"
+          >
+
+          <span>M+</span>
+
+        </div>
+
+      </label>
+
+    </div>
+
+
+    <!-- BOTÃO SALVAR -->
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-primary"
+        id="saveSiteConfig"
+      >
+        SALVAR INFORMAÇÕES
+      </button>
+
+    </div>
+
+  </article>
+
+</section>
+
+
+<!-- =====================================================
+     CONFIGURAÇÕES
+     ===================================================== -->
+
+<section class="page" id="configuracoes">
+
+  <div class="section-head">
+
+    <div>
+
+      <span>SISTEMA</span>
+
+      <h2>Configurações</h2>
+
+      <p>
+        Gerencie os lotes de inscrição e as categorias do evento.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOTES DE INSCRIÇÃO
+       ===================================================== -->
+
+  <article class="panel settings management-settings">
+
+    <div class="settings-section-head settings-section-head-actions">
+
+      <div>
+
+        <b>Lotes de inscrição</b>
+
+        <small>
+          O valor da inscrição será definido pelo lote vigente.
+        </small>
+
+      </div>
+
+
+      <button
+        class="primary small"
+        type="button"
+        id="addLotBtn"
+      >
+        + NOVO LOTE
+      </button>
+
+    </div>
+
+
+    <div
+      id="lotsList"
+      class="management-list"
+    ></div>
+
+
+    <div
+      id="lotsEmpty"
+      class="categories-empty"
+      hidden
+    >
+      Nenhum lote cadastrado.
+    </div>
+
+  </article>
+
+
+  <!-- =====================================================
+       CATEGORIAS
+       ===================================================== -->
+
+  <article
+    class="panel settings management-settings category-management-panel"
+  >
+
+    <div class="settings-section-head settings-section-head-actions">
+
+      <div>
+
+        <b>Categorias</b>
+
+        <small>
+          Defina a idade máxima e controle quais categorias ficam disponíveis para inscrição.
+        </small>
+
+      </div>
+
+
+      <button
+        class="primary small"
+        type="button"
+        id="addCategoryBtn"
+      >
+        + NOVA CATEGORIA
+      </button>
+
+    </div>
+
+
+    <div
+      id="categoriesList"
+      class="management-list"
+    ></div>
+
+
+    <div
+      id="categoriesEmpty"
+      class="categories-empty"
+      hidden
+    >
+      Nenhuma categoria cadastrada.
+    </div>
+
+  </article>
+
+</section>
+<div id="lotModal" class="modal-backdrop" hidden>
+  <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="lotModalTitle">
+    <div class="modal-head">
+      <div><span>LOTE DE INSCRIÇÃO</span><h2 id="lotModalTitle">Novo lote</h2></div>
+      <button type="button" class="modal-close" id="closeLotModal">×</button>
+    </div>
+    <form id="lotForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide"><small>NOME DO LOTE *</small><input id="lotNome" type="text" maxlength="80" placeholder="Ex.: 1º Lote" required></label>
+          <label class="registration-field"><small>DATA INÍCIO *</small><input id="lotDataInicio" type="datetime-local" required></label>
+          <label class="registration-field"><small>DATA FIM *</small><input id="lotDataFim" type="datetime-local" required></label>
+          <label class="registration-field"><small>VALOR *</small><div class="money-input"><span>R$</span><input id="lotValor" type="number" min="0.01" step="0.01" placeholder="80,00" required></div></label>
+        </div>
+        <div id="lotError" class="registration-error" hidden></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="modal-secondary" id="cancelLot">CANCELAR</button><button type="submit" class="modal-primary" id="saveLot">CRIAR LOTE</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- =====================================================
+     MODAL - CONFIRMAR EXCLUSÃO DE LOTE
+     ===================================================== -->
+
+<div id="deleteLotModal" class="modal-backdrop" hidden>
+
+  <div
+    class="detail-modal management-modal delete-confirm-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteLotModalTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>GERENCIAMENTO DE LOTES</span>
+
+        <h2 id="deleteLotModalTitle">
+          Excluir lote
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteLotModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="delete-confirm-content">
+
+        <div class="delete-confirm-icon">
+          !
+        </div>
+
+        <div>
+
+          <h3>
+            Tem certeza que deseja excluir este lote?
+          </h3>
+
+          <p id="deleteLotMessage">
+            Esta ação não poderá ser desfeita.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div
+        id="deleteLotError"
+        class="registration-error"
+        hidden
+      ></div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteLot"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-danger"
+        id="confirmDeleteLot"
+      >
+        EXCLUIR LOTE
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL EXCLUIR CATEGORIA
+     ===================================================== -->
+
+<div
+  id="deleteCategoryModal"
+  class="modal-backdrop"
+  hidden
+>
+  <div
+    class="detail-modal management-modal delete-confirm-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteCategoryTitle"
+  >
+
+    <div class="modal-head">
+
+      <div>
+        <span>EXCLUSÃO DE CATEGORIA</span>
+
+        <h2 id="deleteCategoryTitle">
+          Excluir categoria
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeDeleteCategoryModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="registration-body">
+
+      <div class="delete-confirm-content">
+
+        <div class="delete-confirm-icon">
+          !
+        </div>
+
+        <div>
+
+          <strong>
+            Atenção!
+          </strong>
+
+          <p id="deleteCategoryMessage">
+            Você está prestes a excluir esta categoria.
+            <br>
+            <strong>
+              Esta ação não poderá ser desfeita.
+            </strong>
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-secondary"
+        id="cancelDeleteCategory"
+      >
+        CANCELAR
+      </button>
+
+      <button
+        type="button"
+        class="modal-danger"
+        id="confirmDeleteCategory"
+      >
+        EXCLUIR CATEGORIA
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<div id="categoryModal" class="modal-backdrop" hidden>
+  <div class="detail-modal management-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+    <div class="modal-head">
+      <div><span>CATEGORIA</span><h2 id="categoryModalTitle">Nova categoria</h2></div>
+      <button type="button" class="modal-close" id="closeCategoryModal">×</button>
+    </div>
+    <form id="categoryForm">
+      <div class="registration-body">
+        <div class="registration-grid">
+          <label class="registration-field wide"><small>NOME DA CATEGORIA *</small><input id="categoryNome" type="text" maxlength="80" placeholder="Ex.: Sport Masculino" required></label>
+          <label class="registration-field"><small>IDADE MÁXIMA</small><input id="categoryIdadeMaxima" type="number" min="1" max="120" placeholder="Ex.: 39"></label>
+        </div>
+        <div id="categoryError" class="registration-error" hidden></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="modal-secondary" id="cancelCategory">CANCELAR</button><button type="submit" class="modal-primary" id="saveCategory">CRIAR CATEGORIA</button></div>
+    </form>
+  </div>
+</div>
+</div></section>
+</main>
+<script src="js/main-v62.js?v=621"></script>
 </body>
 </html>
