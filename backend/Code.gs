@@ -389,7 +389,9 @@ function doGet(e) {
       return visualizarArquivoDrive_(
         params.token,
         params.fileId,
-        params.inscricaoId
+        params.inscricaoId,
+        params.modo,
+        params.callback
       );
     }
 
@@ -2369,7 +2371,9 @@ function gerarUrlArquivo_(
 function visualizarArquivoDrive_(
   token,
   fileId,
-  inscricaoId
+  inscricaoId,
+  modo,
+  callback
 ) {
 
   /*
@@ -2542,6 +2546,21 @@ function visualizarArquivoDrive_(
       Utilities.base64Encode(
         blob.getBytes()
       );
+
+    // Entrega os bytes à página principal sem incorporar script.google.com em iframe.
+    if (String(modo).toLowerCase() === 'dados') {
+      if (!/^filePreviewCallback_[A-Za-z0-9_]+$/.test(String(callback || ''))) {
+        return paginaArquivoErro_('Callback inválido.');
+      }
+      return ContentService.createTextOutput(
+        callback + '(' + JSON.stringify({
+          nome: nome,
+          mimeType: mimeType,
+          base64: base64
+        }) + ');'
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
 
 
     /*

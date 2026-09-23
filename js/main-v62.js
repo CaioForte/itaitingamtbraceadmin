@@ -2817,8 +2817,33 @@ function normalizarCategorias_(valor) {
     idadeMaxima: x.idadeMaxima === null || x.idadeMaxima === undefined || x.idadeMaxima === ""
       ? null
       : Number(x.idadeMaxima),
-    ativo: x.ativo === true || String(x.ativo || "").toUpperCase() === "SIM"
+    ativo: x.ativo === true || String(x.ativo || "").toUpperCase() === "SIM",
+    documentosObrigatorios: Array.isArray(x.documentosObrigatorios)
+      ? x.documentosObrigatorios.map(v => String(v || "").trim()).filter(Boolean)
+      : String(x.documentosObrigatorios || "").split("|").map(v => v.trim()).filter(Boolean)
   })).filter(x => x.nome);
+}
+
+function rotuloDocumentoCategoria_(codigo) {
+  const rotulos = {
+    RG: "RG",
+    CPF: "CPF",
+    CERTIDAO: "Certidão",
+    COMPROVANTE_RESIDENCIA: "Comprovante de residência"
+  };
+  return rotulos[String(codigo || "").trim()] || String(codigo || "").trim();
+}
+
+function documentosCategoriaSelecionados_() {
+  return Array.from(document.querySelectorAll('input[name="categoryDocumento"]:checked'))
+    .map(input => input.value);
+}
+
+function preencherDocumentosCategoria_(documentos) {
+  const selecionados = new Set(Array.isArray(documentos) ? documentos : []);
+  document.querySelectorAll('input[name="categoryDocumento"]').forEach(input => {
+    input.checked = selecionados.has(input.value);
+  });
 }
 
 function normalizarLotes_(valor) {
@@ -3039,6 +3064,12 @@ function renderCategoriasConfig_() {
                   ? `Idade máxima: ${c.idadeMaxima} anos`
                   : "Sem idade máxima definida"
               }
+            </span>
+
+            <span class="category-documents-summary">
+              ${c.documentosObrigatorios.length
+                ? `Documentos: ${c.documentosObrigatorios.map(rotuloDocumentoCategoria_).map(esc).join(", ")}`
+                : "Documentos: nenhum obrigatório"}
             </span>
 
           </div>
@@ -3772,6 +3803,12 @@ document
 
 document.getElementById("addCategoryBtn")?.addEventListener("click", () => {
   document.getElementById("categoryForm")?.reset();
+  window.categoriaEditandoId = null;
+  preencherDocumentosCategoria_([]);
+  const titulo = document.getElementById("categoryModalTitle");
+  if (titulo) titulo.textContent = "Nova categoria";
+  const salvar = document.getElementById("saveCategory");
+  if (salvar) salvar.textContent = "CRIAR CATEGORIA";
   limparErroConfig_("categoryError");
   abrirModal_("categoryModal");
   document.getElementById("categoryNome")?.focus();
@@ -3801,6 +3838,9 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
     document
       .getElementById("categoryIdadeMaxima")
       .value;
+
+  const documentosObrigatorios =
+    documentosCategoriaSelecionados_();
 
   if (!nome) {
 
@@ -3881,6 +3921,7 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
     id: categoriaEditandoId,
     nome: nome,
     idadeMaxima: idadeMaxima,
+    documentosObrigatorios: documentosObrigatorios,
     evento: EVENTO_ATUAL
   }
       );
@@ -3916,6 +3957,7 @@ document.getElementById("categoryForm")?.addEventListener("submit", async e => {
     token: s.token,
     nome: nome,
     idadeMaxima: idadeMaxima,
+    documentosObrigatorios: documentosObrigatorios,
     evento: EVENTO_ATUAL
   }
 );
@@ -4037,6 +4079,10 @@ function abrirEdicaoCategoria_(id) {
       categoria.idadeMaxima ?? "";
 
   }
+
+  preencherDocumentosCategoria_(
+    categoria.documentosObrigatorios || []
+  );
 
 
   /* Altera o título */
@@ -5137,6 +5183,16 @@ function renderFiles(files) {
     return;
   }
 
+  const sessao = getSession();
+  const token = sessao?.token || "";
+  const inscricaoId =
+    inscricaoAtual
+      ? valor(
+          inscricaoAtual,
+          "numeroInscricao",
+          "numero"
+        )
+      : "";
 
   list.innerHTML =
     files.map(f => {
@@ -5148,19 +5204,10 @@ function renderFiles(files) {
           "Arquivo"
         );
 
-      // Sempre monta o download direto pelo ID do arquivo.
-      // Assim, mesmo que o backend tenha uma URL antiga salva,
-      // o botão nunca abre o visualizador do Google Drive.
       const fileId =
         f.fileId ||
         f.id ||
         "";
-
-      const url =
-        fileId
-          ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
-          : (f.url || "");
-
 
       const tipo =
         String(
@@ -5172,6 +5219,27 @@ function renderFiles(files) {
           .pop()
           .toUpperCase();
 
+      const urlBase =
+        fileId && token && inscricaoId
+          ? API_URL +
+            "?action=arquivo" +
+            "&token=" +
+            encodeURIComponent(token) +
+            "&fileId=" +
+            encodeURIComponent(fileId) +
+            "&inscricaoId=" +
+            encodeURIComponent(inscricaoId)
+          : "";
+
+      const urlVisualizar =
+        urlBase
+          ? urlBase + "&modo=visualizar"
+          : "";
+
+      const urlBaixar =
+        urlBase
+          ? urlBase + "&modo=baixar"
+          : "";
 
       return `
 
@@ -5190,35 +5258,42 @@ function renderFiles(files) {
               </b>
 
               <small>
-                Comprovante da inscrição
+                Documento da inscrição
               </small>
 
             </div>
 
           </div>
 
-
           ${
-            url
+            urlBase
 
               ? `
+                <div class="file-actions">
 
-                <a
-                  class="file-open file-download"
-                  href="${esc(url)}"
-                  download
-                >
-                  BAIXAR COMPROVANTE ↓
-                </a>
+                  <a
+                    class="file-open file-view"
+                    href="${esc(urlVisualizar)}"
+                  >
+                    VISUALIZAR
+                  </a>
 
+                  <a
+                    class="file-open file-download"
+                    href="${esc(urlBaixar)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    BAIXAR ↓
+                  </a>
+
+                </div>
               `
 
               : `
-
                 <span class="file-open">
                   SEM LINK
                 </span>
-
               `
           }
 
@@ -5228,6 +5303,89 @@ function renderFiles(files) {
 
     }).join("");
 }
+
+/* Visualização dos documentos sem sair da inscrição. */
+document.addEventListener("click", function (event) {
+  const link = event.target.closest(".file-view");
+  if (!link) return;
+  event.preventDefault();
+
+  let modal = document.getElementById("filePreviewModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "filePreviewModal";
+    modal.className = "file-preview-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Visualização do documento");
+    modal.innerHTML = '<div class="file-preview-panel"><button type="button" class="file-preview-close" aria-label="Fechar visualização">FECHAR ×</button><div class="file-preview-content">Carregando documento...</div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal || e.target.closest(".file-preview-close")) {
+        fecharVisualizacaoArquivo_();
+      }
+    });
+  }
+  const content = modal.querySelector(".file-preview-content");
+  if (modal.dataset.objectUrl) URL.revokeObjectURL(modal.dataset.objectUrl);
+  delete modal.dataset.objectUrl;
+  content.textContent = "Carregando documento...";
+  modal.hidden = false;
+  modal.querySelector("button").focus();
+
+  const callbackName = "filePreviewCallback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  const script = document.createElement("script");
+  const timer = setTimeout(function () {
+    if (modal.dataset.callback === callbackName) content.textContent = "Não foi possível carregar o documento.";
+    cleanup();
+  }, 30000);
+  function cleanup() {
+    clearTimeout(timer);
+    script.remove();
+    delete window[callbackName];
+  }
+  modal.dataset.callback = callbackName;
+  window[callbackName] = function (data) {
+    cleanup();
+    if (modal.hidden || modal.dataset.callback !== callbackName) return;
+    try {
+      const bytes = Uint8Array.from(atob(data.base64), c => c.charCodeAt(0));
+      const objectUrl = URL.createObjectURL(new Blob([bytes], { type: data.mimeType }));
+      modal.dataset.objectUrl = objectUrl;
+      content.replaceChildren();
+      const preview = document.createElement(data.mimeType.startsWith("image/") ? "img" : "iframe");
+      preview.className = "file-preview-frame";
+      preview.title = data.nome || "Documento da inscrição";
+      preview.src = objectUrl;
+      content.appendChild(preview);
+    } catch (error) {
+      content.textContent = "Não foi possível exibir o documento.";
+    }
+  };
+  script.onerror = function () {
+    if (modal.dataset.callback === callbackName) content.textContent = "Não foi possível carregar o documento.";
+    cleanup();
+  };
+  const url = new URL(link.href);
+  url.searchParams.set("modo", "dados");
+  url.searchParams.set("callback", callbackName);
+  script.src = url.href;
+  document.head.appendChild(script);
+});
+
+function fecharVisualizacaoArquivo_() {
+  const modal = document.getElementById("filePreviewModal");
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  modal.querySelector(".file-preview-content").replaceChildren();
+  if (modal.dataset.objectUrl) URL.revokeObjectURL(modal.dataset.objectUrl);
+  delete modal.dataset.objectUrl;
+  delete modal.dataset.callback;
+}
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") fecharVisualizacaoArquivo_();
+});
 
 /* =====================================================
    CONVERTER ARQUIVO PARA BASE64

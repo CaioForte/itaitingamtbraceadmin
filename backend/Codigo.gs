@@ -405,7 +405,9 @@ function criarAbaCategorias_(ss) {
       'Nome',
       'IdadeMaxima',
       'Ativo',
-      'CriadoEm'
+      'CriadoEm',
+      'Evento',
+      'DocumentosObrigatorios'
     ]
   );
 }
@@ -841,7 +843,8 @@ function criarLote_(
     valorNumero,
     'SIM',
     agora,
-    evento
+    evento,
+    documentos.join('|')
   ]);
 
 
@@ -1119,6 +1122,36 @@ function excluirLote_(
   );
 }
 
+function normalizarDocumentosCategoria_(documentos) {
+
+  const permitidos = [
+    'RG',
+    'CPF',
+    'CERTIDAO',
+    'COMPROVANTE_RESIDENCIA'
+  ];
+
+  let lista = [];
+
+  if (Array.isArray(documentos)) {
+    lista = documentos;
+  } else if (documentos !== null && documentos !== undefined && documentos !== '') {
+    lista = String(documentos).split('|');
+  }
+
+  const unicos = [];
+
+  lista.forEach(function(item) {
+    const codigo = String(item || '').trim().toUpperCase();
+    if (permitidos.indexOf(codigo) !== -1 && unicos.indexOf(codigo) === -1) {
+      unicos.push(codigo);
+    }
+  });
+
+  return unicos;
+}
+
+
 /* =====================================================
    LISTAR CATEGORIAS - MULTI-EVENTOS
    ===================================================== */
@@ -1220,7 +1253,12 @@ function listarCategorias_(token, evento) {
         ),
 
       evento:
-        eventoLinha
+        eventoLinha,
+
+      documentosObrigatorios:
+        normalizarDocumentosCategoria_(
+          dados[i][6] || ''
+        )
     });
   }
 
@@ -1243,7 +1281,8 @@ function criarCategoria_(
   token,
   nome,
   idadeMaxima,
-  evento
+  evento,
+  documentosObrigatorios
 ) {
 
   const sessao =
@@ -1258,6 +1297,11 @@ function criarCategoria_(
     )
       .trim()
       .toUpperCase();
+
+  const documentos =
+    normalizarDocumentosCategoria_(
+      documentosObrigatorios
+    );
 
 
   if (!nome) {
@@ -1401,6 +1445,9 @@ function criarCategoria_(
     evento:
       evento,
 
+    documentosObrigatorios:
+      documentos,
+
     criadoPor:
       sessao.email
   };
@@ -1416,7 +1463,8 @@ function editarCategoria_(
   id,
   nome,
   idadeMaxima,
-  evento
+  evento,
+  documentosObrigatorios
 ) {
 
   const sessao =
@@ -1435,6 +1483,11 @@ function editarCategoria_(
     )
       .trim()
       .toUpperCase();
+
+  const documentos =
+    normalizarDocumentosCategoria_(
+      documentosObrigatorios
+    );
 
 
   if (!id) {
@@ -1607,6 +1660,15 @@ function editarCategoria_(
           idade
         );
 
+      sheet
+        .getRange(
+          i + 1,
+          7
+        )
+        .setValue(
+          documentos.join('|')
+        );
+
 
       SpreadsheetApp.flush();
 
@@ -1634,6 +1696,9 @@ function editarCategoria_(
 
         evento:
           eventoLinha,
+
+        documentosObrigatorios:
+          documentos,
 
         alteradoPor:
           sessao.email
@@ -2528,7 +2593,9 @@ function doGet(e) {
       return visualizarArquivoDrive_(
         params.token,
         params.fileId,
-        params.inscricaoId
+        params.inscricaoId,
+        params.modo,
+        params.callback
       );
     }
 
@@ -2743,7 +2810,8 @@ case 'criarCategoria':
       body.token,
   body.nome,
   body.idadeMaxima,
-  body.evento
+  body.evento,
+  body.documentosObrigatorios
     )
   );
 
@@ -3224,7 +3292,8 @@ case 'alterarStatusLote':
             body.token,
   body.nome,
   body.idadeMaxima,
-  body.evento
+  body.evento,
+  body.documentosObrigatorios
           )
         );
 
@@ -3238,7 +3307,8 @@ case 'alterarStatusLote':
   body.id,
   body.nome,
   body.idadeMaxima,
-  body.evento
+  body.evento,
+  body.documentosObrigatorios
           )
         );
 
@@ -5233,17 +5303,18 @@ function listarArquivosDrive_(
         file.getId();
 
       /*
-       * Também corrige arquivos enviados antes desta versão.
-       * Assim, o comprovante antigo deixa de exigir login.
+       * Documentos de inscrição contêm dados pessoais.
+       * Mantemos o arquivo PRIVADO e entregamos ao admin
+       * somente pela rota autenticada do Web App.
        */
       try {
         file.setSharing(
-          DriveApp.Access.ANYONE_WITH_LINK,
+          DriveApp.Access.PRIVATE,
           DriveApp.Permission.VIEW
         );
       } catch (sharingError) {
         console.log(
-          'Não foi possível ajustar compartilhamento do arquivo ' +
+          'Não foi possível reforçar a privacidade do arquivo ' +
           fileId +
           ': ' +
           sharingError.message
@@ -5251,8 +5322,9 @@ function listarArquivosDrive_(
       }
 
       const url =
-        'https://drive.google.com/uc?export=download&id=' +
-        encodeURIComponent(fileId);
+        token
+          ? gerarUrlArquivo_(token, fileId, id)
+          : '';
 
 
       result.push({
@@ -5340,7 +5412,9 @@ function gerarUrlArquivo_(
 function visualizarArquivoDrive_(
   token,
   fileId,
-  inscricaoId
+  inscricaoId,
+  modo,
+  callback
 ) {
 
   /*
@@ -5513,6 +5587,111 @@ function visualizarArquivoDrive_(
       Utilities.base64Encode(
         blob.getBytes()
       );
+
+    // Entrega os bytes à página principal sem incorporar script.google.com em iframe.
+    if (String(modo).toLowerCase() === 'dados') {
+      if (!/^filePreviewCallback_[A-Za-z0-9_]+$/.test(String(callback || ''))) {
+        return paginaArquivoErro_('Callback inválido.');
+      }
+      return ContentService.createTextOutput(
+        callback + '(' + JSON.stringify({
+          nome: nome,
+          mimeType: mimeType,
+          base64: base64
+        }) + ');'
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+
+    modo =
+      String(
+        modo || 'baixar'
+      )
+        .trim()
+        .toLowerCase();
+
+    /*
+     * VISUALIZAÇÃO PRIVADA
+     *
+     * O arquivo continua privado no Drive. A prévia é
+     * montada pelo próprio Web App somente depois da
+     * validação da sessão e do vínculo com a inscrição.
+     */
+    if (modo === 'visualizar') {
+
+      const dataUrl =
+        'data:' +
+        mimeType +
+        ';base64,' +
+        base64;
+
+      let visualizador = '';
+
+      if (
+        mimeType.indexOf('image/') === 0
+      ) {
+
+        visualizador =
+          '<img class="preview-image" src="' +
+          dataUrl +
+          '" alt="' +
+          escHtmlServer_(nome) +
+          '">';
+
+      } else if (
+        mimeType === 'application/pdf'
+      ) {
+
+        visualizador =
+          '<iframe class="preview-pdf" src="' +
+          dataUrl +
+          '" title="' +
+          escHtmlServer_(nome) +
+          '"></iframe>';
+
+      }
+
+      const htmlPreview =
+        '<!DOCTYPE html>' +
+        '<html lang="pt-BR">' +
+        '<head>' +
+        '<meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + escHtmlServer_(nome) + '</title>' +
+        '<style>' +
+        '*{box-sizing:border-box}' +
+        'html,body{margin:0;width:100%;height:100%;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif}' +
+        '.top{height:58px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 16px;background:#0b0b0b;border-bottom:1px solid #2b2b2b}' +
+        '.name{min-width:0;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.close{flex:0 0 auto;padding:9px 13px;border-radius:8px;background:#a8ff00;color:#111;text-decoration:none;font-size:11px;font-weight:900}' +
+        '.viewer{height:calc(100% - 58px);display:flex;align-items:center;justify-content:center;padding:14px}' +
+        '.preview-image{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}' +
+        '.preview-pdf{display:block;width:100%;height:100%;border:0;background:#fff;border-radius:8px}' +
+        '</style>' +
+        '</head>' +
+        '<body>' +
+        '<div class="top">' +
+        '<div class="name">' + escHtmlServer_(nome) + '</div>' +
+        '<a class="close" href="javascript:window.close()">FECHAR</a>' +
+        '</div>' +
+        '<div class="viewer">' + visualizador + '</div>' +
+        '</body>' +
+        '</html>';
+
+      return HtmlService
+        .createHtmlOutput(
+          htmlPreview
+        )
+        .setTitle(
+          'Visualizar - ' +
+          nome
+        )
+        .setXFrameOptionsMode(
+          HtmlService
+            .XFrameOptionsMode
+            .ALLOWALL
+        );
+    }
 
 
     /*
@@ -6661,7 +6840,12 @@ function obterCategoriasPublicas_(evento) {
         true,
 
       evento:
-        eventoLinha
+        eventoLinha,
+
+      documentosObrigatorios:
+        normalizarDocumentosCategoria_(
+          dados[i][6] || ''
+        )
 
     });
 
@@ -6723,6 +6907,119 @@ function obterValorCategoriaPublica_(
 /* =====================================================
    CADASTRO PÚBLICO - MULTI-EVENTOS
    ===================================================== */
+
+function obterRotuloDocumentoCategoria_(codigo) {
+
+  const mapa = {
+    RG: 'RG',
+    CPF: 'CPF',
+    CERTIDAO: 'CERTIDAO',
+    COMPROVANTE_RESIDENCIA: 'COMPROVANTE-RESIDENCIA'
+  };
+
+  return mapa[String(codigo || '').trim().toUpperCase()] || '';
+}
+
+
+function validarESalvarDocumentosPublicos_(numeroInscricao, atleta, documentosObrigatorios, documentosRecebidos) {
+
+  const obrigatorios = normalizarDocumentosCategoria_(documentosObrigatorios);
+
+  if (!obrigatorios.length) {
+    return [];
+  }
+
+  const recebidos = Array.isArray(documentosRecebidos)
+    ? documentosRecebidos
+    : [];
+
+  const mapa = {};
+
+  recebidos.forEach(function(doc) {
+    if (!doc) return;
+    const tipo = String(doc.tipo || '').trim().toUpperCase();
+    if (!tipo || mapa[tipo]) return;
+    mapa[tipo] = doc;
+  });
+
+  obrigatorios.forEach(function(tipo) {
+    const doc = mapa[tipo];
+    if (!doc || !String(doc.arquivoBase64 || '').trim()) {
+      throw new Error('Anexe todos os documentos obrigatórios da categoria antes de concluir a inscrição. Documento ausente: ' + obterRotuloDocumentoCategoria_(tipo) + '.');
+    }
+  });
+
+  const mimePermitidos = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ];
+
+  const preparados = obrigatorios.map(function(tipo) {
+    const doc = mapa[tipo];
+    const mimeType = String(doc.mimeType || '').trim().toLowerCase();
+    const base64 = String(doc.arquivoBase64 || '').trim();
+
+    if (mimePermitidos.indexOf(mimeType) === -1) {
+      throw new Error('Formato inválido para ' + obterRotuloDocumentoCategoria_(tipo) + '. Envie PDF, JPG, PNG ou WEBP.');
+    }
+
+    // Aproximação segura: Base64 é ~33% maior que o arquivo binário.
+    if (base64.length > 7 * 1024 * 1024) {
+      throw new Error('O arquivo de ' + obterRotuloDocumentoCategoria_(tipo) + ' excede o limite de 5 MB.');
+    }
+
+    return {
+      tipo: tipo,
+      rotulo: obterRotuloDocumentoCategoria_(tipo),
+      mimeType: mimeType,
+      base64: base64,
+      nomeOriginal: String(doc.nome || '').trim()
+    };
+  });
+
+  const root = DriveApp.getFolderById(DRIVE_ROOT_FOLDER_ID);
+  const folderName = 'INSCRICAO-' + String(numeroInscricao).padStart(3, '0');
+  const folders = root.getFoldersByName(folderName);
+  const folder = folders.hasNext() ? folders.next() : root.createFolder(folderName);
+  const criados = [];
+
+  try {
+    preparados.forEach(function(doc) {
+      const extensao = obterExtensao_(doc.nomeOriginal, doc.mimeType);
+      const nomeAtleta = sanitizarNomeArquivo_(atleta.nome || 'Atleta');
+      const cpf = String(atleta.cpf || '').replace(/\D/g, '');
+      const nomeFinal = doc.rotulo + ' - ' + cpf + ' - ' + nomeAtleta + extensao;
+      const bytes = Utilities.base64Decode(doc.base64);
+      const blob = Utilities.newBlob(bytes, doc.mimeType, nomeFinal);
+      const file = folder.createFile(blob);
+
+      // Nunca tornar documento do atleta público.
+      try {
+        file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);
+      } catch (e) {}
+
+      criados.push(file);
+    });
+
+    return criados.map(function(file) {
+      return {
+        id: file.getId(),
+        nome: file.getName(),
+        mimeType: file.getMimeType(),
+        tamanho: file.getSize()
+      };
+    });
+
+  } catch (erro) {
+    criados.forEach(function(file) {
+      try { file.setTrashed(true); } catch (e) {}
+    });
+    throw erro;
+  }
+}
+
 
 function cadastrarInscricaoPublica_(body) {
 
@@ -6941,6 +7238,7 @@ function cadastrarInscricaoPublica_(body) {
 
 
   let categoriaValida = false;
+  let documentosObrigatoriosCategoria = [];
 
 
   for (
@@ -6960,6 +7258,9 @@ function cadastrarInscricaoPublica_(body) {
     ) {
 
       categoriaValida = true;
+      documentosObrigatoriosCategoria = normalizarDocumentosCategoria_(
+        categorias[i].documentosObrigatorios || []
+      );
       break;
     }
   }
@@ -6970,6 +7271,35 @@ function cadastrarInscricaoPublica_(body) {
     throw new Error(
       'A categoria selecionada não está disponível para este evento.'
     );
+  }
+
+
+  /* =================================================
+     DOCUMENTOS OBRIGATÓRIOS DA CATEGORIA
+     ================================================= */
+
+  const documentosRecebidos =
+    Array.isArray(body.documentos)
+      ? body.documentos
+      : [];
+
+  if (documentosObrigatoriosCategoria.length) {
+    const tiposRecebidos = documentosRecebidos
+      .filter(function(doc) {
+        return doc && String(doc.arquivoBase64 || '').trim();
+      })
+      .map(function(doc) {
+        return String(doc.tipo || '').trim().toUpperCase();
+      });
+
+    documentosObrigatoriosCategoria.forEach(function(tipo) {
+      if (tiposRecebidos.indexOf(tipo) === -1) {
+        throw new Error(
+          'Anexe todos os documentos obrigatórios da categoria antes de concluir a inscrição. Documento ausente: ' +
+          obterRotuloDocumentoCategoria_(tipo) + '.'
+        );
+      }
+    });
   }
 
 
@@ -7046,25 +7376,53 @@ function cadastrarInscricaoPublica_(body) {
 
 
   /* =================================================
+     SALVA DOCUMENTOS ANTES DE CRIAR A INSCRIÇÃO
+     Se algum obrigatório falhar, a inscrição não é criada.
+     ================================================= */
+
+  const documentosSalvos =
+    validarESalvarDocumentosPublicos_(
+      numeroInscricao,
+      {
+        nome: nome,
+        cpf: cpfNumeros
+      },
+      documentosObrigatoriosCategoria,
+      documentosRecebidos
+    );
+
+
+  /* =================================================
      CRIA CHECKOUT INFINITEPAY
      ================================================= */
 
-  const checkout =
-    criarCheckoutInfinitePay_(
-      numeroInscricao,
-      valor,
-      {
-        nome:
-          nome,
+  let checkout;
 
-        email:
-          email,
+  try {
+    checkout =
+      criarCheckoutInfinitePay_(
+        numeroInscricao,
+        valor,
+        {
+          nome:
+            nome,
 
-        telefone:
-          telefone
-      },
-      evento
-    );
+          email:
+            email,
+
+          telefone:
+            telefone
+        },
+        evento
+      );
+  } catch (erroCheckout) {
+    documentosSalvos.forEach(function(doc) {
+      try {
+        DriveApp.getFileById(doc.id).setTrashed(true);
+      } catch (e) {}
+    });
+    throw erroCheckout;
+  }
 
 
   const checkoutUrl =
@@ -7077,6 +7435,12 @@ function cadastrarInscricaoPublica_(body) {
 
 
   if (!checkoutUrl) {
+
+    documentosSalvos.forEach(function(doc) {
+      try {
+        DriveApp.getFileById(doc.id).setTrashed(true);
+      } catch (e) {}
+    });
 
     throw new Error(
       'A InfinitePay não retornou uma URL de pagamento válida.'
@@ -7220,6 +7584,9 @@ function cadastrarInscricaoPublica_(body) {
 
     checkout_url:
       checkoutUrl,
+
+    documentosRecebidos:
+      documentosSalvos.length,
 
     mensagem:
       'Inscrição criada. Redirecionando para o pagamento.'

@@ -6,7 +6,7 @@
 <title>Itaitinga MTB Race — Admin</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
-<link rel="stylesheet" href="css/styles.css?v=622">
+<link rel="stylesheet" href="css/styles.css?v=627">
 </head>
 <body>
 <main id="login" class="login">
@@ -2311,6 +2311,18 @@
           <label class="registration-field wide"><small>NOME DA CATEGORIA *</small><input id="categoryNome" type="text" maxlength="80" placeholder="Ex.: Sport Masculino" required></label>
           <label class="registration-field"><small>IDADE MÁXIMA</small><input id="categoryIdadeMaxima" type="number" min="1" max="120" placeholder="Ex.: 39"></label>
         </div>
+
+        <div class="category-documents-field">
+          <small>DOCUMENTOS OBRIGATÓRIOS</small>
+          <p>Selecione os documentos que o atleta deverá anexar para concluir a inscrição nesta categoria.</p>
+          <div class="category-documents-options">
+            <label><input type="checkbox" name="categoryDocumento" value="RG"> <span>RG</span></label>
+            <label><input type="checkbox" name="categoryDocumento" value="CPF"> <span>CPF</span></label>
+            <label><input type="checkbox" name="categoryDocumento" value="CERTIDAO"> <span>Certidão</span></label>
+            <label><input type="checkbox" name="categoryDocumento" value="COMPROVANTE_RESIDENCIA"> <span>Comprovante de residência</span></label>
+          </div>
+          <em>Se nenhum documento for selecionado, a categoria não exigirá anexos.</em>
+        </div>
         <div id="categoryError" class="registration-error" hidden></div>
       </div>
       <div class="modal-actions"><button type="button" class="modal-secondary" id="cancelCategory">CANCELAR</button><button type="submit" class="modal-primary" id="saveCategory">CRIAR CATEGORIA</button></div>
@@ -2319,6 +2331,6 @@
 </div>
 </div></section>
 </main>
-<script src="js/main-v62.js?v=621"></script>
+<script src="js/main-v62.js?v=627"></script>
 </body>
 </html>
