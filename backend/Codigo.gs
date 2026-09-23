@@ -2595,7 +2595,8 @@ function doGet(e) {
         params.fileId,
         params.inscricaoId,
         params.modo,
-        params.callback
+        params.callback,
+        params.evento
       );
     }
 
@@ -4395,7 +4396,8 @@ const encontrada =
   encontrada.arquivos =
     listarArquivosDrive_(
       id,
-      token
+      token,
+      evento
     );
 
 
@@ -5242,7 +5244,8 @@ function uploadArquivo_(
 
 function listarArquivosDrive_(
   id,
-  token
+  token,
+  evento
 ) {
 
   if (
@@ -5323,7 +5326,7 @@ function listarArquivosDrive_(
 
       const url =
         token
-          ? gerarUrlArquivo_(token, fileId, id)
+          ? gerarUrlArquivo_(token, fileId, id, evento)
           : '';
 
 
@@ -5370,7 +5373,8 @@ function listarArquivosDrive_(
 function gerarUrlArquivo_(
   token,
   fileId,
-  inscricaoId
+  inscricaoId,
+  evento
 ) {
 
   const base =
@@ -5400,6 +5404,10 @@ function gerarUrlArquivo_(
     '&inscricaoId=' +
     encodeURIComponent(
       inscricaoId
+    ) +
+    '&evento=' +
+    encodeURIComponent(
+      evento || 'MTB2026'
     )
   );
 }
@@ -5414,7 +5422,8 @@ function visualizarArquivoDrive_(
   fileId,
   inscricaoId,
   modo,
-  callback
+  callback,
+  evento
 ) {
 
   /*
@@ -5450,7 +5459,8 @@ function visualizarArquivoDrive_(
 
     const inscricao =
       obterInscricaoPorId_(
-        inscricaoId
+        inscricaoId,
+        evento
       );
 
 

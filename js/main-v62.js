@@ -5220,7 +5220,8 @@ function renderFiles(files) {
           .toUpperCase();
 
       const urlBase =
-        fileId && token && inscricaoId
+        f.url ||
+        (fileId && token && inscricaoId
           ? API_URL +
             "?action=arquivo" +
             "&token=" +
@@ -5229,16 +5230,25 @@ function renderFiles(files) {
             encodeURIComponent(fileId) +
             "&inscricaoId=" +
             encodeURIComponent(inscricaoId)
-          : "";
+          : "");
+
+      // O mesmo número pode existir nos dois eventos; a rota deve saber qual consultar.
+      const urlArquivo = urlBase
+        ? (() => {
+            const u = new URL(urlBase);
+            u.searchParams.set("evento", EVENTO_ATUAL);
+            return u.href;
+          })()
+        : "";
 
       const urlVisualizar =
-        urlBase
-          ? urlBase + "&modo=visualizar"
+        urlArquivo
+          ? urlArquivo + "&modo=visualizar"
           : "";
 
       const urlBaixar =
-        urlBase
-          ? urlBase + "&modo=baixar"
+        urlArquivo
+          ? urlArquivo + "&modo=baixar"
           : "";
 
       return `
@@ -5363,8 +5373,14 @@ document.addEventListener("click", function (event) {
     }
   };
   script.onerror = function () {
-    if (modal.dataset.callback === callbackName) content.textContent = "Não foi possível carregar o documento.";
+    if (modal.dataset.callback === callbackName) content.textContent = "Falha ao acessar o comprovante. Confira a sessão e a implantação do Apps Script.";
     cleanup();
+  };
+  script.onload = function () {
+    if (window[callbackName] && modal.dataset.callback === callbackName) {
+      content.textContent = "O Apps Script não retornou o arquivo. Publique a versão atualizada do backend e tente novamente.";
+      cleanup();
+    }
   };
   const url = new URL(link.href);
   url.searchParams.set("modo", "dados");
