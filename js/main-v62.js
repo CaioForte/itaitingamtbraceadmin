@@ -435,6 +435,9 @@ if (paginaAtiva?.id === "despesas") {
       if (paginaAtiva?.id === "configuracoes") {
   await carregarConfiguracoes_();
 }
+      if (paginaAtiva?.id === "conteudo") {
+  await carregarConteudoSite_();
+}
 
       notificar(
         "success",
@@ -3306,6 +3309,9 @@ document
         token:
           s.token,
 
+        evento:
+          EVENTO_ATUAL,
+
         nomeEvento:
           document
             .getElementById(
@@ -3365,7 +3371,15 @@ document
             .getElementById(
               "siteAltimetria"
             )
-            ?.value || ""
+            ?.value || "",
+
+        regulamento:
+          document
+            .getElementById(
+              "siteRegulamento"
+            )
+            ?.value
+            .trim() || ""
 
       };
 
@@ -3391,7 +3405,7 @@ document
       try {
 
         await apiPost(
-          "salvarSiteConfig",
+          "salvarSiteConfigArquivo",
           dados
         );
 
@@ -3440,9 +3454,10 @@ document
 
     const dados =
       await apiGet(
-        "siteConfig",
+        "siteConfigArquivo",
         {
-          token: s.token
+          token: s.token,
+          evento: EVENTO_ATUAL
         }
       );
 
@@ -3501,6 +3516,11 @@ document
     preencher(
       "siteAltimetria",
       dados.altimetria
+    );
+
+    preencher(
+      "siteRegulamento",
+      dados.regulamento
     );
 
 

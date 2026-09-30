@@ -1,0 +1,22 @@
+CONFIGURAÇÃO DO CONTEÚDO DOS SITES
+===================================
+
+O painel agora lê e grava o arquivo data/evento.json diretamente no repositório GitHub de cada evento.
+
+No Apps Script, abra:
+Configurações do projeto > Propriedades do script
+
+Crie estas propriedades:
+
+GITHUB_TOKEN       = token do GitHub com permissão de conteúdo nos dois repositórios
+GITHUB_OWNER       = seu usuário/organização do GitHub
+GITHUB_REPO_MTB    = nome do repositório do site MTB
+GITHUB_REPO_TRAIL  = nome do repositório do site Trail
+GITHUB_BRANCH      = main
+
+IMPORTANTE
+- Não coloque o token dentro do JavaScript do painel.
+- O token fica somente nas Propriedades do script.
+- Depois de alterar o Codigo.gs, publique uma NOVA VERSÃO da implantação do Web App.
+- Os sites precisam conter data/evento.json e js/evento-config.js (já incluídos nos ZIPs desta versão).
+- Ao salvar no painel, o GitHub recebe um commit e o Cloudflare Pages fará o deploy conforme a integração já existente.

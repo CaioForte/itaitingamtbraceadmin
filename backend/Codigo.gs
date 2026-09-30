@@ -2760,7 +2760,16 @@ case 'adminCategorias':
     )
   );
 
-  case 'siteConfig':
+  case 'siteConfigArquivo':
+  return resposta_(
+    true,
+    obterConfiguracaoSiteArquivo_(
+      params.token,
+      params.evento
+    )
+  );
+
+case 'siteConfig':
   return resposta_(
     true,
     obterConfiguracaoSite_(
@@ -3086,7 +3095,17 @@ case "editarDespesa":
           )
         );
 
-        case 'salvarSiteConfig':
+        case 'salvarSiteConfigArquivo':
+
+  return resposta_(
+    true,
+    salvarConfiguracaoSiteArquivo_(
+      body.token,
+      body
+    )
+  );
+
+case 'salvarSiteConfig':
 
   return resposta_(
     true,
@@ -8496,4 +8515,144 @@ inscricoes
       'Estrutura multi-eventos preparada com sucesso.'
   };
 
+}
+
+
+/* =====================================================
+   CONTEÚDO DO SITE EM JSON / GITHUB
+   =====================================================
+   Propriedades necessárias em Configurações do projeto
+   > Propriedades do script:
+     GITHUB_TOKEN
+     GITHUB_OWNER
+     GITHUB_REPO_MTB
+     GITHUB_REPO_TRAIL
+   Opcional:
+     GITHUB_BRANCH (padrão: main)
+   ===================================================== */
+
+function githubConfig_() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    token: String(props.getProperty('GITHUB_TOKEN') || '').trim(),
+    owner: String(props.getProperty('GITHUB_OWNER') || '').trim(),
+    repoMtb: String(props.getProperty('GITHUB_REPO_MTB') || '').trim(),
+    repoTrail: String(props.getProperty('GITHUB_REPO_TRAIL') || '').trim(),
+    branch: String(props.getProperty('GITHUB_BRANCH') || 'main').trim()
+  };
+}
+
+function githubRepoEvento_(evento, cfg) {
+  const ev = String(evento || '').trim().toUpperCase();
+  if (ev === 'MTB2026') return cfg.repoMtb;
+  if (ev === 'TRAIL2026') return cfg.repoTrail;
+  throw new Error('Evento inválido para configuração do site.');
+}
+
+function githubRequest_(url, options) {
+  const cfg = githubConfig_();
+  if (!cfg.owner) throw new Error('Configure GITHUB_OWNER nas Propriedades do script.');
+  if (!cfg.token) throw new Error('Configure GITHUB_TOKEN nas Propriedades do script.');
+
+  const opts = Object.assign({}, options || {});
+  opts.muteHttpExceptions = true;
+  opts.headers = Object.assign({}, opts.headers || {}, {
+    'Authorization': 'Bearer ' + cfg.token,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  });
+
+  const response = UrlFetchApp.fetch(url, opts);
+  const status = response.getResponseCode();
+  const text = response.getContentText();
+  let json = {};
+  try { json = text ? JSON.parse(text) : {}; } catch (e) {}
+
+  if (status < 200 || status >= 300) {
+    const detalhe = json && json.message ? json.message : ('HTTP ' + status);
+    throw new Error('GitHub: ' + detalhe);
+  }
+  return json;
+}
+
+function obterConfiguracaoSiteArquivo_(token, evento) {
+  validarSessao_(token);
+  const cfg = githubConfig_();
+  const repo = githubRepoEvento_(evento, cfg);
+  if (!repo) {
+    throw new Error(
+      String(evento || '').toUpperCase() === 'TRAIL2026'
+        ? 'Configure GITHUB_REPO_TRAIL nas Propriedades do script.'
+        : 'Configure GITHUB_REPO_MTB nas Propriedades do script.'
+    );
+  }
+
+  const url = 'https://api.github.com/repos/' + encodeURIComponent(cfg.owner) + '/' +
+    encodeURIComponent(repo) + '/contents/data/evento.json?ref=' + encodeURIComponent(cfg.branch);
+  const arquivo = githubRequest_(url, { method: 'get' });
+  const conteudo = Utilities.newBlob(
+    Utilities.base64Decode(String(arquivo.content || '').replace(/\s/g, ''))
+  ).getDataAsString('UTF-8');
+  const dados = JSON.parse(conteudo || '{}');
+  dados._sha = arquivo.sha || '';
+  return dados;
+}
+
+function salvarConfiguracaoSiteArquivo_(token, dados) {
+  validarSessao_(token);
+  const cfg = githubConfig_();
+  const evento = String(dados.evento || '').trim().toUpperCase();
+  const repo = githubRepoEvento_(evento, cfg);
+  if (!repo) {
+    throw new Error(
+      evento === 'TRAIL2026'
+        ? 'Configure GITHUB_REPO_TRAIL nas Propriedades do script.'
+        : 'Configure GITHUB_REPO_MTB nas Propriedades do script.'
+    );
+  }
+
+  const urlBase = 'https://api.github.com/repos/' + encodeURIComponent(cfg.owner) + '/' +
+    encodeURIComponent(repo) + '/contents/data/evento.json';
+
+  let sha = '';
+  try {
+    const atual = githubRequest_(urlBase + '?ref=' + encodeURIComponent(cfg.branch), { method: 'get' });
+    sha = atual.sha || '';
+  } catch (e) {
+    if (String(e.message || '').indexOf('Not Found') === -1) throw e;
+  }
+
+  const config = {
+    evento: evento,
+    nomeEvento: String(dados.nomeEvento || '').trim(),
+    modalidade: String(dados.modalidade || '').trim(),
+    dataEvento: String(dados.dataEvento || '').trim(),
+    horario: String(dados.horario || '').trim(),
+    cidade: String(dados.cidade || '').trim(),
+    estado: String(dados.estado || '').trim().toUpperCase(),
+    distancia: String(dados.distancia || '').trim(),
+    altimetria: String(dados.altimetria || '').trim(),
+    regulamento: String(dados.regulamento || '').trim()
+  };
+
+  const jsonTexto = JSON.stringify(config, null, 2) + '\n';
+  const payload = {
+    message: 'Atualiza conteúdo do site - ' + evento,
+    content: Utilities.base64Encode(jsonTexto, Utilities.Charset.UTF_8),
+    branch: cfg.branch
+  };
+  if (sha) payload.sha = sha;
+
+  githubRequest_(urlBase, {
+    method: 'put',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload)
+  });
+
+  return {
+    sucesso: true,
+    mensagem: 'Arquivo data/evento.json atualizado no GitHub.',
+    evento: evento,
+    repositorio: repo
+  };
 }
