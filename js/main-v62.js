@@ -3385,6 +3385,9 @@ document
         localExtenso:
           document.getElementById("siteLocalExtenso")?.value.trim() || "",
 
+        heroDescricao:
+          document.getElementById("siteHeroDescricao")?.value.trim() || "",
+
         regulamento:
           document
             .getElementById(
@@ -3534,6 +3537,7 @@ document
     preencher("siteHeroTitulo", dados.heroTitulo);
     preencher("siteHeroDestaque", dados.heroDestaque);
     preencher("siteLocalExtenso", dados.localExtenso);
+    preencher("siteHeroDescricao", dados.heroDescricao);
 
     preencher(
       "siteRegulamento",

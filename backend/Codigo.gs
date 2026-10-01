@@ -8632,6 +8632,11 @@ function salvarConfiguracaoSiteArquivo_(token, dados) {
     estado: String(dados.estado || '').trim().toUpperCase(),
     distancia: String(dados.distancia || '').trim(),
     altimetria: String(dados.altimetria || '').trim(),
+    heroLinhaSuperior: String(dados.heroLinhaSuperior || '').trim(),
+    heroTitulo: String(dados.heroTitulo || '').trim(),
+    heroDestaque: String(dados.heroDestaque || '').trim(),
+    localExtenso: String(dados.localExtenso || '').trim(),
+    heroDescricao: String(dados.heroDescricao || '').trim(),
     regulamento: String(dados.regulamento || '').trim()
   };
 
