@@ -3373,6 +3373,18 @@ document
             )
             ?.value || "",
 
+        heroLinhaSuperior:
+          document.getElementById("siteHeroLinhaSuperior")?.value.trim() || "",
+
+        heroTitulo:
+          document.getElementById("siteHeroTitulo")?.value.trim() || "",
+
+        heroDestaque:
+          document.getElementById("siteHeroDestaque")?.value.trim() || "",
+
+        localExtenso:
+          document.getElementById("siteLocalExtenso")?.value.trim() || "",
+
         regulamento:
           document
             .getElementById(
@@ -3517,6 +3529,11 @@ document
       "siteAltimetria",
       dados.altimetria
     );
+
+    preencher("siteHeroLinhaSuperior", dados.heroLinhaSuperior);
+    preencher("siteHeroTitulo", dados.heroTitulo);
+    preencher("siteHeroDestaque", dados.heroDestaque);
+    preencher("siteLocalExtenso", dados.localExtenso);
 
     preencher(
       "siteRegulamento",
